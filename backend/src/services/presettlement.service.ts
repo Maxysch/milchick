@@ -446,7 +446,7 @@ export async function generatePreSettlement(
 export async function getPreSettlementDetail(preSettlementId: string) {
   const { data: ps, error: psError } = await supabaseAdmin
     .from('pre_settlements')
-    .select('*, profiles(first_name, last_name, employee_id)')
+    .select('*, profiles!pre_settlements_profile_id_fkey(first_name, last_name, employee_id)')
     .eq('id', preSettlementId)
     .single();
 
@@ -611,7 +611,7 @@ async function recalculateTotal(preSettlementId: string) {
 export async function listPreSettlements(profileId?: string) {
   let query = supabaseAdmin
     .from('pre_settlements')
-    .select('*, profiles(first_name, last_name, employee_id)')
+    .select('*, profiles!pre_settlements_profile_id_fkey(first_name, last_name, employee_id)')
     .order('created_at', { ascending: false });
 
   if (profileId) query = query.eq('profile_id', profileId);

@@ -33,7 +33,7 @@ router.get('/range', async (req, res: Response) => {
 
   const { data, error } = await supabaseAdmin
     .from('exceptions')
-    .select('*, profiles(first_name, last_name), clients(name)')
+    .select('*, profiles!exceptions_profile_id_fkey(first_name, last_name), clients(name)')
     .gte('date_to', from as string)
     .lte('date_from', to as string)
     .order('date_from');
