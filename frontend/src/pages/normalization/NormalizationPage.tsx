@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Save } from 'lucide-react';
 import { api } from '../../lib/api';
 import { formatDate } from '../../lib/utils';
 import {
@@ -36,6 +36,29 @@ function timeDiffExceeds(original: string, normalized: string, thresholdMinutes:
   return diff > thresholdMinutes;
 }
 
+const NIGHTTIME_START = 21 * 60; // 21:00
+const NIGHTTIME_END = 6 * 60;   // 06:00
+
+/** Locally compute daytime/nighttime hours from two HH:mm strings */
+function computeLocalHours(inTime: string, outTime: string): { daytime: number; nighttime: number } {
+  const inMin = timeToMinutes(inTime);
+  const outMin = timeToMinutes(outTime);
+  const totalMin = outMin > inMin ? outMin - inMin : outMin + 1440 - inMin;
+  if (totalMin <= 0) return { daytime: 0, nighttime: 0 };
+
+  let nighttimeMin = 0;
+  for (let m = 0; m < totalMin; m++) {
+    const current = (inMin + m) % 1440;
+    if (current >= NIGHTTIME_START || current < NIGHTTIME_END) {
+      nighttimeMin++;
+    }
+  }
+
+  const daytime = Math.round(((totalMin - nighttimeMin) / 60) * 100) / 100;
+  const nighttime = Math.round((nighttimeMin / 60) * 100) / 100;
+  return { daytime, nighttime };
+}
+
 const WARN_THRESHOLD = 15;
 
 function NormResultRow({
@@ -43,11 +66,13 @@ function NormResultRow({
   index,
   isPersisted,
   onSave,
+  isSaving,
 }: {
   result: NormalizationResult;
   index: number;
   isPersisted: boolean;
   onSave: (id: string, payload: { normalized_in?: string; normalized_out?: string }) => void;
+  isSaving: boolean;
 }) {
   const [normIn, setNormIn] = useState(result.normalized_in.slice(0, 5));
   const [normOut, setNormOut] = useState(result.normalized_out.slice(0, 5));
@@ -62,17 +87,21 @@ function NormResultRow({
   const warnIn = timeDiffExceeds(originalIn, normIn, WARN_THRESHOLD);
   const warnOut = timeDiffExceeds(originalOut, normOut, WARN_THRESHOLD);
 
-  const handleBlurIn = () => {
-    if (normIn !== result.normalized_in.slice(0, 5) && result.id && isPersisted) {
-      onSave(result.id, { normalized_in: normIn });
-    }
-  };
+  const isDirty = normIn !== result.normalized_in.slice(0, 5) || normOut !== result.normalized_out.slice(0, 5);
 
-  const handleBlurOut = () => {
-    if (normOut !== result.normalized_out.slice(0, 5) && result.id && isPersisted) {
-      onSave(result.id, { normalized_out: normOut });
-    }
-  };
+  // Recalculate hours locally when times change
+  const localHours = useMemo(() => {
+    if (isDirty) return computeLocalHours(normIn, normOut);
+    return { daytime: result.daytime_hours, nighttime: result.nighttime_hours };
+  }, [normIn, normOut, isDirty, result.daytime_hours, result.nighttime_hours]);
+
+  const handleSave = useCallback(() => {
+    if (!result.id || !isPersisted || !isDirty) return;
+    const payload: { normalized_in?: string; normalized_out?: string } = {};
+    if (normIn !== result.normalized_in.slice(0, 5)) payload.normalized_in = normIn;
+    if (normOut !== result.normalized_out.slice(0, 5)) payload.normalized_out = normOut;
+    onSave(result.id, payload);
+  }, [result.id, isPersisted, isDirty, normIn, normOut, result.normalized_in, result.normalized_out, onSave]);
 
   return (
     <tr key={`${result.date}-${result.clock_entry_id ?? index}`}>
@@ -86,7 +115,6 @@ function NormResultRow({
             className={`${inputClass} w-28 ${warnIn ? 'border-amber-400 bg-amber-50' : ''}`}
             value={normIn}
             onChange={(e) => setNormIn(e.target.value)}
-            onBlur={handleBlurIn}
             disabled={!isPersisted}
           />
           {warnIn && (
@@ -103,7 +131,6 @@ function NormResultRow({
             className={`${inputClass} w-28 ${warnOut ? 'border-amber-400 bg-amber-50' : ''}`}
             value={normOut}
             onChange={(e) => setNormOut(e.target.value)}
-            onBlur={handleBlurOut}
             disabled={!isPersisted}
           />
           {warnOut && (
@@ -113,7 +140,9 @@ function NormResultRow({
           )}
         </div>
       </td>
-      <td className="px-4 py-3 text-sm text-gray-700">D {result.daytime_hours} / N {result.nighttime_hours}</td>
+      <td className={`px-4 py-3 text-sm ${isDirty ? 'text-blue-700 font-medium' : 'text-gray-700'}`}>
+        D {localHours.daytime.toFixed(2)} / N {localHours.nighttime.toFixed(2)}
+      </td>
       <td className="px-4 py-3 text-sm text-gray-700">
         <div className="flex flex-wrap gap-2">
           {(result.adjustments ?? []).length > 0 ? (result.adjustments ?? []).map((adjustment, adjustmentIndex) => (
@@ -124,6 +153,20 @@ function NormResultRow({
             </span>
           )) : <span className={getBadgeClass('gray')}>Sin ajustes</span>}
         </div>
+      </td>
+      <td className="px-4 py-3 text-sm">
+        {isPersisted && isDirty && (
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            onClick={handleSave}
+            disabled={isSaving}
+            title="Guardar corrección"
+          >
+            <Save className="h-3.5 w-3.5" />
+            Guardar
+          </button>
+        )}
       </td>
     </tr>
   );
@@ -268,6 +311,7 @@ export default function NormalizationPage() {
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Norm. egreso</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Horas</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Ajustes</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Acción</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
@@ -278,6 +322,7 @@ export default function NormalizationPage() {
                       index={index}
                       isPersisted={isPersisted}
                       onSave={(entryId, payload) => editEntryMutation.mutate({ entryId, payload })}
+                      isSaving={editEntryMutation.isPending}
                     />
                   ))}
                 </tbody>
