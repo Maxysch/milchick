@@ -30,6 +30,7 @@ interface RateFactors {
   nighttime: number;
   overtime: number;
   holiday: number;
+  weekend: number;
 }
 
 interface ScheduleEntry {
@@ -92,10 +93,11 @@ function findBaseRate(
 function computeRate(
   baseRate: number,
   factors: RateFactors,
-  options: { isNighttime?: boolean; isOvertime?: boolean; isHoliday?: boolean }
+  options: { isNighttime?: boolean; isOvertime?: boolean; isHoliday?: boolean; isWeekend?: boolean }
 ): number {
   let rate = baseRate;
   if (options.isHoliday) rate *= factors.holiday;
+  if (options.isWeekend) rate *= factors.weekend;
   if (options.isOvertime) rate *= factors.overtime;
   if (options.isNighttime) rate *= factors.nighttime;
   return Math.round(rate * 100) / 100;
@@ -225,7 +227,7 @@ export async function generatePreSettlement(
     .from('rate_factors')
     .select('factor_key, factor_value');
 
-  const factors: RateFactors = { nighttime: 1.06, overtime: 1.5, holiday: 2.0 };
+  const factors: RateFactors = { nighttime: 1.06, overtime: 1.5, holiday: 2.0, weekend: 1.0 };
   for (const f of (factorsRaw || []) as { factor_key: string; factor_value: number }[]) {
     if (f.factor_key in factors) {
       factors[f.factor_key as keyof RateFactors] = Number(f.factor_value);
@@ -312,10 +314,11 @@ export async function generatePreSettlement(
     // Determine hour type prefix based on holiday
     const typePrefix = holiday ? 'holiday' : 'regular';
     const baseRate = findBaseRate(agentRates, date, dayOfWeek);
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
     // Add daytime line
     if (daytimeHours > 0) {
-      const rate = computeRate(baseRate, factors, { isHoliday: holiday });
+      const rate = computeRate(baseRate, factors, { isHoliday: holiday, isWeekend });
       dailyLines.push({
         date,
         hour_type: `${typePrefix}_daytime`,
@@ -329,7 +332,7 @@ export async function generatePreSettlement(
 
     // Add nighttime line
     if (nighttimeHours > 0) {
-      const rate = computeRate(baseRate, factors, { isNighttime: true, isHoliday: holiday });
+      const rate = computeRate(baseRate, factors, { isNighttime: true, isHoliday: holiday, isWeekend });
       dailyLines.push({
         date,
         hour_type: `${typePrefix}_nighttime`,
@@ -347,7 +350,7 @@ export async function generatePreSettlement(
       const classified = classifyOvertimeHours(ot);
 
       if (classified.daytime > 0) {
-        const otRate = computeRate(baseRate, factors, { isOvertime: true, isHoliday: holiday });
+        const otRate = computeRate(baseRate, factors, { isOvertime: true, isHoliday: holiday, isWeekend });
         dailyLines.push({
           date,
           hour_type: 'overtime_daytime',
@@ -360,7 +363,7 @@ export async function generatePreSettlement(
       }
 
       if (classified.nighttime > 0) {
-        const otRate = computeRate(baseRate, factors, { isOvertime: true, isNighttime: true, isHoliday: holiday });
+        const otRate = computeRate(baseRate, factors, { isOvertime: true, isNighttime: true, isHoliday: holiday, isWeekend });
         dailyLines.push({
           date,
           hour_type: 'overtime_nighttime',

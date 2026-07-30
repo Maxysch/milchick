@@ -26,7 +26,8 @@ ALTER TABLE rate_factors ENABLE ROW LEVEL SECURITY;
 INSERT INTO rate_factors (factor_key, factor_value, description) VALUES
   ('nighttime', 1.0600, 'Factor nocturno (22:00-06:00)'),
   ('overtime',  1.5000, 'Factor horas extra'),
-  ('holiday',   2.0000, 'Factor feriado');
+  ('holiday',   2.0000, 'Factor feriado'),
+  ('weekend',   1.0000, 'Factor fin de semana (sáb/dom)');
 
 -- 2. Simplificar agent_rates: eliminar time_slot y rate_type
 -- Primero eliminar la constraint UNIQUE vieja

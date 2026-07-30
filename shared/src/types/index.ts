@@ -37,7 +37,7 @@ export interface AgentRate {
 }
 
 // ─── Rate Factors ───
-export type RateFactorKey = 'nighttime' | 'overtime' | 'holiday';
+export type RateFactorKey = 'nighttime' | 'overtime' | 'holiday' | 'weekend';
 
 export interface RateFactor {
   id: string;
