@@ -15,6 +15,7 @@ import overtimeRoutes from './routes/overtime.routes.js';
 import holidayRoutes from './routes/holidays.routes.js';
 import rulesRoutes from './routes/rules.routes.js';
 import normalizationRoutes from './routes/normalization.routes.js';
+import preSettlementRoutes from './routes/preSettlements.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -42,6 +43,7 @@ app.use('/api/overtime', overtimeRoutes);
 app.use('/api/holidays', holidayRoutes);
 app.use('/api/rules', rulesRoutes);
 app.use('/api/normalization', normalizationRoutes);
+app.use('/api/pre-settlements', preSettlementRoutes);
 
 app.listen(PORT, () => {
   console.log(`🚀 Milchick backend running on port ${PORT}`);
