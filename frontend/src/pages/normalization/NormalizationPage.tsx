@@ -36,7 +36,7 @@ function timeDiffExceeds(original: string, normalized: string, thresholdMinutes:
   return diff > thresholdMinutes;
 }
 
-const NIGHTTIME_START = 21 * 60; // 21:00
+const NIGHTTIME_START = 22 * 60; // 22:00
 const NIGHTTIME_END = 6 * 60;   // 06:00
 
 /** Locally compute daytime/nighttime hours from two HH:mm strings */

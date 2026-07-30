@@ -34,7 +34,7 @@ interface NormalizationResult {
 }
 
 // Configurable boundary between daytime and nighttime (24h format)
-const NIGHTTIME_START = '21:00';
+const NIGHTTIME_START = '22:00';
 const NIGHTTIME_END = '06:00';
 
 /**
@@ -56,7 +56,7 @@ function minutesToTime(minutes: number): string {
 
 /**
  * Calculate daytime and nighttime hours between two times on the same day.
- * Nighttime: 21:00 to 06:00 (next day handled as same-day boundary)
+ * Nighttime: 22:00 to 06:00 (next day handled as same-day boundary)
  */
 function splitDaytimeNighttime(
   startMin: number,

@@ -59,7 +59,7 @@ interface SettlementItem {
   percentage_base: string | null;
 }
 
-const NIGHTTIME_START_MIN = 21 * 60; // 21:00
+const NIGHTTIME_START_MIN = 22 * 60; // 22:00
 const NIGHTTIME_END_MIN = 6 * 60;   // 06:00
 
 function timeToMinutes(time: string): number {
