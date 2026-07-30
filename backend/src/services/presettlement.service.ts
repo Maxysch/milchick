@@ -21,7 +21,6 @@ interface OvertimeEntry {
 }
 
 interface AgentRate {
-  day_of_week: number;
   amount_per_hour: number;
   effective_from: string;
 }
@@ -69,18 +68,14 @@ function timeToMinutes(time: string): number {
 }
 
 /**
- * Get the base rate for a profile on a given day (most recent effective_from <= date)
+ * Get the base rate for a profile (most recent effective_from <= date)
  */
 function findBaseRate(
   rates: AgentRate[],
   date: string,
-  dayOfWeek: number,
 ): number {
   const matching = rates
-    .filter(r =>
-      r.day_of_week === dayOfWeek &&
-      r.effective_from <= date
-    )
+    .filter(r => r.effective_from <= date)
     .sort((a, b) => b.effective_from.localeCompare(a.effective_from));
 
   return matching[0]?.amount_per_hour || 0;
@@ -216,7 +211,7 @@ export async function generatePreSettlement(
   // Fetch all rates for this profile
   const { data: rates } = await supabaseAdmin
     .from('agent_rates')
-    .select('day_of_week, amount_per_hour, effective_from')
+    .select('amount_per_hour, effective_from')
     .eq('profile_id', profileId)
     .order('effective_from', { ascending: false });
 
@@ -313,7 +308,7 @@ export async function generatePreSettlement(
 
     // Determine hour type prefix based on holiday
     const typePrefix = holiday ? 'holiday' : 'regular';
-    const baseRate = findBaseRate(agentRates, date, dayOfWeek);
+    const baseRate = findBaseRate(agentRates, date);
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
     // Add daytime line

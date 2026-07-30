@@ -24,12 +24,11 @@ export interface Client {
 }
 
 // ─── Agent Rates ───
-export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0=Sunday
+export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0=Sunday (used by schedules)
 
 export interface AgentRate {
   id: string;
   profile_id: string;
-  day_of_week: DayOfWeek;
   amount_per_hour: number;
   effective_from: string;
   created_at: string;

@@ -226,10 +226,9 @@ export const getAgentRates = tool(
   async ({ profile_id }) => {
     const { data, error } = await supabaseAdmin
       .from('agent_rates')
-      .select('day_of_week, amount_per_hour, effective_from')
+      .select('amount_per_hour, effective_from')
       .eq('profile_id', profile_id)
-      .order('effective_from', { ascending: false })
-      .order('day_of_week');
+      .order('effective_from', { ascending: false });
 
     if (error) return `Error: ${error.message}`;
     if (!data || data.length === 0) return 'No hay tarifas configuradas para este agente.';
@@ -239,10 +238,8 @@ export const getAgentRates = tool(
       .from('rate_factors')
       .select('factor_key, factor_value, description');
 
-    const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-
-    const lines = data.map((r: { day_of_week: number; amount_per_hour: number; effective_from: string }) =>
-      `${dayNames[r.day_of_week]} | Base: $${r.amount_per_hour}/h (desde ${r.effective_from})`
+    const lines = data.map((r: { amount_per_hour: number; effective_from: string }) =>
+      `Base: $${r.amount_per_hour}/h (desde ${r.effective_from})`
     ).join('\n');
 
     const factorLines = (factors || []).map((f: { factor_key: string; factor_value: number; description: string }) =>

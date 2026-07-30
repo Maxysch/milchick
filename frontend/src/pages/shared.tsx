@@ -33,7 +33,6 @@ export interface Client {
 export interface AgentRate {
   id: string;
   profile_id: string;
-  day_of_week: number;
   amount_per_hour: number;
   effective_from: string;
 }

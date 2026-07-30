@@ -11,7 +11,6 @@ import { formatDate, formatCurrency } from '../../lib/utils';
 import {
   AgentRate,
   cardClass,
-  DAY_OPTIONS,
   EmptyState,
   ErrorState,
   formatProfileName,
@@ -39,7 +38,6 @@ type ProfileFormValues = z.infer<typeof baseSchema>;
 
 const rateSchema = z.object({
   id: z.string().optional(),
-  day_of_week: z.coerce.number().min(0).max(6),
   amount_per_hour: z.coerce.number().positive('Ingresá un valor mayor a 0'),
   effective_from: z.string().min(1, 'Ingresá la vigencia'),
 });
@@ -137,7 +135,7 @@ export default function AgentFormPage() {
 
   const rateForm = useForm<{ rates: RateFormValues[] }>({
     defaultValues: {
-      rates: [{ day_of_week: 1, amount_per_hour: 0, effective_from: '' }],
+      rates: [{ amount_per_hour: 0, effective_from: '' }],
     },
   });
   const rateFields = useFieldArray({ control: rateForm.control, name: 'rates' });
@@ -147,7 +145,7 @@ export default function AgentFormPage() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['agent-rates', id] });
       setRateError(null);
-      rateForm.reset({ rates: [{ day_of_week: 1, amount_per_hour: 0, effective_from: '' }] });
+      rateForm.reset({ rates: [{ amount_per_hour: 0, effective_from: '' }] });
     },
     onError: (error) => {
       setRateError((error as Error).message);
@@ -256,25 +254,19 @@ export default function AgentFormPage() {
               <form className="space-y-4" onSubmit={handleRatesSubmit}>
                 <div className="space-y-3">
                   {rateFields.fields.map((field, index) => (
-                    <div key={field.id} className="grid gap-3 rounded-lg border border-gray-200 p-4 md:grid-cols-4">
-                      <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">Día</label>
-                        <select className={inputClass} {...rateForm.register(`rates.${index}.day_of_week`, { valueAsNumber: true })}>
-                          {DAY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                        </select>
-                      </div>
+                    <div key={field.id} className="grid gap-3 rounded-lg border border-gray-200 p-4 md:grid-cols-3">
                       <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">Tarifa base por hora</label>
                         <input className={inputClass} type="number" min="0" step="0.01" {...rateForm.register(`rates.${index}.amount_per_hour`, { valueAsNumber: true })} />
                       </div>
-                      <div className="flex gap-2">
-                        <div className="flex-1">
-                          <label className="mb-1 block text-sm font-medium text-gray-700">Vigencia</label>
-                          <input className={inputClass} type="date" {...rateForm.register(`rates.${index}.effective_from`)} />
-                        </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">Vigencia desde</label>
+                        <input className={inputClass} type="date" {...rateForm.register(`rates.${index}.effective_from`)} />
+                      </div>
+                      <div className="flex items-end">
                         <button
                           type="button"
-                          className="mt-7 inline-flex h-10 items-center justify-center rounded-lg bg-red-100 px-3 text-red-700 hover:bg-red-200"
+                          className="inline-flex h-10 items-center justify-center rounded-lg bg-red-100 px-3 text-red-700 hover:bg-red-200"
                           onClick={() => rateFields.remove(index)}
                           disabled={rateFields.fields.length === 1}
                         >
@@ -289,7 +281,7 @@ export default function AgentFormPage() {
                   <button
                     type="button"
                     className={`${secondaryButtonClass} inline-flex items-center gap-2`}
-                    onClick={() => rateFields.append({ day_of_week: 1, amount_per_hour: 0, effective_from: '' })}
+                    onClick={() => rateFields.append({ amount_per_hour: 0, effective_from: '' })}
                   >
                     <Plus className="h-4 w-4" />
                     Agregar línea
@@ -312,16 +304,14 @@ export default function AgentFormPage() {
                     <table className={tableClass}>
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className={thClass}>Día</th>
                           <th className={thClass}>Tarifa base</th>
-                          <th className={thClass}>Vigencia</th>
+                          <th className={thClass}>Vigencia desde</th>
                           <th className={thClass}>Acciones</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200 bg-white">
                         {(ratesQuery.data ?? []).map((rate) => (
                           <tr key={rate.id}>
-                            <td className={tdClass}>{DAY_OPTIONS.find((option) => option.value === rate.day_of_week)?.label ?? rate.day_of_week}</td>
                             <td className={tdClass}>{formatCurrency(rate.amount_per_hour)}</td>
                             <td className={tdClass}>{formatDate(rate.effective_from)}</td>
                             <td className={tdClass}>

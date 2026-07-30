@@ -34,7 +34,6 @@ export type UpdateClientInput = z.infer<typeof updateClientSchema>;
 // ─── Agent Rate ───
 export const createAgentRateSchema = z.object({
   profile_id: z.string().uuid(),
-  day_of_week: z.number().int().min(0).max(6),
   amount_per_hour: z.number().positive(),
   effective_from: z.string(), // ISO date
 });
