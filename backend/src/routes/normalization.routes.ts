@@ -4,6 +4,7 @@ import {
   normalizeEntries,
   normalizeAndPersist,
   getNormalizedEntries,
+  updateNormalizedEntry,
 } from '../services/normalizer.service.js';
 
 const router = Router();
@@ -56,6 +57,24 @@ router.get('/:profileId', async (req, res: Response) => {
 
   try {
     const data = await getNormalizedEntries(profileId, from, to);
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+// Update a persisted normalized entry
+router.patch('/entry/:entryId', requireRole('admin', 'supervisor'), async (req, res: Response) => {
+  const entryId = String(req.params.entryId);
+  const { normalized_in, normalized_out } = req.body;
+
+  if (!normalized_in && !normalized_out) {
+    res.status(400).json({ error: 'At least normalized_in or normalized_out is required' });
+    return;
+  }
+
+  try {
+    const data = await updateNormalizedEntry(entryId, { normalized_in, normalized_out });
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });

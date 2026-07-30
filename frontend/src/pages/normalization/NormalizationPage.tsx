@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { AlertTriangle } from 'lucide-react';
 import { api } from '../../lib/api';
 import { formatDate } from '../../lib/utils';
 import {
@@ -23,6 +24,111 @@ function getOriginalTime(result: NormalizationResult, kind: 'clockin' | 'clockou
   return adjustment?.original ?? (kind === 'clockin' ? result.normalized_in : result.normalized_out);
 }
 
+/** Parse HH:mm to minutes since midnight */
+function timeToMinutes(time: string): number {
+  const parts = time.split(':');
+  return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+}
+
+/** Check if difference between two times exceeds threshold (in minutes) */
+function timeDiffExceeds(original: string, normalized: string, thresholdMinutes: number): boolean {
+  const diff = Math.abs(timeToMinutes(original.slice(0, 5)) - timeToMinutes(normalized.slice(0, 5)));
+  return diff > thresholdMinutes;
+}
+
+const WARN_THRESHOLD = 15;
+
+function NormResultRow({
+  result,
+  index,
+  isPersisted,
+  onSave,
+}: {
+  result: NormalizationResult;
+  index: number;
+  isPersisted: boolean;
+  onSave: (id: string, payload: { normalized_in?: string; normalized_out?: string }) => void;
+}) {
+  const [normIn, setNormIn] = useState(result.normalized_in.slice(0, 5));
+  const [normOut, setNormOut] = useState(result.normalized_out.slice(0, 5));
+
+  useEffect(() => {
+    setNormIn(result.normalized_in.slice(0, 5));
+    setNormOut(result.normalized_out.slice(0, 5));
+  }, [result.normalized_in, result.normalized_out]);
+
+  const originalIn = String(getOriginalTime(result, 'clockin')).slice(0, 5);
+  const originalOut = String(getOriginalTime(result, 'clockout')).slice(0, 5);
+  const warnIn = timeDiffExceeds(originalIn, normIn, WARN_THRESHOLD);
+  const warnOut = timeDiffExceeds(originalOut, normOut, WARN_THRESHOLD);
+
+  const handleBlurIn = () => {
+    if (normIn !== result.normalized_in.slice(0, 5) && result.id && isPersisted) {
+      onSave(result.id, { normalized_in: normIn });
+    }
+  };
+
+  const handleBlurOut = () => {
+    if (normOut !== result.normalized_out.slice(0, 5) && result.id && isPersisted) {
+      onSave(result.id, { normalized_out: normOut });
+    }
+  };
+
+  return (
+    <tr key={`${result.date}-${result.clock_entry_id ?? index}`}>
+      <td className="px-4 py-3 text-sm text-gray-700">{formatDate(result.date)}</td>
+      <td className="px-4 py-3 text-sm text-gray-700">{originalIn}</td>
+      <td className="px-4 py-3 text-sm text-gray-700">{originalOut}</td>
+      <td className="px-4 py-3 text-sm">
+        <div className="flex items-center gap-1.5">
+          <input
+            type="time"
+            className={`${inputClass} w-28 ${warnIn ? 'border-amber-400 bg-amber-50' : ''}`}
+            value={normIn}
+            onChange={(e) => setNormIn(e.target.value)}
+            onBlur={handleBlurIn}
+            disabled={!isPersisted}
+          />
+          {warnIn && (
+            <span className="text-amber-500" title={`Diferencia > ${WARN_THRESHOLD} min vs marcado (${originalIn})`}>
+              <AlertTriangle className="h-4 w-4" />
+            </span>
+          )}
+        </div>
+      </td>
+      <td className="px-4 py-3 text-sm">
+        <div className="flex items-center gap-1.5">
+          <input
+            type="time"
+            className={`${inputClass} w-28 ${warnOut ? 'border-amber-400 bg-amber-50' : ''}`}
+            value={normOut}
+            onChange={(e) => setNormOut(e.target.value)}
+            onBlur={handleBlurOut}
+            disabled={!isPersisted}
+          />
+          {warnOut && (
+            <span className="text-amber-500" title={`Diferencia > ${WARN_THRESHOLD} min vs marcado (${originalOut})`}>
+              <AlertTriangle className="h-4 w-4" />
+            </span>
+          )}
+        </div>
+      </td>
+      <td className="px-4 py-3 text-sm text-gray-700">D {result.daytime_hours} / N {result.nighttime_hours}</td>
+      <td className="px-4 py-3 text-sm text-gray-700">
+        <div className="flex flex-wrap gap-2">
+          {(result.adjustments ?? []).length > 0 ? (result.adjustments ?? []).map((adjustment, adjustmentIndex) => (
+            <span key={`${adjustment.type ?? 'adj'}-${adjustmentIndex}`} className={getBadgeClass(
+              adjustment.type?.startsWith('manual_edit') ? 'yellow' : 'blue'
+            )}>
+              {adjustment.type ?? 'ajuste'}
+            </span>
+          )) : <span className={getBadgeClass('gray')}>Sin ajustes</span>}
+        </div>
+      </td>
+    </tr>
+  );
+}
+
 export default function NormalizationPage() {
   const queryClient = useQueryClient();
   const profilesQuery = useProfilesQuery();
@@ -30,6 +136,7 @@ export default function NormalizationPage() {
   const [from, setFrom] = useState(getMonthStart());
   const [to, setTo] = useState(getToday());
   const [previewResults, setPreviewResults] = useState<NormalizationResult[]>([]);
+  const [isPersisted, setIsPersisted] = useState(false);
   const [ruleForm, setRuleForm] = useState({ id: '', name: '', description: '', rule_text: '', is_active: true });
 
   useEffect(() => {
@@ -45,14 +152,28 @@ export default function NormalizationPage() {
 
   const previewMutation = useMutation({
     mutationFn: () => api.get<NormalizationResult[]>(`/normalization/preview/${profileId}?from=${from}&to=${to}`),
-    onSuccess: (results) => setPreviewResults(results),
+    onSuccess: (results) => {
+      setPreviewResults(results);
+      setIsPersisted(false);
+    },
   });
 
   const runMutation = useMutation({
     mutationFn: () => api.post<{ normalized: number; results: NormalizationResult[] }>(`/normalization/run/${profileId}`, { from, to }),
     onSuccess: async (payload) => {
       setPreviewResults(payload.results);
+      setIsPersisted(true);
       await queryClient.invalidateQueries({ queryKey: ['normalized', profileId, from, to] });
+    },
+  });
+
+  const editEntryMutation = useMutation({
+    mutationFn: ({ entryId, payload }: { entryId: string; payload: { normalized_in?: string; normalized_out?: string } }) =>
+      api.patch<NormalizationResult>(`/normalization/entry/${entryId}`, payload),
+    onSuccess: (updated) => {
+      setPreviewResults((prev) =>
+        prev.map((r) => (r.id === updated.id ? { ...r, ...updated } : r))
+      );
     },
   });
 
@@ -115,9 +236,24 @@ export default function NormalizationPage() {
 
         <section className={cardClass}>
           <div className="mb-4 flex items-center justify-between gap-4">
-            <h2 className="text-lg font-semibold text-gray-900">Resultados</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-lg font-semibold text-gray-900">Resultados</h2>
+              {isPersisted ? (
+                <span className={getBadgeClass('green')}>Persistido</span>
+              ) : previewResults.length > 0 ? (
+                <span className={getBadgeClass('yellow')}>Preview (sin guardar)</span>
+              ) : null}
+            </div>
             <div className="text-sm text-gray-500">Horas totales: {totalPreviewHours.toFixed(2)}</div>
           </div>
+          {!isPersisted && previewResults.length > 0 && (
+            <p className="mb-3 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+              Los resultados son de solo lectura. Ejecutá <strong>Run</strong> para persistirlos y poder editarlos.
+            </p>
+          )}
+          {editEntryMutation.error && (
+            <p className="mb-3 text-sm text-red-600">{(editEntryMutation.error as Error).message}</p>
+          )}
           {previewResults.length === 0 ? (
             <EmptyState message="No hay resultados para mostrar. Ejecutá una preview." />
           ) : (
@@ -126,31 +262,23 @@ export default function NormalizationPage() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Fecha</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Original ingreso</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Original egreso</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Normalizado</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Marcado ingreso</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Marcado egreso</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Norm. ingreso</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Norm. egreso</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Horas</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Ajustes</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {previewResults.map((result, index) => (
-                    <tr key={`${result.date}-${result.clock_entry_id ?? index}`}>
-                      <td className="px-4 py-3 text-sm text-gray-700">{formatDate(result.date)}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700">{String(getOriginalTime(result, 'clockin')).slice(0, 5)}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700">{String(getOriginalTime(result, 'clockout')).slice(0, 5)}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700">{result.normalized_in.slice(0, 5)} - {result.normalized_out.slice(0, 5)}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700">D {result.daytime_hours} / N {result.nighttime_hours}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700">
-                        <div className="flex flex-wrap gap-2">
-                          {(result.adjustments ?? []).length > 0 ? (result.adjustments ?? []).map((adjustment, adjustmentIndex) => (
-                            <span key={`${adjustment.type ?? 'adj'}-${adjustmentIndex}`} className={getBadgeClass('blue')}>
-                              {adjustment.type ?? 'ajuste'}
-                            </span>
-                          )) : <span className={getBadgeClass('gray')}>Sin ajustes</span>}
-                        </div>
-                      </td>
-                    </tr>
+                    <NormResultRow
+                      key={`${result.date}-${result.clock_entry_id ?? index}`}
+                      result={result}
+                      index={index}
+                      isPersisted={isPersisted}
+                      onSave={(entryId, payload) => editEntryMutation.mutate({ entryId, payload })}
+                    />
                   ))}
                 </tbody>
               </table>

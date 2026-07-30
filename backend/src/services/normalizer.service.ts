@@ -266,3 +266,60 @@ export async function getNormalizedEntries(
   if (error) throw new Error(error.message);
   return data;
 }
+
+/**
+ * Update a persisted normalized entry's times and recalculate hours
+ */
+export async function updateNormalizedEntry(
+  entryId: string,
+  updates: { normalized_in?: string; normalized_out?: string }
+) {
+  const { data: current, error: fetchError } = await supabaseAdmin
+    .from('normalized_entries')
+    .select('*')
+    .eq('id', entryId)
+    .single();
+
+  if (fetchError || !current) throw new Error('Normalized entry not found');
+
+  const normIn = updates.normalized_in ?? current.normalized_in;
+  const normOut = updates.normalized_out ?? current.normalized_out;
+  const normInMin = timeToMinutes(normIn);
+  const normOutMin = timeToMinutes(normOut);
+  const { daytime, nighttime } = splitDaytimeNighttime(normInMin, normOutMin);
+
+  const adjustments = [...(current.adjustments ?? [])];
+  // Track manual edit
+  if (updates.normalized_in && updates.normalized_in !== current.normalized_in) {
+    adjustments.push({
+      type: 'manual_edit_in',
+      original: current.normalized_in,
+      adjusted: updates.normalized_in,
+      reason: 'Manual correction by supervisor',
+    });
+  }
+  if (updates.normalized_out && updates.normalized_out !== current.normalized_out) {
+    adjustments.push({
+      type: 'manual_edit_out',
+      original: current.normalized_out,
+      adjusted: updates.normalized_out,
+      reason: 'Manual correction by supervisor',
+    });
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('normalized_entries')
+    .update({
+      normalized_in: normIn,
+      normalized_out: normOut,
+      daytime_hours: daytime,
+      nighttime_hours: nighttime,
+      adjustments,
+    })
+    .eq('id', entryId)
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to update normalized entry: ${error.message}`);
+  return data;
+}
