@@ -9,26 +9,43 @@ import {
   Settings,
   LogOut,
   Home,
+  UserCircle,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { cn } from '../../lib/utils';
+import { useProfile } from '../../hooks/useProfile';
+import type { Role } from '@milchick/shared';
 
-const navItems = [
-  { to: '/', icon: Home, label: 'Inicio' },
-  { to: '/agents', icon: Users, label: 'Agentes' },
-  { to: '/clients', icon: Building2, label: 'Clientes' },
-  { to: '/schedules', icon: Calendar, label: 'Esquemas' },
-  { to: '/clock-entries', icon: Clock, label: 'Marcaciones' },
-  { to: '/exceptions', icon: AlertCircle, label: 'Excepciones' },
-  { to: '/normalization', icon: Settings, label: 'Normalización' },
-  { to: '/pre-settlements', icon: BarChart3, label: 'Preliquidación' },
+interface NavItem {
+  to: string;
+  icon: typeof Home;
+  label: string;
+  roles: Role[]; // roles that can see this item
+}
+
+const navItems: NavItem[] = [
+  { to: '/', icon: Home, label: 'Inicio', roles: ['admin', 'supervisor'] },
+  { to: '/my-portal', icon: UserCircle, label: 'Mi Portal', roles: ['agent'] },
+  { to: '/agents', icon: Users, label: 'Agentes', roles: ['admin', 'supervisor'] },
+  { to: '/clients', icon: Building2, label: 'Clientes', roles: ['admin', 'supervisor'] },
+  { to: '/schedules', icon: Calendar, label: 'Esquemas', roles: ['admin', 'supervisor'] },
+  { to: '/clock-entries', icon: Clock, label: 'Marcaciones', roles: ['admin', 'supervisor'] },
+  { to: '/exceptions', icon: AlertCircle, label: 'Excepciones', roles: ['admin', 'supervisor'] },
+  { to: '/normalization', icon: Settings, label: 'Normalización', roles: ['admin', 'supervisor'] },
+  { to: '/pre-settlements', icon: BarChart3, label: 'Preliquidación', roles: ['admin', 'supervisor'] },
 ];
 
 export default function AppLayout() {
+  const { profile } = useProfile();
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     window.location.href = '/login';
   };
+
+  const visibleItems = navItems.filter(
+    (item) => !profile || item.roles.includes(profile.role)
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -40,7 +57,7 @@ export default function AppLayout() {
         </div>
 
         <nav className="flex-1 p-4 space-y-1">
-          {navItems.map(({ to, icon: Icon, label }) => (
+          {visibleItems.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}

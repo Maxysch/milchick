@@ -2,9 +2,11 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import AppLayout from './components/layout/AppLayout';
 import AuthGuard from './components/layout/AuthGuard';
+import RoleGuard from './components/layout/RoleGuard';
 
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
 const DashboardPage = lazy(() => import('./pages/dashboard/DashboardPage'));
+const MyPortalPage = lazy(() => import('./pages/myPortal/MyPortalPage'));
 const AgentsListPage = lazy(() => import('./pages/agents/AgentsListPage'));
 const AgentFormPage = lazy(() => import('./pages/agents/AgentFormPage'));
 const ClientsListPage = lazy(() => import('./pages/clients/ClientsListPage'));
@@ -37,19 +39,25 @@ function App() {
               </AuthGuard>
             }
           >
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/agents" element={<AgentsListPage />} />
-            <Route path="/agents/new" element={<AgentFormPage />} />
-            <Route path="/agents/:id" element={<AgentFormPage />} />
-            <Route path="/clients" element={<ClientsListPage />} />
-            <Route path="/clients/new" element={<ClientFormPage />} />
-            <Route path="/clients/:id" element={<ClientFormPage />} />
-            <Route path="/schedules" element={<ScheduleManagerPage />} />
-            <Route path="/clock-entries" element={<ClockEntriesPage />} />
-            <Route path="/exceptions" element={<ExceptionsPage />} />
-            <Route path="/normalization" element={<NormalizationPage />} />
-            <Route path="/pre-settlements" element={<PreSettlementsListPage />} />
-            <Route path="/pre-settlements/:id" element={<PreSettlementDetailPage />} />
+            {/* Agent-only routes */}
+            <Route path="/my-portal" element={<MyPortalPage />} />
+
+            {/* Admin/Supervisor routes */}
+            <Route element={<RoleGuard allowed={['admin', 'supervisor']} />}>
+              <Route path="/" element={<DashboardPage />} />
+              <Route path="/agents" element={<AgentsListPage />} />
+              <Route path="/agents/new" element={<AgentFormPage />} />
+              <Route path="/agents/:id" element={<AgentFormPage />} />
+              <Route path="/clients" element={<ClientsListPage />} />
+              <Route path="/clients/new" element={<ClientFormPage />} />
+              <Route path="/clients/:id" element={<ClientFormPage />} />
+              <Route path="/schedules" element={<ScheduleManagerPage />} />
+              <Route path="/clock-entries" element={<ClockEntriesPage />} />
+              <Route path="/exceptions" element={<ExceptionsPage />} />
+              <Route path="/normalization" element={<NormalizationPage />} />
+              <Route path="/pre-settlements" element={<PreSettlementsListPage />} />
+              <Route path="/pre-settlements/:id" element={<PreSettlementDetailPage />} />
+            </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
