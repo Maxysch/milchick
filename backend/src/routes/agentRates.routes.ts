@@ -13,8 +13,7 @@ router.get('/profile/:profileId', async (req, res: Response) => {
     .select('*')
     .eq('profile_id', req.params.profileId)
     .order('day_of_week')
-    .order('time_slot')
-    .order('rate_type');
+    .order('effective_from', { ascending: false });
 
   if (error) { res.status(500).json({ error: error.message }); return; }
   res.json(data);

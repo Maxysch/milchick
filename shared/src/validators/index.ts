@@ -35,8 +35,6 @@ export type UpdateClientInput = z.infer<typeof updateClientSchema>;
 export const createAgentRateSchema = z.object({
   profile_id: z.string().uuid(),
   day_of_week: z.number().int().min(0).max(6),
-  time_slot: z.enum(['daytime', 'nighttime']),
-  rate_type: z.enum(['regular', 'overtime']),
   amount_per_hour: z.number().positive(),
   effective_from: z.string(), // ISO date
 });

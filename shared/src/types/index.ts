@@ -25,17 +25,25 @@ export interface Client {
 
 // ─── Agent Rates ───
 export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0=Sunday
-export type TimeSlot = 'daytime' | 'nighttime';
-export type RateType = 'regular' | 'overtime';
 
 export interface AgentRate {
   id: string;
   profile_id: string;
   day_of_week: DayOfWeek;
-  time_slot: TimeSlot;
-  rate_type: RateType;
   amount_per_hour: number;
   effective_from: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// ─── Rate Factors ───
+export type RateFactorKey = 'nighttime' | 'overtime' | 'holiday';
+
+export interface RateFactor {
+  id: string;
+  factor_key: RateFactorKey;
+  factor_value: number;
+  description: string | null;
   created_at: string;
   updated_at: string;
 }

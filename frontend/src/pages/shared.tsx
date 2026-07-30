@@ -34,8 +34,6 @@ export interface AgentRate {
   id: string;
   profile_id: string;
   day_of_week: number;
-  time_slot: 'daytime' | 'nighttime';
-  rate_type: 'regular' | 'overtime';
   amount_per_hour: number;
   effective_from: string;
 }

@@ -22,10 +22,14 @@ interface OvertimeEntry {
 
 interface AgentRate {
   day_of_week: number;
-  time_slot: string;
-  rate_type: string;
   amount_per_hour: number;
   effective_from: string;
+}
+
+interface RateFactors {
+  nighttime: number;
+  overtime: number;
+  holiday: number;
 }
 
 interface ScheduleEntry {
@@ -64,26 +68,37 @@ function timeToMinutes(time: string): number {
 }
 
 /**
- * Get the most recent rate for a profile, day, time_slot, and rate_type
- * that is effective on or before a given date
+ * Get the base rate for a profile on a given day (most recent effective_from <= date)
  */
-function findRate(
+function findBaseRate(
   rates: AgentRate[],
   date: string,
   dayOfWeek: number,
-  timeSlot: string,
-  rateType: string
 ): number {
   const matching = rates
     .filter(r =>
       r.day_of_week === dayOfWeek &&
-      r.time_slot === timeSlot &&
-      r.rate_type === rateType &&
       r.effective_from <= date
     )
     .sort((a, b) => b.effective_from.localeCompare(a.effective_from));
 
   return matching[0]?.amount_per_hour || 0;
+}
+
+/**
+ * Compute the effective rate by applying global factors to the base rate.
+ * Factors are multiplicative when combined (e.g., overtime + nighttime = base × overtime × nighttime).
+ */
+function computeRate(
+  baseRate: number,
+  factors: RateFactors,
+  options: { isNighttime?: boolean; isOvertime?: boolean; isHoliday?: boolean }
+): number {
+  let rate = baseRate;
+  if (options.isHoliday) rate *= factors.holiday;
+  if (options.isOvertime) rate *= factors.overtime;
+  if (options.isNighttime) rate *= factors.nighttime;
+  return Math.round(rate * 100) / 100;
 }
 
 /**
@@ -199,11 +214,23 @@ export async function generatePreSettlement(
   // Fetch all rates for this profile
   const { data: rates } = await supabaseAdmin
     .from('agent_rates')
-    .select('*')
+    .select('day_of_week, amount_per_hour, effective_from')
     .eq('profile_id', profileId)
     .order('effective_from', { ascending: false });
 
   const agentRates = (rates as AgentRate[]) || [];
+
+  // Fetch global rate factors
+  const { data: factorsRaw } = await supabaseAdmin
+    .from('rate_factors')
+    .select('factor_key, factor_value');
+
+  const factors: RateFactors = { nighttime: 1.06, overtime: 1.5, holiday: 2.0 };
+  for (const f of (factorsRaw || []) as { factor_key: string; factor_value: number }[]) {
+    if (f.factor_key in factors) {
+      factors[f.factor_key as keyof RateFactors] = Number(f.factor_value);
+    }
+  }
 
   // Fetch normalized entries
   const { data: normalizedRaw } = await supabaseAdmin
@@ -284,11 +311,11 @@ export async function generatePreSettlement(
 
     // Determine hour type prefix based on holiday
     const typePrefix = holiday ? 'holiday' : 'regular';
+    const baseRate = findBaseRate(agentRates, date, dayOfWeek);
 
     // Add daytime line
     if (daytimeHours > 0) {
-      const rateType = isVacation ? 'regular' : 'regular';
-      const rate = findRate(agentRates, date, dayOfWeek, 'daytime', rateType);
+      const rate = computeRate(baseRate, factors, { isHoliday: holiday });
       dailyLines.push({
         date,
         hour_type: `${typePrefix}_daytime`,
@@ -302,7 +329,7 @@ export async function generatePreSettlement(
 
     // Add nighttime line
     if (nighttimeHours > 0) {
-      const rate = findRate(agentRates, date, dayOfWeek, 'nighttime', 'regular');
+      const rate = computeRate(baseRate, factors, { isNighttime: true, isHoliday: holiday });
       dailyLines.push({
         date,
         hour_type: `${typePrefix}_nighttime`,
@@ -320,7 +347,7 @@ export async function generatePreSettlement(
       const classified = classifyOvertimeHours(ot);
 
       if (classified.daytime > 0) {
-        const otRate = findRate(agentRates, date, dayOfWeek, 'daytime', 'overtime');
+        const otRate = computeRate(baseRate, factors, { isOvertime: true, isHoliday: holiday });
         dailyLines.push({
           date,
           hour_type: 'overtime_daytime',
@@ -333,7 +360,7 @@ export async function generatePreSettlement(
       }
 
       if (classified.nighttime > 0) {
-        const otRate = findRate(agentRates, date, dayOfWeek, 'nighttime', 'overtime');
+        const otRate = computeRate(baseRate, factors, { isOvertime: true, isNighttime: true, isHoliday: holiday });
         dailyLines.push({
           date,
           hour_type: 'overtime_nighttime',

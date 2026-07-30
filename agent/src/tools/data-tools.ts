@@ -226,28 +226,34 @@ export const getAgentRates = tool(
   async ({ profile_id }) => {
     const { data, error } = await supabaseAdmin
       .from('agent_rates')
-      .select('day_of_week, time_slot, rate_type, amount_per_hour, effective_from')
+      .select('day_of_week, amount_per_hour, effective_from')
       .eq('profile_id', profile_id)
       .order('effective_from', { ascending: false })
-      .order('day_of_week')
-      .order('time_slot');
+      .order('day_of_week');
 
     if (error) return `Error: ${error.message}`;
     if (!data || data.length === 0) return 'No hay tarifas configuradas para este agente.';
 
-    const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-    const slotLabels: Record<string, string> = { daytime: 'Diurna', nighttime: 'Nocturna' };
-    const typeLabels: Record<string, string> = { regular: 'Normal', overtime: 'Extra' };
+    // Also fetch global factors
+    const { data: factors } = await supabaseAdmin
+      .from('rate_factors')
+      .select('factor_key, factor_value, description');
 
-    const lines = data.map(r =>
-      `${dayNames[r.day_of_week]} | ${slotLabels[r.time_slot]} | ${typeLabels[r.rate_type]} | $${r.amount_per_hour}/h (desde ${r.effective_from})`
+    const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+    const lines = data.map((r: { day_of_week: number; amount_per_hour: number; effective_from: string }) =>
+      `${dayNames[r.day_of_week]} | Base: $${r.amount_per_hour}/h (desde ${r.effective_from})`
     ).join('\n');
 
-    return `Tarifas del agente:\n${lines}`;
+    const factorLines = (factors || []).map((f: { factor_key: string; factor_value: number; description: string }) =>
+      `  ${f.factor_key}: ×${f.factor_value} (${f.description})`
+    ).join('\n');
+
+    return `Tarifas base del agente:\n${lines}\n\nFactores globales:\n${factorLines}`;
   },
   {
     name: 'get_agent_rates',
-    description: 'Consulta las tarifas configuradas de un agente (por día, franja horaria, tipo).',
+    description: 'Consulta las tarifas base configuradas de un agente y los factores globales de multiplicación.',
     schema: z.object({
       profile_id: z.string().describe('UUID del perfil del agente'),
     }),
