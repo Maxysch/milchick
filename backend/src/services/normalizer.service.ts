@@ -236,14 +236,15 @@ export async function normalizeAndPersist(
     .gte('date', dateFrom)
     .lte('date', dateTo);
 
-  // Insert new normalized entries
-  const { error } = await supabaseAdmin
+  // Insert new normalized entries and return them with generated IDs
+  const { data: inserted, error } = await supabaseAdmin
     .from('normalized_entries')
-    .insert(results);
+    .insert(results)
+    .select();
 
   if (error) throw new Error(`Failed to persist normalized entries: ${error.message}`);
 
-  return results;
+  return (inserted as NormalizationResult[]) || results;
 }
 
 /**
