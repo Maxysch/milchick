@@ -123,6 +123,16 @@ export interface PreSettlementRecord {
   profiles?: ProfileRelation | null;
 }
 
+export interface TimeEntry {
+  clock_in: string;
+  clock_out: string | null;
+}
+
+export interface NormalizedTimeEntry {
+  normalized_in: string;
+  normalized_out: string;
+}
+
 export interface PreSettlementDailyLine {
   id: string;
   pre_settlement_id: string;
@@ -134,6 +144,8 @@ export interface PreSettlementDailyLine {
   is_projected: boolean;
   client_id: string | null;
   clients?: NameRelation | null;
+  clock_times?: TimeEntry[] | null;
+  normalized_times?: NormalizedTimeEntry[] | null;
 }
 
 export interface PreSettlementItem {
@@ -146,10 +158,16 @@ export interface PreSettlementItem {
   percentage_base: string | null;
 }
 
+export interface PreSettlementWarnings {
+  has_projected: boolean;
+  dates_without_normalization: string[];
+}
+
 export interface PreSettlementDetail extends PreSettlementRecord {
   daily: PreSettlementDailyLine[];
   items: PreSettlementItem[];
   totals_by_type: Record<string, { hours: number; amount: number }>;
+  warnings: PreSettlementWarnings;
 }
 
 type NameRelation = { name: string } | Array<{ name: string }>;

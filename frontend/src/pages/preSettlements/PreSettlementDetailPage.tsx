@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Clock, Info, Trash2 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { formatCurrency, formatDate, HOUR_TYPE_LABELS } from '../../lib/utils';
 import {
@@ -20,6 +20,49 @@ import {
   primaryButtonClass,
 } from '../shared';
 
+function TimeTooltip({ line }: { line: PreSettlementDailyLine }) {
+  const [open, setOpen] = useState(false);
+
+  const hasClock = line.clock_times && line.clock_times.length > 0;
+  const hasNorm = line.normalized_times && line.normalized_times.length > 0;
+
+  if (!hasClock && !hasNorm) return null;
+
+  return (
+    <span className="relative inline-block">
+      <button
+        type="button"
+        className="text-gray-400 hover:text-blue-600 transition-colors"
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        onClick={() => setOpen(!open)}
+      >
+        <Clock className="h-4 w-4" />
+      </button>
+      {open && (
+        <div className="absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-2 text-xs text-white shadow-lg">
+          {hasClock && line.clock_times!.map((ct, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="text-gray-400">Marcado:</span>
+              <span>{ct.clock_in.slice(0, 5)} → {ct.clock_out ? ct.clock_out.slice(0, 5) : '—'}</span>
+            </div>
+          ))}
+          {hasNorm && line.normalized_times!.map((nt, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="text-green-400">Normalizado:</span>
+              <span>{nt.normalized_in.slice(0, 5)} → {nt.normalized_out.slice(0, 5)}</span>
+            </div>
+          ))}
+          {hasClock && !hasNorm && (
+            <div className="mt-1 text-amber-400">⚠ Sin normalizar</div>
+          )}
+          <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+        </div>
+      )}
+    </span>
+  );
+}
+
 function DailyRow({ line, onSave }: { line: PreSettlementDailyLine; onSave: (id: string, payload: { hours?: number; rate_per_hour?: number }) => void }) {
   const [hours, setHours] = useState(String(line.hours));
   const [rate, setRate] = useState(String(line.rate_per_hour));
@@ -33,7 +76,12 @@ function DailyRow({ line, onSave }: { line: PreSettlementDailyLine; onSave: (id:
 
   return (
     <tr>
-      <td className="px-4 py-3 text-sm text-gray-700">{formatDate(line.date)}</td>
+      <td className="px-4 py-3 text-sm text-gray-700">
+        <div className="flex items-center gap-1.5">
+          {formatDate(line.date)}
+          <TimeTooltip line={line} />
+        </div>
+      </td>
       <td className="px-4 py-3 text-sm text-gray-700">{HOUR_TYPE_LABELS[line.hour_type]}</td>
       <td className="px-4 py-3 text-sm text-gray-700">
         <input
@@ -228,6 +276,27 @@ export default function PreSettlementDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Warnings */}
+        {detail.warnings?.has_projected && (
+          <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+            <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
+            <div className="text-sm text-blue-800">
+              <strong>Algunas líneas están proyectadas.</strong> Se calcularon a partir del esquema porque son fechas futuras, vacaciones, o no tienen marcaciones registradas.
+            </div>
+          </div>
+        )}
+        {detail.warnings?.dates_without_normalization?.length > 0 && (
+          <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" />
+            <div className="text-sm text-amber-800">
+              <strong>Hay fechas pasadas sin horas normalizadas</strong> — se usaron horas proyectadas del esquema en su lugar. Ejecute el normalizador para obtener horas reales.
+              <div className="mt-1 font-mono text-xs">
+                {detail.warnings.dates_without_normalization.map(d => formatDate(d)).join(', ')}
+              </div>
+            </div>
+          </div>
+        )}
 
         <section className={cardClass}>
           <h2 className="mb-4 text-lg font-semibold text-gray-900">Desglose diario</h2>

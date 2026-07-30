@@ -465,6 +465,57 @@ export async function getPreSettlementDetail(preSettlementId: string) {
     .eq('pre_settlement_id', preSettlementId)
     .order('created_at');
 
+  // Fetch clock entries and normalized entries for the period to build time info
+  const { data: clockEntries } = await supabaseAdmin
+    .from('clock_entries')
+    .select('date, clock_in, clock_out')
+    .eq('profile_id', ps.profile_id)
+    .gte('date', ps.period_from)
+    .lte('date', ps.period_to)
+    .order('date')
+    .order('clock_in');
+
+  const { data: normalizedEntries } = await supabaseAdmin
+    .from('normalized_entries')
+    .select('date, normalized_in, normalized_out')
+    .eq('profile_id', ps.profile_id)
+    .gte('date', ps.period_from)
+    .lte('date', ps.period_to)
+    .order('date')
+    .order('normalized_in');
+
+  // Build lookup maps by date
+  const clockByDate: Record<string, { clock_in: string; clock_out: string | null }[]> = {};
+  for (const ce of clockEntries || []) {
+    if (!clockByDate[ce.date]) clockByDate[ce.date] = [];
+    clockByDate[ce.date].push({ clock_in: ce.clock_in, clock_out: ce.clock_out });
+  }
+
+  const normByDate: Record<string, { normalized_in: string; normalized_out: string }[]> = {};
+  for (const ne of normalizedEntries || []) {
+    if (!normByDate[ne.date]) normByDate[ne.date] = [];
+    normByDate[ne.date].push({ normalized_in: ne.normalized_in, normalized_out: ne.normalized_out });
+  }
+
+  // Enrich daily lines with time info
+  const today = new Date().toISOString().split('T')[0];
+  const uniqueDates = [...new Set((daily || []).map(l => l.date))];
+  const datesWithoutNormalization: string[] = [];
+
+  for (const date of uniqueDates) {
+    const hasClock = Boolean(clockByDate[date]?.length);
+    const hasNorm = Boolean(normByDate[date]?.length);
+    if (hasClock && !hasNorm && date <= today) {
+      datesWithoutNormalization.push(date);
+    }
+  }
+
+  const enrichedDaily = (daily || []).map((line: Record<string, unknown>) => ({
+    ...line,
+    clock_times: clockByDate[line.date as string] || null,
+    normalized_times: normByDate[line.date as string] || null,
+  }));
+
   // Calculate totals by hour type
   const totalsByType: Record<string, { hours: number; amount: number }> = {};
   for (const line of daily || []) {
@@ -475,11 +526,17 @@ export async function getPreSettlementDetail(preSettlementId: string) {
     totalsByType[line.hour_type].amount += line.amount;
   }
 
+  const hasProjected = (daily || []).some((l: Record<string, unknown>) => l.is_projected);
+
   return {
     ...ps,
-    daily: daily || [],
+    daily: enrichedDaily,
     items: items || [],
     totals_by_type: totalsByType,
+    warnings: {
+      has_projected: hasProjected,
+      dates_without_normalization: datesWithoutNormalization,
+    },
   };
 }
 
