@@ -4,6 +4,17 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
+import authRoutes from './routes/auth.routes.js';
+import profileRoutes from './routes/profiles.routes.js';
+import clientRoutes from './routes/clients.routes.js';
+import agentRateRoutes from './routes/agentRates.routes.js';
+import scheduleRoutes from './routes/schedules.routes.js';
+import clockEntryRoutes from './routes/clockEntries.routes.js';
+import exceptionRoutes from './routes/exceptions.routes.js';
+import overtimeRoutes from './routes/overtime.routes.js';
+import holidayRoutes from './routes/holidays.routes.js';
+import rulesRoutes from './routes/rules.routes.js';
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -18,19 +29,17 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Routes will be added here as we build each module
-// app.use('/api/auth', authRoutes);
-// app.use('/api/profiles', profileRoutes);
-// app.use('/api/clients', clientRoutes);
-// app.use('/api/schedules', scheduleRoutes);
-// app.use('/api/clock-entries', clockEntryRoutes);
-// app.use('/api/exceptions', exceptionRoutes);
-// app.use('/api/overtime', overtimeRoutes);
-// app.use('/api/holidays', holidayRoutes);
-// app.use('/api/agent-rates', agentRateRoutes);
-// app.use('/api/normalization', normalizationRoutes);
-// app.use('/api/pre-settlements', preSettlementRoutes);
-// app.use('/api/settlement-rules', settlementRuleRoutes);
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/profiles', profileRoutes);
+app.use('/api/clients', clientRoutes);
+app.use('/api/agent-rates', agentRateRoutes);
+app.use('/api/schedules', scheduleRoutes);
+app.use('/api/clock-entries', clockEntryRoutes);
+app.use('/api/exceptions', exceptionRoutes);
+app.use('/api/overtime', overtimeRoutes);
+app.use('/api/holidays', holidayRoutes);
+app.use('/api/rules', rulesRoutes);
 
 app.listen(PORT, () => {
   console.log(`🚀 Milchick backend running on port ${PORT}`);
