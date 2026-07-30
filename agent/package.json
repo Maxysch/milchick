@@ -10,12 +10,18 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@langchain/core": "^0.3.80",
+    "@langchain/langgraph": "^1.4.8",
+    "@langchain/openai": "^0.3.17",
     "@milchick/shared": "*",
-    "langchain": "^0.3.0",
-    "@langchain/core": "^0.3.0",
-    "@langchain/openai": "^0.3.0",
-    "dotenv": "^16.4.7",
-    "zod": "^3.23.8"
+    "@supabase/supabase-js": "^2.111.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^5.2.1",
+    "langchain": "^0.3.37",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",

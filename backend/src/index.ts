@@ -16,6 +16,7 @@ import holidayRoutes from './routes/holidays.routes.js';
 import rulesRoutes from './routes/rules.routes.js';
 import normalizationRoutes from './routes/normalization.routes.js';
 import preSettlementRoutes from './routes/preSettlements.routes.js';
+import agentChatRoutes from './routes/agent.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -44,6 +45,7 @@ app.use('/api/holidays', holidayRoutes);
 app.use('/api/rules', rulesRoutes);
 app.use('/api/normalization', normalizationRoutes);
 app.use('/api/pre-settlements', preSettlementRoutes);
+app.use('/api/agent', agentChatRoutes);
 
 app.listen(PORT, () => {
   console.log(`🚀 Milchick backend running on port ${PORT}`);
