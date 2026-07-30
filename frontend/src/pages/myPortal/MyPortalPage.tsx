@@ -13,9 +13,8 @@ export default function MyPortalPage() {
 
   // Today's clock entries
   const { data: todayEntries } = useQuery({
-    queryKey: ['my-clock-entries', profile?.id, today],
-    queryFn: () => api.get<Array<Record<string, unknown>>>(`/clock-entries/profile/${profile!.id}?from=${today}&to=${today}`),
-    enabled: !!profile,
+    queryKey: ['my-clock-entries', today],
+    queryFn: () => api.get<Array<Record<string, unknown>>>('/clock-entries/my/today'),
   });
 
   // My active schedule
@@ -42,12 +41,7 @@ export default function MyPortalPage() {
   // Clock in
   const clockIn = useMutation({
     mutationFn: () => {
-      const now = new Date();
-      const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-      return api.post('/clock-entries', {
-        profile_id: profile!.id,
-        date: today,
-        clock_in: time,
+      return api.post('/clock-entries/my/clock-in', {
         notes: clockNote || null,
       });
     },
@@ -57,14 +51,10 @@ export default function MyPortalPage() {
     },
   });
 
-  // Clock out (patch the last entry without clock_out)
+  // Clock out
   const clockOut = useMutation({
     mutationFn: () => {
-      const openEntry = todayEntries?.find((e) => !e.clock_out);
-      if (!openEntry) throw new Error('No hay marcación de ingreso abierta');
-      const now = new Date();
-      const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-      return api.patch(`/clock-entries/${openEntry.id}`, { clock_out: time });
+      return api.post('/clock-entries/my/clock-out', {});
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-clock-entries'] });

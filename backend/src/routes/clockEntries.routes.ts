@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
-import { authMiddleware, requireRole } from '../middleware/auth.js';
+import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth.js';
 import { createClockEntrySchema, updateClockEntrySchema } from '@milchick/shared';
 
 const router = Router();
@@ -100,6 +100,77 @@ router.delete('/:id', requireRole('admin', 'supervisor'), async (req, res: Respo
 
   if (error) { res.status(500).json({ error: error.message }); return; }
   res.status(204).send();
+});
+
+// ─── Self-service: agent marks own clock in/out ───
+
+// Clock in (any authenticated user, own entry only)
+router.post('/my/clock-in', async (req: AuthRequest, res: Response) => {
+  const today = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+  const { data, error } = await supabaseAdmin
+    .from('clock_entries')
+    .insert({
+      profile_id: req.userId!,
+      date: today,
+      clock_in: time,
+      notes: req.body.notes || null,
+    })
+    .select('*, clients(name)')
+    .single();
+
+  if (error) { res.status(500).json({ error: error.message }); return; }
+  res.status(201).json(data);
+});
+
+// Clock out (any authenticated user, closes own open entry)
+router.post('/my/clock-out', async (req: AuthRequest, res: Response) => {
+  const today = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+  // Find open entry for today
+  const { data: openEntry } = await supabaseAdmin
+    .from('clock_entries')
+    .select('id')
+    .eq('profile_id', req.userId!)
+    .eq('date', today)
+    .is('clock_out', null)
+    .order('clock_in', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (!openEntry) {
+    res.status(400).json({ error: 'No hay marcación de ingreso abierta para hoy' });
+    return;
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('clock_entries')
+    .update({ clock_out: time })
+    .eq('id', openEntry.id)
+    .select('*, clients(name)')
+    .single();
+
+  if (error) { res.status(500).json({ error: error.message }); return; }
+  res.json(data);
+});
+
+// Get my entries for today
+router.get('/my/today', async (req: AuthRequest, res: Response) => {
+  const today = new Date().toISOString().split('T')[0];
+
+  const { data, error } = await supabaseAdmin
+    .from('clock_entries')
+    .select('*, clients(name)')
+    .eq('profile_id', req.userId!)
+    .eq('date', today)
+    .order('clock_in');
+
+  if (error) { res.status(500).json({ error: error.message }); return; }
+  res.json(data);
 });
 
 export default router;
