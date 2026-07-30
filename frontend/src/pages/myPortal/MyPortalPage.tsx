@@ -61,7 +61,19 @@ export default function MyPortalPage() {
     },
   });
 
+  const undoClockOut = useMutation({
+    mutationFn: () => {
+      return api.post('/clock-entries/my/undo-clock-out', {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-clock-entries'] });
+    },
+  });
+
   const hasOpenEntry = todayEntries?.some((e) => !e.clock_out);
+  const lastClosedEntry = todayEntries
+    ?.filter((e) => e.clock_out)
+    .slice(-1)[0];
 
   if (!profile) return null;
 
@@ -113,6 +125,15 @@ export default function MyPortalPage() {
               >
                 Marcar ingreso
               </button>
+              {lastClosedEntry && (
+                <button
+                  onClick={() => undoClockOut.mutate()}
+                  disabled={undoClockOut.isPending}
+                  className="bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 font-medium text-sm"
+                >
+                  Anular egreso
+                </button>
+              )}
             </>
           ) : (
             <button
@@ -124,9 +145,9 @@ export default function MyPortalPage() {
             </button>
           )}
         </div>
-        {(clockIn.error || clockOut.error) && (
+        {(clockIn.error || clockOut.error || undoClockOut.error) && (
           <p className="text-red-600 text-sm mt-2">
-            {(clockIn.error || clockOut.error)?.message}
+            {(clockIn.error || clockOut.error || undoClockOut.error)?.message}
           </p>
         )}
       </div>

@@ -158,6 +158,50 @@ router.post('/my/clock-out', async (req: AuthRequest, res: Response) => {
   res.json(data);
 });
 
+// Undo last clock-out (within 5 min grace period)
+router.post('/my/undo-clock-out', async (req: AuthRequest, res: Response) => {
+  const today = new Date().toISOString().split('T')[0];
+  const now = new Date();
+
+  // Find the most recent closed entry for today
+  const { data: lastEntry } = await supabaseAdmin
+    .from('clock_entries')
+    .select('id, clock_out')
+    .eq('profile_id', req.userId!)
+    .eq('date', today)
+    .not('clock_out', 'is', null)
+    .order('clock_out', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (!lastEntry) {
+    res.status(400).json({ error: 'No hay egreso para anular hoy' });
+    return;
+  }
+
+  // Check grace period (5 minutes)
+  const [hours, minutes] = (lastEntry.clock_out as string).split(':').map(Number);
+  const clockOutTime = new Date(now);
+  clockOutTime.setHours(hours, minutes, 0, 0);
+  const diffMs = now.getTime() - clockOutTime.getTime();
+  const diffMinutes = diffMs / 60000;
+
+  if (diffMinutes > 5) {
+    res.status(400).json({ error: 'Pasaron más de 5 minutos desde el egreso. No se puede anular.' });
+    return;
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('clock_entries')
+    .update({ clock_out: null })
+    .eq('id', lastEntry.id)
+    .select('*, clients(name)')
+    .single();
+
+  if (error) { res.status(500).json({ error: error.message }); return; }
+  res.json(data);
+});
+
 // Get my entries for today
 router.get('/my/today', async (req: AuthRequest, res: Response) => {
   const today = new Date().toISOString().split('T')[0];
