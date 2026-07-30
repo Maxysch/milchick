@@ -95,13 +95,16 @@ function NormResultRow({
     return { daytime: result.daytime_hours, nighttime: result.nighttime_hours };
   }, [normIn, normOut, isDirty, result.daytime_hours, result.nighttime_hours]);
 
+  // Editable if persisted via Run, or if this entry was previously normalized (has an ID)
+  const canEdit = isPersisted || Boolean(result.previously_normalized && result.id);
+
   const handleSave = useCallback(() => {
-    if (!result.id || !isPersisted || !isDirty) return;
+    if (!result.id || !canEdit || !isDirty) return;
     const payload: { normalized_in?: string; normalized_out?: string } = {};
     if (normIn !== result.normalized_in.slice(0, 5)) payload.normalized_in = normIn;
     if (normOut !== result.normalized_out.slice(0, 5)) payload.normalized_out = normOut;
     onSave(result.id, payload);
-  }, [result.id, isPersisted, isDirty, normIn, normOut, result.normalized_in, result.normalized_out, onSave]);
+  }, [result.id, canEdit, isDirty, normIn, normOut, result.normalized_in, result.normalized_out, onSave]);
 
   return (
     <tr key={`${result.date}-${result.clock_entry_id ?? index}`}>
@@ -115,7 +118,7 @@ function NormResultRow({
             className={`${inputClass} w-28 ${warnIn ? 'border-amber-400 bg-amber-50' : ''}`}
             value={normIn}
             onChange={(e) => setNormIn(e.target.value)}
-            disabled={!isPersisted}
+            disabled={!canEdit}
           />
           {warnIn && (
             <span className="text-amber-500" title={`Diferencia > ${WARN_THRESHOLD} min vs marcado (${originalIn})`}>
@@ -131,7 +134,7 @@ function NormResultRow({
             className={`${inputClass} w-28 ${warnOut ? 'border-amber-400 bg-amber-50' : ''}`}
             value={normOut}
             onChange={(e) => setNormOut(e.target.value)}
-            disabled={!isPersisted}
+            disabled={!canEdit}
           />
           {warnOut && (
             <span className="text-amber-500" title={`Diferencia > ${WARN_THRESHOLD} min vs marcado (${originalOut})`}>
@@ -145,17 +148,20 @@ function NormResultRow({
       </td>
       <td className="px-4 py-3 text-sm text-gray-700">
         <div className="flex flex-wrap gap-2">
+          {result.previously_normalized && (
+            <span className={getBadgeClass('purple')}>Norm. previo</span>
+          )}
           {(result.adjustments ?? []).length > 0 ? (result.adjustments ?? []).map((adjustment, adjustmentIndex) => (
             <span key={`${adjustment.type ?? 'adj'}-${adjustmentIndex}`} className={getBadgeClass(
               adjustment.type?.startsWith('manual_edit') ? 'yellow' : 'blue'
             )}>
               {adjustment.type ?? 'ajuste'}
             </span>
-          )) : <span className={getBadgeClass('gray')}>Sin ajustes</span>}
+          )) : !result.previously_normalized ? <span className={getBadgeClass('gray')}>Sin ajustes</span> : null}
         </div>
       </td>
       <td className="px-4 py-3 text-sm">
-        {isPersisted && isDirty && (
+        {canEdit && isDirty && (
           <button
             type="button"
             className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"

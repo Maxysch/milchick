@@ -29,6 +29,8 @@ interface NormalizationResult {
   daytime_hours: number;
   nighttime_hours: number;
   adjustments: Record<string, unknown>[];
+  previously_normalized?: boolean;
+  id?: string;
 }
 
 // Configurable boundary between daytime and nighttime (24h format)
@@ -186,13 +188,28 @@ function normalizeAgainstSchedule(
 }
 
 /**
- * Normalize all clock entries for a profile in a date range
+ * Normalize all clock entries for a profile in a date range.
+ * If there are already persisted normalized entries for some dates,
+ * those are returned as-is (marked previously_normalized) and not recalculated.
  */
 export async function normalizeEntries(
   profileId: string,
   dateFrom: string,
   dateTo: string
 ): Promise<NormalizationResult[]> {
+  // Fetch existing persisted entries for this range
+  const { data: existingRaw } = await supabaseAdmin
+    .from('normalized_entries')
+    .select('*')
+    .eq('profile_id', profileId)
+    .gte('date', dateFrom)
+    .lte('date', dateTo)
+    .order('date')
+    .order('normalized_in');
+
+  const existing = (existingRaw || []) as Array<NormalizationResult & { id: string }>;
+  const existingDates = new Set(existing.map(e => e.date));
+
   // Fetch clock entries
   const { data: entries } = await supabaseAdmin
     .from('clock_entries')
@@ -203,21 +220,32 @@ export async function normalizeEntries(
     .order('date')
     .order('clock_in');
 
-  if (!entries || entries.length === 0) return [];
-
   const results: NormalizationResult[] = [];
 
-  for (const entry of entries as ClockEntry[]) {
+  // Add previously normalized entries first
+  for (const entry of existing) {
+    results.push({ ...entry, previously_normalized: true });
+  }
+
+  // Normalize only clock entries for dates without existing normalization
+  for (const entry of (entries as ClockEntry[]) || []) {
+    if (existingDates.has(entry.date)) continue;
+
     const schedules = await getActiveSchedules(profileId, entry.date);
     const normalized = normalizeAgainstSchedule(entry, schedules);
-    results.push(normalized);
+    results.push({ ...normalized, previously_normalized: false });
   }
+
+  // Sort by date then time
+  results.sort((a, b) => a.date.localeCompare(b.date) || a.normalized_in.localeCompare(b.normalized_in));
 
   return results;
 }
 
 /**
- * Normalize and persist results (replacing any existing normalized entries)
+ * Normalize and persist results.
+ * Only recalculates and persists days that don't already have normalized entries.
+ * Previously normalized days are returned as-is.
  */
 export async function normalizeAndPersist(
   profileId: string,
@@ -228,23 +256,48 @@ export async function normalizeAndPersist(
 
   if (results.length === 0) return [];
 
-  // Delete existing normalized entries for this range
-  await supabaseAdmin
-    .from('normalized_entries')
-    .delete()
-    .eq('profile_id', profileId)
-    .gte('date', dateFrom)
-    .lte('date', dateTo);
+  // Split into previously persisted vs new
+  const newEntries = results.filter(r => !r.previously_normalized);
 
-  // Insert new normalized entries and return them with generated IDs
-  const { data: inserted, error } = await supabaseAdmin
-    .from('normalized_entries')
-    .insert(results)
-    .select();
+  if (newEntries.length > 0) {
+    // Collect dates of new entries to delete any partial leftovers
+    const newDates = [...new Set(newEntries.map(r => r.date))];
 
-  if (error) throw new Error(`Failed to persist normalized entries: ${error.message}`);
+    for (const date of newDates) {
+      await supabaseAdmin
+        .from('normalized_entries')
+        .delete()
+        .eq('profile_id', profileId)
+        .eq('date', date);
+    }
 
-  return (inserted as NormalizationResult[]) || results;
+    // Strip the previously_normalized flag before inserting
+    const toInsert = newEntries.map(({ previously_normalized, ...rest }) => rest);
+
+    const { data: inserted, error } = await supabaseAdmin
+      .from('normalized_entries')
+      .insert(toInsert)
+      .select();
+
+    if (error) throw new Error(`Failed to persist normalized entries: ${error.message}`);
+
+    // Build a map of inserted entries by date+clock_entry_id for merging IDs back
+    const insertedMap = new Map<string, NormalizationResult>();
+    for (const row of (inserted || []) as NormalizationResult[]) {
+      insertedMap.set(`${row.date}|${row.clock_entry_id}`, row);
+    }
+
+    // Merge IDs into the results
+    return results.map(r => {
+      if (r.previously_normalized) return r;
+      const key = `${r.date}|${r.clock_entry_id}`;
+      const persisted = insertedMap.get(key);
+      return persisted ? { ...persisted, previously_normalized: false } : r;
+    });
+  }
+
+  // All entries were previously normalized
+  return results;
 }
 
 /**

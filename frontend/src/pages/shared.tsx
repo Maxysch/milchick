@@ -100,6 +100,7 @@ export interface NormalizationResult {
   daytime_hours: number;
   nighttime_hours: number;
   adjustments: AdjustmentRecord[] | null;
+  previously_normalized?: boolean;
 }
 
 export interface NormalizationRule {
