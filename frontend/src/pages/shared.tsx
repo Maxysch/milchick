@@ -5,13 +5,9 @@ import { cn, DAY_NAMES } from '../lib/utils';
 
 export type Role = 'admin' | 'supervisor' | 'agent';
 export type ExceptionType = 'vacation' | 'absence' | 'schedule_change' | 'extraordinary_coverage';
-export type HourType =
-  | 'regular_daytime'
-  | 'regular_nighttime'
-  | 'overtime_daytime'
-  | 'overtime_nighttime'
-  | 'holiday_daytime'
-  | 'holiday_nighttime';
+export type Band = 'day_ld' | 'night_ld' | 'day_hd' | 'night_hd';
+export type Tier = 'normal' | 'additional' | 'overtime_50' | 'overtime_100';
+export type LineSource = 'schedule' | 'exception' | 'overtime' | 'manual';
 export type PreSettlementStatus = 'draft' | 'confirmed' | 'cancelled';
 
 export interface Profile {
@@ -135,12 +131,14 @@ export interface PreSettlementDailyLine {
   id: string;
   pre_settlement_id: string;
   date: string;
-  hour_type: HourType;
+  band: Band;
+  tier: Tier;
   hours: number;
   rate_per_hour: number;
   amount: number;
   is_projected: boolean;
   client_id: string | null;
+  source: LineSource;
   clients?: NameRelation | null;
   clock_times?: TimeEntry[] | null;
   normalized_times?: NormalizedTimeEntry[] | null;
@@ -158,7 +156,7 @@ export interface PreSettlementItem {
 
 export interface PreSettlementWarnings {
   has_projected: boolean;
-  dates_without_normalization: string[];
+  dates_without_clock_in: string[];
 }
 
 export interface PreSettlementDetail extends PreSettlementRecord {

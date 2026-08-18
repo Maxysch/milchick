@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { AlertTriangle, ArrowLeft, Clock, Info, Trash2 } from 'lucide-react';
 import { api } from '../../lib/api';
-import { formatCurrency, formatDate, HOUR_TYPE_LABELS } from '../../lib/utils';
+import { formatCurrency, formatDate, hourLabel, LINE_SOURCE_LABELS } from '../../lib/utils';
 import {
   cardClass,
   EmptyState,
@@ -24,9 +24,8 @@ function TimeTooltip({ line }: { line: PreSettlementDailyLine }) {
   const [open, setOpen] = useState(false);
 
   const hasClock = line.clock_times && line.clock_times.length > 0;
-  const hasNorm = line.normalized_times && line.normalized_times.length > 0;
 
-  if (!hasClock && !hasNorm) return null;
+  if (!hasClock) return null;
 
   return (
     <span className="relative inline-block">
@@ -47,15 +46,6 @@ function TimeTooltip({ line }: { line: PreSettlementDailyLine }) {
               <span>{ct.clock_in.slice(0, 5)} → {ct.clock_out ? ct.clock_out.slice(0, 5) : '—'}</span>
             </div>
           ))}
-          {hasNorm && line.normalized_times!.map((nt, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <span className="text-green-400">Normalizado:</span>
-              <span>{nt.normalized_in.slice(0, 5)} → {nt.normalized_out.slice(0, 5)}</span>
-            </div>
-          ))}
-          {hasClock && !hasNorm && (
-            <div className="mt-1 text-amber-400">⚠ Sin normalizar</div>
-          )}
           <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
         </div>
       )}
@@ -82,7 +72,14 @@ function DailyRow({ line, onSave }: { line: PreSettlementDailyLine; onSave: (id:
           <TimeTooltip line={line} />
         </div>
       </td>
-      <td className="px-4 py-3 text-sm text-gray-700">{HOUR_TYPE_LABELS[line.hour_type]}</td>
+      <td className="px-4 py-3 text-sm text-gray-700">
+        {hourLabel(line.band, line.tier)}
+        {line.source !== 'schedule' && (
+          <span className="ml-1.5 rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600">
+            {LINE_SOURCE_LABELS[line.source] ?? line.source}
+          </span>
+        )}
+      </td>
       <td className="px-4 py-3 text-sm text-gray-700">
         <input
           className={inputClass}
@@ -282,17 +279,18 @@ export default function PreSettlementDetailPage() {
           <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
             <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
             <div className="text-sm text-blue-800">
-              <strong>Algunas líneas están proyectadas.</strong> Se calcularon a partir del esquema porque son fechas futuras, vacaciones, o no tienen marcaciones registradas.
+              <strong>Algunas líneas están proyectadas.</strong> Corresponden a fechas futuras o a días cubiertos por una excepción (vacaciones, licencia).
             </div>
           </div>
         )}
-        {detail.warnings?.dates_without_normalization?.length > 0 && (
+        {detail.warnings?.dates_without_clock_in?.length > 0 && (
           <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
             <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" />
             <div className="text-sm text-amber-800">
-              <strong>Hay fechas pasadas sin horas normalizadas</strong> — se usaron horas proyectadas del esquema en su lugar. Ejecute el normalizador para obtener horas reales.
+              <strong>Se pagaron horas de esquema sin marcación de respaldo.</strong> Revise
+              estos días y corrija las horas si corresponde.
               <div className="mt-1 font-mono text-xs">
-                {detail.warnings.dates_without_normalization.map(d => formatDate(d)).join(', ')}
+                {detail.warnings.dates_without_clock_in.map(d => formatDate(d)).join(', ')}
               </div>
             </div>
           </div>
@@ -327,13 +325,16 @@ export default function PreSettlementDetailPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {Object.entries(detail.totals_by_type).map(([hourType, totals]) => (
-            <div key={hourType} className={cardClass}>
-              <div className="text-sm text-gray-500">{HOUR_TYPE_LABELS[hourType] ?? hourType}</div>
+          {Object.entries(detail.totals_by_type).map(([key, totals]) => {
+            const [band, tier] = key.split(':');
+            return (
+            <div key={key} className={cardClass}>
+              <div className="text-sm text-gray-500">{hourLabel(band, tier)}</div>
               <div className="mt-2 text-xl font-semibold text-gray-900">{totals.hours.toFixed(2)} hs</div>
               <div className="mt-1 text-sm text-gray-600">{formatCurrency(totals.amount)}</div>
             </div>
-          ))}
+            );
+          })}
         </section>
 
         <section className={cardClass}>

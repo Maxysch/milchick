@@ -2,8 +2,10 @@ import { Router, Response } from 'express';
 import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth.js';
 import { generatePreSettlementSchema, createPreSettlementItemSchema, updatePreSettlementDailySchema, updatePreSettlementItemSchema } from '@milchick/shared';
 import {
+  fetchPeriodStartDay,
   generatePreSettlement,
   getPreSettlementDetail,
+  settlementPeriod,
   listPreSettlements,
   updateDailyLine,
   addItem,
@@ -39,6 +41,24 @@ router.post('/generate', requireRole('admin', 'supervisor'), async (req: AuthReq
       req.userId!
     );
     res.status(201).json(result);
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+// Período de liquidación por defecto para un mes (va del 26 al 25).
+// Va antes de /:id para que no lo capture la ruta con parámetro.
+router.get('/period', async (req, res: Response) => {
+  const year = Number(req.query.year);
+  const month = Number(req.query.month);
+  if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) {
+    res.status(400).json({ error: 'Se requieren year y month (1-12)' });
+    return;
+  }
+
+  try {
+    const startDay = await fetchPeriodStartDay();
+    res.json({ ...settlementPeriod(year, month, startDay), period_start_day: startDay });
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }

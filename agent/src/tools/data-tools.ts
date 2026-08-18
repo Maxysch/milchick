@@ -272,7 +272,7 @@ export const getPreSettlementDetail = tool(
 
     const { data: daily } = await supabaseAdmin
       .from('pre_settlement_daily')
-      .select('date, hour_type, hours, rate_per_hour, amount, is_projected')
+      .select('date, band, tier, hours, rate_per_hour, amount, is_projected, source')
       .eq('pre_settlement_id', pre_settlement_id)
       .order('date');
 
@@ -282,13 +282,21 @@ export const getPreSettlementDetail = tool(
       .eq('pre_settlement_id', pre_settlement_id);
 
     const typeLabels: Record<string, string> = {
-      regular_daytime: 'Diurna',
-      regular_nighttime: 'Nocturna',
-      overtime_daytime: 'Extra diurna',
-      overtime_nighttime: 'Extra nocturna',
-      holiday_daytime: 'Feriado diurna',
-      holiday_nighttime: 'Feriado nocturna',
+      day_ld: 'Diurna LD',
+      night_ld: 'Nocturna LD',
+      day_hd: 'Diurna HD',
+      night_hd: 'Nocturna HD',
     };
+
+    const tierLabels: Record<string, string> = {
+      normal: '',
+      additional: ' Adicional',
+      overtime_50: ' Extra 50%',
+      overtime_100: ' Extra 100%',
+    };
+
+    const describe = (band: string, tier: string) =>
+      `${typeLabels[band] ?? band}${tierLabels[tier] ?? ` ${tier}`}`;
 
     const profile = (ps as Record<string, unknown>).profiles as Record<string, string>;
     let result = `Preliquidación de ${profile.first_name} ${profile.last_name}\nPeríodo: ${ps.period_from} al ${ps.period_to}\nEstado: ${ps.status}\n\n`;
@@ -296,20 +304,21 @@ export const getPreSettlementDetail = tool(
     if (daily && daily.length > 0) {
       result += 'Desglose diario:\n';
       for (const d of daily) {
-        result += `  ${d.date} | ${typeLabels[d.hour_type] || d.hour_type} | ${d.hours}h × $${d.rate_per_hour} = $${d.amount}${d.is_projected ? ' (proyectado)' : ''}\n`;
+        result += `  ${d.date} | ${describe(d.band, d.tier)} | ${d.hours}h × $${d.rate_per_hour} = $${d.amount}${d.is_projected ? ' (proyectado)' : ''}\n`;
       }
 
       // Totals by type
       const byType: Record<string, { hours: number; amount: number }> = {};
       for (const d of daily) {
-        if (!byType[d.hour_type]) byType[d.hour_type] = { hours: 0, amount: 0 };
-        byType[d.hour_type].hours += d.hours;
-        byType[d.hour_type].amount += d.amount;
+        const key = describe(d.band, d.tier);
+        if (!byType[key]) byType[key] = { hours: 0, amount: 0 };
+        byType[key].hours += d.hours;
+        byType[key].amount += d.amount;
       }
 
       result += '\nTotales por tipo:\n';
       for (const [type, totals] of Object.entries(byType)) {
-        result += `  ${typeLabels[type] || type}: ${totals.hours}h = $${totals.amount}\n`;
+        result += `  ${type}: ${totals.hours}h = $${totals.amount}\n`;
       }
     }
 

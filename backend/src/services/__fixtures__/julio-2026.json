@@ -1,0 +1,1169 @@
+{
+  "_comment": "Datos reales de la liquidación de julio 2026, extraídos con validacion/generar_fixture.py. No editar a mano.",
+  "gridPeriod": {
+    "from": "2026-07-01",
+    "to": "2026-07-31"
+  },
+  "holidays": [
+    "2026-07-09",
+    "2026-07-10"
+  ],
+  "agents": [
+    {
+      "agent": "Yanina Benitez",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 128.0
+        },
+        {
+          "band": "day_ld",
+          "tier": "additional",
+          "hours": 5.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "09:00",
+          "end_time": "13:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 1,
+          "start_time": "15:00",
+          "end_time": "18:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "08:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "11:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "12:00",
+          "end_time": "16:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "12:00",
+          "end_time": "16:00",
+          "client_id": null
+        }
+      ],
+      "overtime": [
+        {
+          "date": "2026-07-01",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-07-02",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-07-03",
+          "hours": 3.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": "Adicionales 26/29/30 Jun"
+        }
+      ],
+      "expectedHours": 133.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.04,
+        "super_reg_pct": 0.1,
+        "equipment_pct": 0.05,
+        "seniority_months": 67,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 8.0,
+      "vacationHours": 72.0,
+      "manualItemsTotal": 61032.18,
+      "manualItems": [
+        {
+          "concepto": "Reintegro Gastos",
+          "importe": 61032.18
+        }
+      ],
+      "expected": {
+        "subtotal": 542391.5189,
+        "net": 785464.5349,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Paola Farías",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 204.083333
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "09:00",
+          "end_time": "18:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "09:00",
+          "end_time": "18:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "09:00",
+          "end_time": "18:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "09:00",
+          "end_time": "18:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "09:00",
+          "end_time": "18:00",
+          "client_id": null
+        }
+      ],
+      "overtime": [],
+      "expectedHours": 204.083333,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.03,
+        "super_reg_pct": 0.05,
+        "equipment_pct": 0.05,
+        "seniority_months": 32,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 18.0,
+      "vacationHours": 0.0,
+      "manualItemsTotal": 122469.18,
+      "manualItems": [
+        {
+          "concepto": "Adelantos Solicitados sobre Variables Habituales",
+          "importe": -100000.0
+        },
+        {
+          "concepto": "Reintegro traslados hijos 13 días hábiles Julio 2026",
+          "importe": 94500.0
+        },
+        {
+          "concepto": "Comisión x Ventas Variable No Habitual JUNIO 2026 El Práctico",
+          "importe": 57472.0
+        },
+        {
+          "concepto": "Reintegro Gastos Monotributo",
+          "importe": 70497.18
+        }
+      ],
+      "expected": {
+        "subtotal": 824529.3791,
+        "net": 1162007.154,
+        "additionalPctInSheet": 0.2
+      }
+    },
+    {
+      "agent": "María Sol Olaviaga",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 138.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "09:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "09:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "09:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "09:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "09:00",
+          "end_time": "15:00",
+          "client_id": null
+        }
+      ],
+      "overtime": [],
+      "expectedHours": 138.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.03,
+        "reg_qualitative_pct": 0.03,
+        "super_reg_pct": 0.1,
+        "equipment_pct": 0.05,
+        "seniority_months": 75,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 6.0,
+      "vacationHours": 72.0,
+      "manualItemsTotal": 70497.18,
+      "manualItems": [
+        {
+          "concepto": "Reintegro Gastos Monotributo",
+          "importe": 70497.18
+        }
+      ],
+      "expected": {
+        "subtotal": 557542.12,
+        "net": 814390.2995,
+        "additionalPctInSheet": 0.2
+      }
+    },
+    {
+      "agent": "Walter Palavecino",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 127.0
+        },
+        {
+          "band": "day_ld",
+          "tier": "additional",
+          "hours": 2.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "08:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "08:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "08:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "08:00",
+          "end_time": "12:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "08:00",
+          "end_time": "12:00",
+          "client_id": null
+        }
+      ],
+      "overtime": [
+        {
+          "date": "2026-07-01",
+          "hours": 2.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": "Hs Ad del 29 y 30 jun"
+        }
+      ],
+      "expectedHours": 129.0,
+      "params": {
+        "reg_people_pct": 0.03,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.0,
+        "super_reg_pct": 0.0,
+        "equipment_pct": 0.05,
+        "seniority_months": 57,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 9.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 61032.18,
+      "manualItems": [
+        {
+          "concepto": "Reintegro Gastos Monotributo",
+          "importe": 61032.18
+        }
+      ],
+      "expected": {
+        "subtotal": 523200.7575,
+        "net": 679584.7765,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Giuliana Yaccusi",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 127.0
+        },
+        {
+          "band": "day_ld",
+          "tier": "additional",
+          "hours": 7.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "08:00",
+          "end_time": "11:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 1,
+          "start_time": "15:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "15:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "09:00",
+          "end_time": "12:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "15:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "10:00",
+          "end_time": "12:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        }
+      ],
+      "overtime": [
+        {
+          "date": "2026-07-01",
+          "hours": 2.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-07-02",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-07-03",
+          "hours": 2.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": "29 y 30 jun adicionales"
+        },
+        {
+          "date": "2026-07-06",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-07-20",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        }
+      ],
+      "expectedHours": 134.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.03,
+        "super_reg_pct": 0.05,
+        "equipment_pct": 0.05,
+        "seniority_months": 53,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 12.0,
+      "vacationHours": 89.0,
+      "manualItemsTotal": 70497.18,
+      "manualItems": [
+        {
+          "concepto": "Reintegro Gastos Monotributo",
+          "importe": 70497.18
+        }
+      ],
+      "expected": {
+        "subtotal": 548451.7593,
+        "net": 771618.0524,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Micaela Abraham",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 127.0
+        },
+        {
+          "band": "day_ld",
+          "tier": "additional",
+          "hours": 1.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "08:00",
+          "end_time": "14:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 1,
+          "start_time": "16:00",
+          "end_time": "18:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "08:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "08:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "08:00",
+          "end_time": "12:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "08:00",
+          "end_time": "12:00",
+          "client_id": null
+        }
+      ],
+      "overtime": [
+        {
+          "date": "2026-07-20",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        }
+      ],
+      "expectedHours": 128.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.03,
+        "super_reg_pct": 0.05,
+        "equipment_pct": 0.05,
+        "seniority_months": 36,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 8.0,
+      "vacationHours": 78.0,
+      "manualItemsTotal": 49527.18,
+      "manualItems": [
+        {
+          "concepto": "Reintegro Gastos Monotributo",
+          "importe": 49527.18
+        }
+      ],
+      "expected": {
+        "subtotal": 517948.5491,
+        "net": 697584.4296,
+        "additionalPctInSheet": 0.2
+      }
+    },
+    {
+      "agent": "Ascona Gonzalo",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 124.0
+        },
+        {
+          "band": "day_ld",
+          "tier": "additional",
+          "hours": 5.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "12:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "15:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "15:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "10:00",
+          "end_time": "19:00",
+          "client_id": null
+        }
+      ],
+      "overtime": [
+        {
+          "date": "2026-07-01",
+          "hours": 2.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-07-02",
+          "hours": 2.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": "del 30-06-2026"
+        },
+        {
+          "date": "2026-07-07",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        }
+      ],
+      "expectedHours": 129.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.04,
+        "super_reg_pct": 0.1,
+        "equipment_pct": 0.05,
+        "seniority_months": 13,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 15.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 49527.18,
+      "manualItems": [
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 49527.18
+        }
+      ],
+      "expected": {
+        "subtotal": 526230.8777,
+        "net": 743317.5858,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Chirino Facundo",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 127.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "08:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "10:00",
+          "end_time": "17:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "08:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "09:00",
+          "end_time": "14:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "10:00",
+          "end_time": "14:00",
+          "client_id": null
+        }
+      ],
+      "overtime": [],
+      "expectedHours": 127.0,
+      "params": {
+        "reg_people_pct": 0.03,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.02,
+        "super_reg_pct": 0.0,
+        "equipment_pct": 0.05,
+        "seniority_months": 13,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 9.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 61032.18,
+      "manualItems": [
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 61032.18
+        }
+      ],
+      "expected": {
+        "subtotal": 513100.3568,
+        "net": 659443.6658,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Rodríguez Liliana",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 126.0
+        },
+        {
+          "band": "day_ld",
+          "tier": "additional",
+          "hours": 15.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "12:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        }
+      ],
+      "overtime": [
+        {
+          "date": "2026-07-01",
+          "hours": 3.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-07-02",
+          "hours": 3.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-07-03",
+          "hours": 4.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-07-06",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": "del 30/06"
+        },
+        {
+          "date": "2026-07-21",
+          "hours": 2.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-07-22",
+          "hours": 2.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        }
+      ],
+      "expectedHours": 141.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.04,
+        "super_reg_pct": 0.1,
+        "equipment_pct": 0.05,
+        "seniority_months": 2,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 11.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 61032.18,
+      "manualItems": [
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 61032.18
+        }
+      ],
+      "expected": {
+        "subtotal": 584813.2019,
+        "net": 815244.2137,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Ferreyra Priscila",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 124.5
+        }
+      ],
+      "schedule": null,
+      "overtime": [],
+      "expectedHours": 124.5,
+      "params": {
+        "reg_people_pct": 0.03,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.02,
+        "super_reg_pct": 0.0,
+        "equipment_pct": 0.05,
+        "seniority_months": 2,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 11.0,
+      "vacationHours": 0.0,
+      "manualItemsTotal": 133081.06159,
+      "manualItems": [
+        {
+          "concepto": "Vacaciones NG Proporcionales No Habitual Año 2026",
+          "importe": 40239.99648
+        },
+        {
+          "concepto": "Bono 2 Semestre no habitual proporcional Año 2026",
+          "importe": 43313.88511
+        },
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 49527.18
+        }
+      ],
+      "expected": {
+        "subtotal": 502999.9561,
+        "net": 719500.1937,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Alanis Brenda",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 127.0
+        },
+        {
+          "band": "day_ld",
+          "tier": "additional",
+          "hours": 9.5
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "12:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        }
+      ],
+      "overtime": [
+        {
+          "date": "2026-07-01",
+          "hours": 3.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-07-02",
+          "hours": 3.5,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": "del 26 y 30 jun 2026"
+        },
+        {
+          "date": "2026-07-03",
+          "hours": 3.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        }
+      ],
+      "expectedHours": 136.5,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.02,
+        "super_reg_pct": 0.05,
+        "equipment_pct": 0.05,
+        "seniority_months": 2,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 11.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 49527.18,
+      "manualItems": [
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 49527.18
+        }
+      ],
+      "expected": {
+        "subtotal": 561077.2602,
+        "net": 734754.32,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Moreno Laura",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 127.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "12:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        }
+      ],
+      "overtime": [],
+      "expectedHours": 127.0,
+      "params": {
+        "reg_people_pct": 0.03,
+        "reg_quantitative_pct": 0.01,
+        "reg_qualitative_pct": 0.01,
+        "super_reg_pct": 0.0,
+        "equipment_pct": 0.05,
+        "seniority_months": 2,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 11.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 49527.18,
+      "manualItems": [
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 49527.18
+        }
+      ],
+      "expected": {
+        "subtotal": 513100.3568,
+        "net": 637013.5871,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Bissuti Stefano",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 132.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "12:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        }
+      ],
+      "overtime": [],
+      "expectedHours": 132.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.04,
+        "super_reg_pct": 0.1,
+        "equipment_pct": 0.05,
+        "seniority_months": 1,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 11.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 49527.18,
+      "manualItems": [
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 49527.18
+        }
+      ],
+      "expected": {
+        "subtotal": 533301.1582,
+        "net": 738818.9092,
+        "additionalPctInSheet": 0.25
+      }
+    }
+  ]
+}

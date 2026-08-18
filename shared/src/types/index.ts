@@ -10,6 +10,16 @@ export interface Profile {
   email: string;
   role: Role;
   is_active: boolean;
+  hire_date: string | null;
+  /** Parámetros de liquidación del agente (ver SettlementParams en el backend) */
+  reg_people_pct: number;
+  reg_quantitative_pct: number;
+  reg_qualitative_pct: number;
+  super_reg_pct: number;
+  equipment_pct: number;
+  seniority_months: number;
+  holiday_compensation_factor: number;
+  vacation_plus_factor: number;
   created_at: string;
   updated_at: string;
 }
@@ -36,7 +46,12 @@ export interface AgentRate {
 }
 
 // ─── Rate Factors ───
-export type RateFactorKey = 'nighttime' | 'overtime' | 'holiday' | 'weekend';
+export type RateFactorKey =
+  | 'nighttime'     // recargo nocturno
+  | 'hd'            // recargo de la franja HD (vie 20:00 a dom 24:00)
+  | 'additional'    // horas fuera del esquema, sin llegar a extra
+  | 'overtime_50'
+  | 'overtime_100';
 
 export interface RateFactor {
   id: string;
@@ -77,6 +92,7 @@ export interface ClockEntry {
 // ─── Exception ───
 export type ExceptionType =
   | 'vacation'
+  | 'paid_leave'          // licencia paga: se liquida, pero no es vacaciones
   | 'absence'
   | 'schedule_change'
   | 'extraordinary_coverage';
@@ -100,6 +116,7 @@ export interface Overtime {
   profile_id: string;
   date: string;
   hours: number;
+  tier: Tier;
   start_time: string | null; // HH:mm, optional
   end_time: string | null;   // HH:mm, optional
   client_id: string | null;
@@ -151,24 +168,30 @@ export interface PreSettlement {
   updated_at: string;
 }
 
-export type HourType =
-  | 'regular_daytime'
-  | 'regular_nighttime'
-  | 'overtime_daytime'
-  | 'overtime_nighttime'
-  | 'holiday_daytime'
-  | 'holiday_nighttime';
+/**
+ * Banda horaria. LD es la franja habitual de lunes a viernes; HD es el resto,
+ * desde el viernes 20:00 hasta el domingo a medianoche.
+ */
+export type Band = 'day_ld' | 'night_ld' | 'day_hd' | 'night_hd';
+
+/** Recargo aplicado sobre la banda. */
+export type Tier = 'normal' | 'additional' | 'overtime_50' | 'overtime_100';
+
+/** De dónde salió la línea, para poder auditar la preliquidación. */
+export type LineSource = 'schedule' | 'exception' | 'overtime' | 'manual';
 
 export interface PreSettlementDaily {
   id: string;
   pre_settlement_id: string;
   date: string;
-  hour_type: HourType;
+  band: Band;
+  tier: Tier;
   hours: number;          // editable
   rate_per_hour: number;  // editable
-  amount: number;         // recalculated
+  amount: number;         // recalculado
   is_projected: boolean;
   client_id: string | null;
+  source: LineSource;
 }
 
 export interface PreSettlementItem {

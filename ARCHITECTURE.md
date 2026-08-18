@@ -89,22 +89,32 @@ profiles ──────────┬──── agent_rates
 |-------|-----------|-----------------|
 | `profiles` | Agentes, supervisores, admins. Extiende `auth.users` | FK a auth.users |
 | `clients` | Clientes del call center (solo nombre + estado) | — |
-| `agent_rates` | Tarifa por hora del agente por día/franja/tipo | FK a profiles |
+| `agent_rates` | Tarifa base por hora del agente, con vigencia | FK a profiles |
+| `rate_factors` | Multiplicadores globales (nocturno, HD, adicional, extras) | — |
 | `schedules` | Esquema horario con fecha de vigencia | FK a profiles, clients |
 | `clock_entries` | Marcaciones brutas de entrada/salida | FK a profiles, clients |
 | `exceptions` | Vacaciones, ausencias, cambios, coberturas | FK a profiles, clients |
-| `overtime` | Horas extra con horarios opcionales | FK a profiles, clients |
+| `overtime` | Horas adicionales y extra, con tramo y horarios opcionales | FK a profiles, clients |
 | `holidays` | Feriados nacionales y de empresa por año | — |
 | `normalization_rules` | Reglas de normalización (texto para LangChain) | FK a profiles (creator) |
 | `settlement_rules` | Reglas de liquidación (texto para LangChain) | FK a profiles (creator) |
 | `normalized_entries` | Resultado del normalizador | FK a profiles, clock_entries |
 | `pre_settlements` | Cabecera de preliquidación | FK a profiles |
-| `pre_settlement_daily` | Desglose diario por tipo de hora | FK a pre_settlements, clients |
-| `pre_settlement_items` | Ítems adicionales (presentismo, premios) | FK a pre_settlements |
+| `pre_settlement_daily` | Desglose diario por banda × tramo | FK a pre_settlements, clients |
+| `pre_settlement_items` | Conceptos calculados e ítems manuales | FK a pre_settlements |
+| `settlement_settings` | Configuración del período de liquidación (26 → 25) | — |
+
+La migración `008` siembra los datos reales de operación (clientes, agentes,
+tarifas, esquemas, feriados, excepciones, horas extra y marcaciones desde el
+01/06/2026). Se regenera desde los Excel con `validacion/generar_seed.py`.
 
 ### Decisiones clave del modelo
 
-1. **Tarifas por agente, no por cliente**: Se definió que el valor por hora depende del agente (según día de la semana y franja horaria), no del cliente. Esto simplifica el modelo vs. Roz que tenía `client_task_rates`.
+1. **Una tarifa base por agente**: el valor por hora depende del agente, no del
+   cliente ni del día de la semana. Todo lo demás son multiplicadores globales en
+   `rate_factors` (nocturno 1,13 · HD 1,0125 · adicional 1,25 · extra 50% · extra
+   100%). Si dos agentes de la misma categoría tienen multiplicadores distintos,
+   es un error de carga, no una condición contractual.
 
 2. **Esquemas con fecha de vigencia**: Cada entrada de `schedules` tiene `effective_from` y `effective_until` (null = vigente). Esto permite cambiar el esquema de un agente sin perder historial.
 
@@ -114,7 +124,7 @@ profiles ──────────┬──── agent_rates
 
 5. **Excepciones unificadas**: Una sola tabla maneja vacaciones, ausencias, cambios de jornada y coberturas extraordinarias. El campo `exception_type` diferencia.
 
-6. **Preliquidación en 3 niveles**: Cabecera (`pre_settlements`) → desglose diario (`pre_settlement_daily`) → ítems adicionales (`pre_settlement_items`). Todo editable.
+6. **Preliquidación en 3 niveles**: Cabecera (`pre_settlements`) → desglose diario (`pre_settlement_daily`) → ítems (`pre_settlement_items`). Todo editable. Cada línea diaria guarda su `source` (`schedule`, `exception`, `overtime`, `manual`) para poder auditar de dónde salió.
 
 7. **Sin tabla de `tasks`**: A diferencia de Roz, no hay tareas como entidad separada. La relación agente-cliente se modela directamente en schedules y clock_entries.
 
@@ -158,7 +168,11 @@ El normalizador toma marcaciones brutas y produce horarios "limpios" listos para
 1. Si el agente marcó entrada **antes** del inicio de su esquema → ajustar al inicio (recortar setup)
 2. Si el agente marcó salida **después** del fin de su esquema → ajustar al fin
 3. Si no hay esquema que matchee → marcar como "sin esquema" pero conservar la marcación
-4. Separar horas en **diurnas** (06:00-21:00) y **nocturnas** (21:00-06:00)
+4. Separar horas en **diurnas** y **nocturnas** según `NIGHTTIME_START` / `NIGHTTIME_END` (22:00–06:00)
+
+> El normalizador ya **no alimenta la preliquidación**. Desde la migración 007 las
+> horas que se pagan salen del esquema; las marcaciones sirven para detectar
+> desvíos. Ver "Preliquidador" más abajo.
 
 **Puntos de extensión:**
 - Las constantes `NIGHTTIME_START` y `NIGHTTIME_END` son configurables en el código
@@ -170,19 +184,45 @@ El normalizador toma marcaciones brutas y produce horarios "limpios" listos para
 Calcula honorarios para un agente en un período dado.
 
 **Lógica:**
-1. Recorre cada día del período
-2. Para días pasados: usa `normalized_entries` (horas reales normalizadas)
-3. Para días futuros o vacaciones: **proyecta** desde el esquema vigente
-4. Clasifica horas: `regular_daytime`, `regular_nighttime`, `overtime_daytime`, `overtime_nighttime`, `holiday_daytime`, `holiday_nighttime`
-5. Aplica la tarifa del agente para ese día/franja/tipo
-6. Genera ítems automáticos: presentismo, plus vacacional (si aplica)
+1. Recorre cada día del período (que va del 26 al 25, no del 1 al 30 — ver `settlement_settings`)
+2. Toma las horas del **esquema vigente** de ese día, con todos sus tramos (turnos partidos incluidos)
+3. Clasifica cada tramo en una de cuatro **bandas** y un **tramo de recargo**:
+   - Bandas: `day_ld`, `night_ld`, `day_hd`, `night_hd`
+   - Recargos: `normal`, `additional`, `overtime_50`, `overtime_100`
+4. Aplica `tarifa base del agente × factor de banda × factor de recargo`
+5. Calcula seis conceptos sobre el subtotal (ver abajo)
+6. Contrasta contra las marcaciones y devuelve **advertencias**, sin tocar importes
 7. Todo es editable: horas, tarifas, ítems, montos
 
+**Bandas horarias** (`settlement-calc.ts`):
+
+| Banda | Cuándo |
+|-------|--------|
+| `day_ld` | lun–jue 06:00–21:00, vie 06:00–20:00 |
+| `night_ld` | el continuo del lunes 21:00 al viernes 05:00 |
+| `day_hd` / `night_hd` | todo el resto: vie 20:00 → dom 24:00, con corte día/noche en 06:00 y 21:00 |
+
+**Conceptos calculados:** REG (Premio a la Excelencia), SUPER REG, antigüedad,
+reintegro por uso de equipos, compensación por feriado no trabajado y plus
+vacacional. Los parámetros de cada uno viven en `profiles`. Todo lo demás
+(adelantos, reintegros de monotributo, comisiones, bonos) entra como ítem manual.
+
 **Decisiones:**
+- **Se paga el esquema, no la marcación.** Verificado de punta a punta contra la
+  liquidación de julio 2026: partiendo del esquema, **6 de los 12 agentes con
+  esquema cargado llegan al neto exacto**. Los otros 6 difieren en total ~$186 mil
+  (2% del período) y en los seis casos la causa está en los datos de entrada
+  —esquemas desactualizados, excepciones sin cargar, un arrastre del mes
+  anterior—, no en el cálculo. Los desvíos están fijados en
+  `settlement-calc.test.ts` con su motivo.
+- Las **marcaciones** producen advertencias (`no_clock_in`, `arrived_late`,
+  `left_early`, `worked_without_schedule`) que quien liquida revisa y corrige.
 - Las **ausencias** se excluyen del cálculo (no se pagan)
-- Las **vacaciones** se calculan como si el agente hubiera trabajado normalmente (según esquema) + un plus vacacional opcional
-- La **proyección** usa el esquema vigente al momento de generar la preliquidación
+- Los **feriados no trabajados** no generan horas: se compensan con un concepto
+  aparte, proporcional a las horas de esquema que caían ese día
+- Las **vacaciones** se pagan según esquema + plus vacacional opcional
 - El **recálculo** es automático: editar horas o tarifas recalcula el monto; agregar/quitar ítems recalcula el total
+- Las tarifas **no se redondean** en el camino: el redondeo a centavos va sólo sobre el total
 
 ### Agentes LangChain
 
@@ -366,12 +406,22 @@ La protección se aplica con `requireRole('admin', 'supervisor')` en las rutas q
 
 Editar `normalizeAgainstSchedule()` en `backend/src/services/normalizer.service.ts`. Agregar un nuevo bloque después de los Rules existentes.
 
-### Agregar un nuevo tipo de hora a la preliquidación
+### Agregar una banda o un tramo de recargo
 
-1. Agregar el tipo en `HourType` en `shared/src/types/index.ts`
-2. Agregar la constraint CHECK en la DB
-3. Agregar la lógica de clasificación en `presettlement.service.ts`
-4. Agregar el label en `HOUR_TYPE_LABELS` en `frontend/src/lib/utils.ts`
+1. Agregar el valor en `Band` / `Tier` en `backend/src/services/settlement-calc.ts`
+   y en `shared/src/types/index.ts`
+2. Ajustar `bandAt()` (si es una banda) o `tierMultiplier()` (si es un recargo)
+3. Actualizar la constraint CHECK de `pre_settlement_daily` con una migración
+4. Agregar el label en `BAND_LABELS` / `TIER_LABELS` en `frontend/src/lib/utils.ts`
+5. Agregar el factor a `rate_factors` si el multiplicador es configurable
+
+### Agregar un concepto calculado
+
+1. Agregar el código en `ConceptCode` y la lógica en `computeConcepts()`
+   (`settlement-calc.ts`)
+2. Agregar los parámetros que necesite a `SettlementParams` y a `profiles`
+3. Agregar el label en `CONCEPT_LABELS` en `frontend/src/lib/utils.ts`
+4. Cubrirlo con un test en `settlement-calc.test.ts`
 
 ### Agregar una nueva herramienta al agente LangChain
 
@@ -393,7 +443,10 @@ El sistema fue diseñado para que esto se pueda agregar sin reestructurar:
 
 ### Limitaciones actuales
 
-- **Sin tests**: No hay tests unitarios ni de integración. Prioridad para agregar.
+- **Tests parciales**: el núcleo de cálculo (`settlement-calc.ts`) tiene 76 tests
+  que lo validan contra la liquidación real de julio 2026 (`npm test`), incluida
+  la cadena completa esquema → neto para los 12 agentes con esquema cargado.
+  El resto del backend y el frontend siguen sin cobertura.
 - **Sin exports/reportes**: No hay exportación a Excel/PDF. El proyecto Roz tenía `exceljs`.
 - **Normalización básica**: Solo recorta setup y ajuste a esquema. No hay tolerancias configurables, redondeo, ni lógica avanzada aún.
 - **Agente LangChain sin memoria persistente**: Cada request crea un agente nuevo. No hay historial de conversación entre requests.
@@ -403,7 +456,7 @@ El sistema fue diseñado para que esto se pueda agregar sin reestructurar:
 
 ### Mejoras sugeridas (en orden de prioridad)
 
-1. **Tests**: Agregar vitest para backend (servicios) y playwright/cypress para frontend
+1. **Tests**: extender vitest al resto del backend y agregar playwright/cypress para frontend
 2. **Exportación**: Excel y PDF para preliquidaciones
 3. **Tolerancia configurable**: Minutos de tolerancia para clock-in/out en vez de solo trimear al esquema
 4. **Memoria del agente**: Persistir conversaciones del LangChain con checkpointer
@@ -426,6 +479,10 @@ El sistema fue diseñado para que esto se pueda agregar sin reestructurar:
 | 6 | Marcaciones manuales por supervisor | Los agentes no cargan su propia asistencia | Self-service, integración con softphone |
 | 7 | Vacaciones se pagan como horas normales | Decisión del negocio, con plus opcional | No pagar vacaciones, tarifa especial |
 | 8 | Proyección de días futuros | Permite preliquidar antes de fin de mes | Solo liquidar lo trabajado |
+| 11 | Se paga el esquema, no la marcación | Verificado contra julio 2026: las horas liquidadas siguen al esquema, no a lo marcado | Liquidar lo marcado con alguna regla de redondeo (se probó: no reproduce los valores reales) |
+| 12 | Feriado como concepto, no como tipo de hora | La planilla nunca cargó horas de feriado; compensa aparte | Mantener `holiday_daytime`/`holiday_nighttime` con factor ×2 |
+| 13 | Período del 26 al 25 | Es el corte real del negocio; el mes calendario obligaba a arrastres manuales | Mes calendario |
+| 14 | Tramo "Adicional" al 25% para todos | Tres planillas lo tenían escrito como 20%; se resolvió que es error de carga | Porcentaje por agente |
 | 9 | Preliquidación totalmente editable | El liquidador necesita flexibilidad total | Campos bloqueados, solo override |
 | 10 | Clientes simples (solo ABM) | No se necesita configuración compleja | Config de billing/rates por cliente |
 

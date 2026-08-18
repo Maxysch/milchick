@@ -8,6 +8,9 @@ export const loginSchema = z.object({
 export type LoginInput = z.infer<typeof loginSchema>;
 
 // ─── Profile ───
+// Los porcentajes van en tanto por uno: 0.04 = 4%
+const pct = z.number().min(0).max(1);
+
 export const createProfileSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
@@ -15,6 +18,16 @@ export const createProfileSchema = z.object({
   last_name: z.string().min(1),
   employee_id: z.string().nullable().optional(),
   role: z.enum(['admin', 'supervisor', 'agent']),
+  hire_date: z.string().nullable().optional(),
+  // Parámetros de liquidación
+  reg_people_pct: pct.optional(),
+  reg_quantitative_pct: pct.optional(),
+  reg_qualitative_pct: pct.optional(),
+  super_reg_pct: pct.optional(),
+  equipment_pct: pct.optional(),
+  seniority_months: z.number().int().min(0).optional(),
+  holiday_compensation_factor: z.number().min(0).max(2).optional(),
+  vacation_plus_factor: z.number().min(0).max(2).optional(),
 });
 export type CreateProfileInput = z.infer<typeof createProfileSchema>;
 
@@ -71,7 +84,7 @@ export type UpdateClockEntryInput = z.infer<typeof updateClockEntrySchema>;
 // ─── Exception ───
 export const createExceptionSchema = z.object({
   profile_id: z.string().uuid(),
-  exception_type: z.enum(['vacation', 'absence', 'schedule_change', 'extraordinary_coverage']),
+  exception_type: z.enum(['vacation', 'paid_leave', 'absence', 'schedule_change', 'extraordinary_coverage']),
   date_from: z.string(),
   date_to: z.string(),
   client_id: z.string().uuid().nullable().optional(),
@@ -84,6 +97,7 @@ export const createOvertimeSchema = z.object({
   profile_id: z.string().uuid(),
   date: z.string(),
   hours: z.number().positive(),
+  tier: z.enum(['additional', 'overtime_50', 'overtime_100']).default('overtime_50'),
   start_time: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
   end_time: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
   client_id: z.string().uuid().nullable().optional(),
