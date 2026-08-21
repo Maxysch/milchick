@@ -16,6 +16,9 @@ import holidayRoutes from './routes/holidays.routes.js';
 import rulesRoutes from './routes/rules.routes.js';
 import normalizationRoutes from './routes/normalization.routes.js';
 import preSettlementRoutes from './routes/preSettlements.routes.js';
+import settingsRoutes from './routes/settings.routes.js';
+import dashboardRoutes from './routes/dashboard.routes.js';
+import periodParamsRoutes from './routes/periodParams.routes.js';
 import agentChatRoutes from './routes/agent.routes.js';
 
 const app = express();
@@ -45,6 +48,9 @@ app.use('/api/holidays', holidayRoutes);
 app.use('/api/rules', rulesRoutes);
 app.use('/api/normalization', normalizationRoutes);
 app.use('/api/pre-settlements', preSettlementRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/period-params', periodParamsRoutes);
 app.use('/api/agent', agentChatRoutes);
 
 app.listen(PORT, () => {

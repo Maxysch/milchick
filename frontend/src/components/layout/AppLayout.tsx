@@ -7,6 +7,8 @@ import {
   AlertCircle,
   BarChart3,
   Settings,
+  SlidersHorizontal,
+  Award,
   LogOut,
   Home,
   UserCircle,
@@ -32,7 +34,9 @@ const navItems: NavItem[] = [
   { to: '/clock-entries', icon: Clock, label: 'Marcaciones', roles: ['admin', 'supervisor'] },
   { to: '/exceptions', icon: AlertCircle, label: 'Excepciones', roles: ['admin', 'supervisor'] },
   { to: '/normalization', icon: Settings, label: 'Normalización', roles: ['admin', 'supervisor'] },
+  { to: '/period-params', icon: Award, label: 'Evaluación mensual', roles: ['admin', 'supervisor'] },
   { to: '/pre-settlements', icon: BarChart3, label: 'Preliquidación', roles: ['admin', 'supervisor'] },
+  { to: '/settings', icon: SlidersHorizontal, label: 'Configuración', roles: ['admin', 'supervisor'] },
 ];
 
 export default function AppLayout() {

@@ -1,0 +1,4113 @@
+{
+ "holidays": [
+  "2026-07-09",
+  "2026-07-10"
+ ],
+ "agents": [
+  {
+   "agent": "Yanina Benitez",
+   "schedule": [
+    {
+     "day_of_week": 1,
+     "start_time": "09:00",
+     "end_time": "13:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 1,
+     "start_time": "15:00",
+     "end_time": "18:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 2,
+     "start_time": "08:00",
+     "end_time": "15:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 3,
+     "start_time": "11:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 4,
+     "start_time": "12:00",
+     "end_time": "16:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 5,
+     "start_time": "12:00",
+     "end_time": "16:00",
+     "client_id": "c1"
+    }
+   ],
+   "observations": [
+    {
+     "date": "2026-07-01",
+     "clockIn": "07:45",
+     "clockOut": "19:00",
+     "clockedHours": 9.528830555555555,
+     "segments": [
+      {
+       "clockIn": "07:45",
+       "clockOut": "09:01"
+      },
+      {
+       "clockIn": "10:45",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-02",
+     "clockIn": "10:45",
+     "clockOut": "16:01",
+     "clockedHours": 5.258596944444444,
+     "segments": [
+      {
+       "clockIn": "10:45",
+       "clockOut": "16:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-03",
+     "clockIn": "11:45",
+     "clockOut": "16:05",
+     "clockedHours": 4.335373333333333,
+     "segments": [
+      {
+       "clockIn": "11:45",
+       "clockOut": "16:05"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-06",
+     "clockIn": "08:45",
+     "clockOut": "18:01",
+     "clockedHours": 7.528361666666667,
+     "segments": [
+      {
+       "clockIn": "08:45",
+       "clockOut": "13:00"
+      },
+      {
+       "clockIn": "14:45",
+       "clockOut": "18:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-07",
+     "clockIn": "07:45",
+     "clockOut": "15:00",
+     "clockedHours": 7.256740555555555,
+     "segments": [
+      {
+       "clockIn": "07:45",
+       "clockOut": "15:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-08",
+     "clockIn": "10:45",
+     "clockOut": "19:00",
+     "clockedHours": 8.256647222222222,
+     "segments": [
+      {
+       "clockIn": "10:45",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-13",
+     "clockIn": "08:45",
+     "clockOut": "18:00",
+     "clockedHours": 7.528050833333333,
+     "segments": [
+      {
+       "clockIn": "08:45",
+       "clockOut": "13:01"
+      },
+      {
+       "clockIn": "14:45",
+       "clockOut": "18:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-14",
+     "clockIn": "07:45",
+     "clockOut": "15:05",
+     "clockedHours": 7.326811388888889,
+     "segments": [
+      {
+       "clockIn": "07:45",
+       "clockOut": "15:05"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-15",
+     "clockIn": "10:45",
+     "clockOut": "19:00",
+     "clockedHours": 8.259158888888889,
+     "segments": [
+      {
+       "clockIn": "10:45",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-16",
+     "clockIn": "11:45",
+     "clockOut": "16:03",
+     "clockedHours": 4.298423055555555,
+     "segments": [
+      {
+       "clockIn": "11:45",
+       "clockOut": "16:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-17",
+     "clockIn": "11:45",
+     "clockOut": "16:00",
+     "clockedHours": 4.2546388888888895,
+     "segments": [
+      {
+       "clockIn": "11:45",
+       "clockOut": "16:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-20",
+     "clockIn": "08:45",
+     "clockOut": "18:00",
+     "clockedHours": 7.526067222222222,
+     "segments": [
+      {
+       "clockIn": "08:45",
+       "clockOut": "13:01"
+      },
+      {
+       "clockIn": "14:45",
+       "clockOut": "18:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-21",
+     "clockIn": "07:45",
+     "clockOut": "15:07",
+     "clockedHours": 7.373468333333333,
+     "segments": [
+      {
+       "clockIn": "07:45",
+       "clockOut": "15:07"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-22",
+     "clockIn": "10:45",
+     "clockOut": "19:01",
+     "clockedHours": 8.262920833333332,
+     "segments": [
+      {
+       "clockIn": "10:45",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-23",
+     "clockIn": "11:45",
+     "clockOut": "16:01",
+     "clockedHours": 4.276843333333334,
+     "segments": [
+      {
+       "clockIn": "11:45",
+       "clockOut": "16:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-24",
+     "clockIn": "11:45",
+     "clockOut": "16:00",
+     "clockedHours": 4.254761388888888,
+     "segments": [
+      {
+       "clockIn": "11:45",
+       "clockOut": "16:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-27",
+     "clockIn": "08:45",
+     "clockOut": "18:03",
+     "clockedHours": 7.5597513888888885,
+     "segments": [
+      {
+       "clockIn": "08:45",
+       "clockOut": "13:01"
+      },
+      {
+       "clockIn": "14:45",
+       "clockOut": "18:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-28",
+     "clockIn": "07:45",
+     "clockOut": "15:01",
+     "clockedHours": 7.268183611111111,
+     "segments": [
+      {
+       "clockIn": "07:45",
+       "clockOut": "15:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-29",
+     "clockIn": "10:45",
+     "clockOut": "19:03",
+     "clockedHours": 8.30890861111111,
+     "segments": [
+      {
+       "clockIn": "10:45",
+       "clockOut": "19:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-30",
+     "clockIn": "11:45",
+     "clockOut": "16:00",
+     "clockedHours": 4.258054444444444,
+     "segments": [
+      {
+       "clockIn": "11:45",
+       "clockOut": "16:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-31",
+     "clockIn": "07:45",
+     "clockOut": "12:01",
+     "clockedHours": 4.267469722222222,
+     "segments": [
+      {
+       "clockIn": "07:45",
+       "clockOut": "12:01"
+      }
+     ]
+    }
+   ],
+   "overtime": [
+    {
+     "date": "2026-07-01",
+     "hours": 1.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    },
+    {
+     "date": "2026-07-02",
+     "hours": 1.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    },
+    {
+     "date": "2026-07-03",
+     "hours": 3.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    }
+   ],
+   "paidBySheet": {
+    "2026-07-01": 1.0,
+    "2026-07-02": 1.0,
+    "2026-07-03": 3.0,
+    "2026-07-04": 0.0,
+    "2026-07-05": 0.0,
+    "2026-07-06": 0.0,
+    "2026-07-07": 0.0,
+    "2026-07-08": 0.0,
+    "2026-07-09": 0.0,
+    "2026-07-10": 0.0,
+    "2026-07-11": 0.0,
+    "2026-07-12": 0.0,
+    "2026-07-13": 0.0,
+    "2026-07-14": 0.0,
+    "2026-07-15": 0.0,
+    "2026-07-16": 0.0,
+    "2026-07-17": 0.0,
+    "2026-07-18": 0.0,
+    "2026-07-19": 0.0,
+    "2026-07-20": 0.0,
+    "2026-07-21": 0.0,
+    "2026-07-22": 0.0,
+    "2026-07-23": 0.0,
+    "2026-07-24": 0.0,
+    "2026-07-25": 0.0,
+    "2026-07-26": 0.0,
+    "2026-07-27": 0.0,
+    "2026-07-28": 0.0,
+    "2026-07-29": 0.0,
+    "2026-07-30": 0.0,
+    "2026-07-31": 0.0
+   }
+  },
+  {
+   "agent": "Paola Farías",
+   "schedule": [
+    {
+     "day_of_week": 1,
+     "start_time": "09:00",
+     "end_time": "18:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 2,
+     "start_time": "09:00",
+     "end_time": "18:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 3,
+     "start_time": "09:00",
+     "end_time": "18:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 4,
+     "start_time": "09:00",
+     "end_time": "18:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 5,
+     "start_time": "09:00",
+     "end_time": "18:00",
+     "client_id": "c1"
+    }
+   ],
+   "observations": [
+    {
+     "date": "2026-07-01",
+     "clockIn": "08:48",
+     "clockOut": "18:02",
+     "clockedHours": 9.228541666666667,
+     "segments": [
+      {
+       "clockIn": "08:48",
+       "clockOut": "18:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-02",
+     "clockIn": "08:50",
+     "clockOut": "18:04",
+     "clockedHours": 9.235012222222222,
+     "segments": [
+      {
+       "clockIn": "08:50",
+       "clockOut": "18:04"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-03",
+     "clockIn": "08:43",
+     "clockOut": "18:03",
+     "clockedHours": 9.325977777777776,
+     "segments": [
+      {
+       "clockIn": "08:43",
+       "clockOut": "18:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-06",
+     "clockIn": "08:50",
+     "clockOut": "18:03",
+     "clockedHours": 9.213459444444444,
+     "segments": [
+      {
+       "clockIn": "08:50",
+       "clockOut": "18:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-07",
+     "clockIn": "08:48",
+     "clockOut": "18:03",
+     "clockedHours": 9.253079166666666,
+     "segments": [
+      {
+       "clockIn": "08:48",
+       "clockOut": "18:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-08",
+     "clockIn": "08:43",
+     "clockOut": "18:02",
+     "clockedHours": 9.312576388888889,
+     "segments": [
+      {
+       "clockIn": "08:43",
+       "clockOut": "18:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-13",
+     "clockIn": "08:50",
+     "clockOut": "18:03",
+     "clockedHours": 9.213714444444445,
+     "segments": [
+      {
+       "clockIn": "08:50",
+       "clockOut": "18:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-14",
+     "clockIn": "08:46",
+     "clockOut": "18:02",
+     "clockedHours": 9.261633611111112,
+     "segments": [
+      {
+       "clockIn": "08:46",
+       "clockOut": "18:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-15",
+     "clockIn": "08:49",
+     "clockOut": "18:03",
+     "clockedHours": 9.229709722222223,
+     "segments": [
+      {
+       "clockIn": "08:49",
+       "clockOut": "18:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-16",
+     "clockIn": "08:47",
+     "clockOut": "18:04",
+     "clockedHours": 9.277348888888888,
+     "segments": [
+      {
+       "clockIn": "08:47",
+       "clockOut": "18:04"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-17",
+     "clockIn": "08:42",
+     "clockOut": "18:03",
+     "clockedHours": 9.336055,
+     "segments": [
+      {
+       "clockIn": "08:42",
+       "clockOut": "18:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-20",
+     "clockIn": "08:41",
+     "clockOut": "18:03",
+     "clockedHours": 9.357412499999999,
+     "segments": [
+      {
+       "clockIn": "08:41",
+       "clockOut": "18:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-21",
+     "clockIn": "08:50",
+     "clockOut": "18:03",
+     "clockedHours": 9.2186275,
+     "segments": [
+      {
+       "clockIn": "08:50",
+       "clockOut": "18:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-22",
+     "clockIn": "08:43",
+     "clockOut": "18:03",
+     "clockedHours": 9.331063333333333,
+     "segments": [
+      {
+       "clockIn": "08:43",
+       "clockOut": "18:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-23",
+     "clockIn": "08:45",
+     "clockOut": "18:03",
+     "clockedHours": 9.303026944444444,
+     "segments": [
+      {
+       "clockIn": "08:45",
+       "clockOut": "18:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-24",
+     "clockIn": "08:44",
+     "clockOut": "18:02",
+     "clockedHours": 9.3000775,
+     "segments": [
+      {
+       "clockIn": "08:44",
+       "clockOut": "18:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-27",
+     "clockIn": "08:46",
+     "clockOut": "18:01",
+     "clockedHours": 9.245497777777778,
+     "segments": [
+      {
+       "clockIn": "08:46",
+       "clockOut": "18:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-28",
+     "clockIn": "08:44",
+     "clockOut": "18:03",
+     "clockedHours": 9.31333361111111,
+     "segments": [
+      {
+       "clockIn": "08:44",
+       "clockOut": "18:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-29",
+     "clockIn": "08:50",
+     "clockOut": "18:03",
+     "clockedHours": 9.226399166666665,
+     "segments": [
+      {
+       "clockIn": "08:50",
+       "clockOut": "18:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-30",
+     "clockIn": "08:44",
+     "clockOut": "18:05",
+     "clockedHours": 9.343131666666666,
+     "segments": [
+      {
+       "clockIn": "08:44",
+       "clockOut": "18:05"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-31",
+     "clockIn": "08:45",
+     "clockOut": "18:03",
+     "clockedHours": 9.305637222222222,
+     "segments": [
+      {
+       "clockIn": "08:45",
+       "clockOut": "18:03"
+      }
+     ]
+    }
+   ],
+   "overtime": [],
+   "paidBySheet": {
+    "2026-07-01": 0.0,
+    "2026-07-02": 0.0,
+    "2026-07-03": 0.0,
+    "2026-07-04": 0.0,
+    "2026-07-05": 0.0,
+    "2026-07-06": 0.0,
+    "2026-07-07": 0.0,
+    "2026-07-08": 0.0,
+    "2026-07-09": 0.0,
+    "2026-07-10": 0.0,
+    "2026-07-11": 0.0,
+    "2026-07-12": 0.0,
+    "2026-07-13": 0.0,
+    "2026-07-14": 0.0,
+    "2026-07-15": 0.0,
+    "2026-07-16": 0.0,
+    "2026-07-17": 0.0,
+    "2026-07-18": 0.0,
+    "2026-07-19": 0.0,
+    "2026-07-20": 0.0,
+    "2026-07-21": 0.0,
+    "2026-07-22": 0.0,
+    "2026-07-23": 0.0,
+    "2026-07-24": 0.0,
+    "2026-07-25": 0.0,
+    "2026-07-26": 0.0,
+    "2026-07-27": 0.0,
+    "2026-07-28": 0.0,
+    "2026-07-29": 0.0,
+    "2026-07-30": 0.0,
+    "2026-07-31": 0.0
+   }
+  },
+  {
+   "agent": "María Sol Olaviaga",
+   "schedule": [
+    {
+     "day_of_week": 1,
+     "start_time": "09:00",
+     "end_time": "15:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 2,
+     "start_time": "09:00",
+     "end_time": "15:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 3,
+     "start_time": "09:00",
+     "end_time": "15:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 4,
+     "start_time": "09:00",
+     "end_time": "15:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 5,
+     "start_time": "09:00",
+     "end_time": "15:00",
+     "client_id": "c1"
+    }
+   ],
+   "observations": [
+    {
+     "date": "2026-07-01",
+     "clockIn": "08:50",
+     "clockOut": "15:29",
+     "clockedHours": 6.643341666666666,
+     "segments": [
+      {
+       "clockIn": "08:50",
+       "clockOut": "15:29"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-02",
+     "clockIn": "08:54",
+     "clockOut": "15:21",
+     "clockedHours": 6.450559166666666,
+     "segments": [
+      {
+       "clockIn": "08:54",
+       "clockOut": "15:21"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-03",
+     "clockIn": "08:49",
+     "clockOut": "15:22",
+     "clockedHours": 6.543202777777777,
+     "segments": [
+      {
+       "clockIn": "08:49",
+       "clockOut": "15:22"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-06",
+     "clockIn": "08:47",
+     "clockOut": "15:25",
+     "clockedHours": 6.630808333333333,
+     "segments": [
+      {
+       "clockIn": "08:47",
+       "clockOut": "15:25"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-07",
+     "clockIn": "08:49",
+     "clockOut": "15:20",
+     "clockedHours": 6.510565277777777,
+     "segments": [
+      {
+       "clockIn": "08:49",
+       "clockOut": "15:20"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-08",
+     "clockIn": "08:48",
+     "clockOut": "17:27",
+     "clockedHours": 8.649008055555555,
+     "segments": [
+      {
+       "clockIn": "08:48",
+       "clockOut": "17:27"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-10",
+     "clockIn": "08:51",
+     "clockOut": "17:15",
+     "clockedHours": 8.403766666666668,
+     "segments": [
+      {
+       "clockIn": "08:51",
+       "clockOut": "17:15"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-13",
+     "clockIn": "08:49",
+     "clockOut": "15:21",
+     "clockedHours": 6.541209444444444,
+     "segments": [
+      {
+       "clockIn": "08:49",
+       "clockOut": "15:21"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-14",
+     "clockIn": "08:55",
+     "clockOut": "15:18",
+     "clockedHours": 6.380177499999999,
+     "segments": [
+      {
+       "clockIn": "08:55",
+       "clockOut": "15:18"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-15",
+     "clockIn": "08:50",
+     "clockOut": "15:30",
+     "clockedHours": 6.6607975,
+     "segments": [
+      {
+       "clockIn": "08:50",
+       "clockOut": "15:30"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-16",
+     "clockIn": "08:51",
+     "clockOut": "15:22",
+     "clockedHours": 6.522234166666667,
+     "segments": [
+      {
+       "clockIn": "08:51",
+       "clockOut": "15:22"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-17",
+     "clockIn": "08:51",
+     "clockOut": "15:17",
+     "clockedHours": 6.429658333333333,
+     "segments": [
+      {
+       "clockIn": "08:51",
+       "clockOut": "15:17"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-20",
+     "clockIn": "08:47",
+     "clockOut": "15:23",
+     "clockedHours": 6.589699166666667,
+     "segments": [
+      {
+       "clockIn": "08:47",
+       "clockOut": "15:23"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-21",
+     "clockIn": "08:59",
+     "clockOut": "15:08",
+     "clockedHours": 6.153230277777778,
+     "segments": [
+      {
+       "clockIn": "08:59",
+       "clockOut": "15:08"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-22",
+     "clockIn": "08:52",
+     "clockOut": "15:25",
+     "clockedHours": 6.546726666666666,
+     "segments": [
+      {
+       "clockIn": "08:52",
+       "clockOut": "15:25"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-23",
+     "clockIn": "08:55",
+     "clockOut": "15:14",
+     "clockedHours": 6.314399722222222,
+     "segments": [
+      {
+       "clockIn": "08:55",
+       "clockOut": "15:14"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-24",
+     "clockIn": "08:52",
+     "clockOut": "15:24",
+     "clockedHours": 6.548533055555556,
+     "segments": [
+      {
+       "clockIn": "08:52",
+       "clockOut": "15:24"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-27",
+     "clockIn": "08:52",
+     "clockOut": "15:15",
+     "clockedHours": 6.370878055555556,
+     "segments": [
+      {
+       "clockIn": "08:52",
+       "clockOut": "15:15"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-28",
+     "clockIn": "09:00",
+     "clockOut": "15:20",
+     "clockedHours": 6.332693888888889,
+     "segments": [
+      {
+       "clockIn": "09:00",
+       "clockOut": "15:20"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-29",
+     "clockIn": "08:47",
+     "clockOut": "15:09",
+     "clockedHours": 6.36367861111111,
+     "segments": [
+      {
+       "clockIn": "08:47",
+       "clockOut": "15:09"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-30",
+     "clockIn": "08:35",
+     "clockOut": "15:21",
+     "clockedHours": 6.777961111111111,
+     "segments": [
+      {
+       "clockIn": "08:35",
+       "clockOut": "15:21"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-31",
+     "clockIn": "08:45",
+     "clockOut": "15:14",
+     "clockedHours": 6.481248888888889,
+     "segments": [
+      {
+       "clockIn": "08:45",
+       "clockOut": "15:14"
+      }
+     ]
+    }
+   ],
+   "overtime": [],
+   "paidBySheet": {
+    "2026-07-01": 0.0,
+    "2026-07-02": 0.0,
+    "2026-07-03": 0.0,
+    "2026-07-04": 0.0,
+    "2026-07-05": 0.0,
+    "2026-07-06": 0.0,
+    "2026-07-07": 0.0,
+    "2026-07-08": 0.0,
+    "2026-07-09": 0.0,
+    "2026-07-10": 0.0,
+    "2026-07-11": 0.0,
+    "2026-07-12": 0.0,
+    "2026-07-13": 0.0,
+    "2026-07-14": 0.0,
+    "2026-07-15": 0.0,
+    "2026-07-16": 0.0,
+    "2026-07-17": 0.0,
+    "2026-07-18": 0.0,
+    "2026-07-19": 0.0,
+    "2026-07-20": 0.0,
+    "2026-07-21": 0.0,
+    "2026-07-22": 0.0,
+    "2026-07-23": 0.0,
+    "2026-07-24": 0.0,
+    "2026-07-25": 0.0,
+    "2026-07-26": 0.0,
+    "2026-07-27": 0.0,
+    "2026-07-28": 0.0,
+    "2026-07-29": 0.0,
+    "2026-07-30": 0.0,
+    "2026-07-31": 0.0
+   }
+  },
+  {
+   "agent": "Walter Palavecino",
+   "schedule": [
+    {
+     "day_of_week": 1,
+     "start_time": "08:00",
+     "end_time": "15:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 2,
+     "start_time": "08:00",
+     "end_time": "15:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 3,
+     "start_time": "08:00",
+     "end_time": "15:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 4,
+     "start_time": "08:00",
+     "end_time": "12:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 5,
+     "start_time": "08:00",
+     "end_time": "12:00",
+     "client_id": "c1"
+    }
+   ],
+   "observations": [
+    {
+     "date": "2026-07-01",
+     "clockIn": "08:00",
+     "clockOut": "15:01",
+     "clockedHours": 7.016756944444444,
+     "segments": [
+      {
+       "clockIn": "08:00",
+       "clockOut": "15:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-02",
+     "clockIn": "08:01",
+     "clockOut": "13:00",
+     "clockedHours": 4.978790833333334,
+     "segments": [
+      {
+       "clockIn": "08:01",
+       "clockOut": "13:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-03",
+     "clockIn": "07:55",
+     "clockOut": "12:02",
+     "clockedHours": 4.109963888888889,
+     "segments": [
+      {
+       "clockIn": "07:55",
+       "clockOut": "12:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-07",
+     "clockIn": "08:01",
+     "clockOut": "15:01",
+     "clockedHours": 7.0095775,
+     "segments": [
+      {
+       "clockIn": "08:01",
+       "clockOut": "15:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-08",
+     "clockIn": "08:04",
+     "clockOut": "15:02",
+     "clockedHours": 6.960798888888889,
+     "segments": [
+      {
+       "clockIn": "08:04",
+       "clockOut": "15:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-13",
+     "clockIn": "07:59",
+     "clockOut": "15:00",
+     "clockedHours": 7.030768888888889,
+     "segments": [
+      {
+       "clockIn": "07:59",
+       "clockOut": "15:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-14",
+     "clockIn": "08:01",
+     "clockOut": "15:06",
+     "clockedHours": 7.081777777777778,
+     "segments": [
+      {
+       "clockIn": "08:01",
+       "clockOut": "15:06"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-16",
+     "clockIn": "07:59",
+     "clockOut": "13:02",
+     "clockedHours": 5.041065,
+     "segments": [
+      {
+       "clockIn": "07:59",
+       "clockOut": "13:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-17",
+     "clockIn": "07:52",
+     "clockOut": "12:05",
+     "clockedHours": 4.215878611111111,
+     "segments": [
+      {
+       "clockIn": "07:52",
+       "clockOut": "12:05"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-20",
+     "clockIn": "08:01",
+     "clockOut": "15:08",
+     "clockedHours": 7.1150730555555555,
+     "segments": [
+      {
+       "clockIn": "08:01",
+       "clockOut": "15:08"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-21",
+     "clockIn": "07:52",
+     "clockOut": "15:01",
+     "clockedHours": 7.1421075,
+     "segments": [
+      {
+       "clockIn": "07:52",
+       "clockOut": "15:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-22",
+     "clockIn": "07:53",
+     "clockOut": "15:01",
+     "clockedHours": 7.127873888888889,
+     "segments": [
+      {
+       "clockIn": "07:53",
+       "clockOut": "15:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-23",
+     "clockIn": "07:49",
+     "clockOut": "13:02",
+     "clockedHours": 5.210610277777778,
+     "segments": [
+      {
+       "clockIn": "07:49",
+       "clockOut": "13:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-24",
+     "clockIn": "07:51",
+     "clockOut": "12:02",
+     "clockedHours": 4.1766894444444445,
+     "segments": [
+      {
+       "clockIn": "07:51",
+       "clockOut": "12:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-27",
+     "clockIn": "07:57",
+     "clockOut": "15:02",
+     "clockedHours": 7.085949722222223,
+     "segments": [
+      {
+       "clockIn": "07:57",
+       "clockOut": "15:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-28",
+     "clockIn": "07:49",
+     "clockOut": "15:01",
+     "clockedHours": 7.206741388888889,
+     "segments": [
+      {
+       "clockIn": "07:49",
+       "clockOut": "15:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-29",
+     "clockIn": "07:52",
+     "clockOut": "15:09",
+     "clockedHours": 7.285541111111111,
+     "segments": [
+      {
+       "clockIn": "07:52",
+       "clockOut": "15:09"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-30",
+     "clockIn": "07:52",
+     "clockOut": "13:01",
+     "clockedHours": 5.159691388888889,
+     "segments": [
+      {
+       "clockIn": "07:52",
+       "clockOut": "13:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-31",
+     "clockIn": "11:52",
+     "clockOut": "16:00",
+     "clockedHours": 4.144173055555555,
+     "segments": [
+      {
+       "clockIn": "11:52",
+       "clockOut": "16:00"
+      }
+     ]
+    }
+   ],
+   "overtime": [
+    {
+     "date": "2026-07-01",
+     "hours": 2.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    }
+   ],
+   "paidBySheet": {
+    "2026-07-01": 2.0,
+    "2026-07-02": 0.0,
+    "2026-07-03": 0.0,
+    "2026-07-04": 0.0,
+    "2026-07-05": 0.0,
+    "2026-07-06": 0.0,
+    "2026-07-07": 0.0,
+    "2026-07-08": 0.0,
+    "2026-07-09": 0.0,
+    "2026-07-10": 0.0,
+    "2026-07-11": 0.0,
+    "2026-07-12": 0.0,
+    "2026-07-13": 0.0,
+    "2026-07-14": 0.0,
+    "2026-07-15": 0.0,
+    "2026-07-16": 0.0,
+    "2026-07-17": 0.0,
+    "2026-07-18": 0.0,
+    "2026-07-19": 0.0,
+    "2026-07-20": 0.0,
+    "2026-07-21": 0.0,
+    "2026-07-22": 0.0,
+    "2026-07-23": 0.0,
+    "2026-07-24": 0.0,
+    "2026-07-25": 0.0,
+    "2026-07-26": 0.0,
+    "2026-07-27": 0.0,
+    "2026-07-28": 0.0,
+    "2026-07-29": 0.0,
+    "2026-07-30": 0.0,
+    "2026-07-31": 0.0
+   }
+  },
+  {
+   "agent": "Giuliana Yaccusi",
+   "schedule": [
+    {
+     "day_of_week": 1,
+     "start_time": "08:00",
+     "end_time": "11:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 1,
+     "start_time": "15:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 2,
+     "start_time": "15:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 3,
+     "start_time": "09:00",
+     "end_time": "12:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 3,
+     "start_time": "15:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 4,
+     "start_time": "10:00",
+     "end_time": "12:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 4,
+     "start_time": "14:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 5,
+     "start_time": "14:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    }
+   ],
+   "observations": [
+    {
+     "date": "2026-07-01",
+     "clockIn": "12:26",
+     "clockOut": "19:00",
+     "clockedHours": 5.072866111111112,
+     "segments": [
+      {
+       "clockIn": "12:26",
+       "clockOut": "12:26"
+      },
+      {
+       "clockIn": "13:56",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-02",
+     "clockIn": "08:52",
+     "clockOut": "19:00",
+     "clockedHours": 8.230573055555556,
+     "segments": [
+      {
+       "clockIn": "08:52",
+       "clockOut": "12:01"
+      },
+      {
+       "clockIn": "13:55",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-03",
+     "clockIn": "13:59",
+     "clockOut": "19:00",
+     "clockedHours": 5.0163577777777775,
+     "segments": [
+      {
+       "clockIn": "13:59",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-06",
+     "clockIn": "07:57",
+     "clockOut": "19:01",
+     "clockedHours": 8.027091666666667,
+     "segments": [
+      {
+       "clockIn": "07:57",
+       "clockOut": "11:55"
+      },
+      {
+       "clockIn": "14:57",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-07",
+     "clockIn": "14:59",
+     "clockOut": "19:01",
+     "clockedHours": 4.0380255555555555,
+     "segments": [
+      {
+       "clockIn": "14:59",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-08",
+     "clockIn": "08:56",
+     "clockOut": "19:00",
+     "clockedHours": 7.519805833333333,
+     "segments": [
+      {
+       "clockIn": "08:56",
+       "clockOut": "12:17"
+      },
+      {
+       "clockIn": "14:50",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-13",
+     "clockIn": "07:53",
+     "clockOut": "19:01",
+     "clockedHours": 7.315412222222222,
+     "segments": [
+      {
+       "clockIn": "07:53",
+       "clockOut": "11:07"
+      },
+      {
+       "clockIn": "14:56",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-14",
+     "clockIn": "14:53",
+     "clockOut": "19:00",
+     "clockedHours": 4.1225325,
+     "segments": [
+      {
+       "clockIn": "14:53",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-15",
+     "clockIn": "08:55",
+     "clockOut": "12:03",
+     "clockedHours": 3.1355416666666667,
+     "segments": [
+      {
+       "clockIn": "08:55",
+       "clockOut": "12:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-16",
+     "clockIn": "09:58",
+     "clockOut": "19:16",
+     "clockedHours": 7.371429166666666,
+     "segments": [
+      {
+       "clockIn": "09:58",
+       "clockOut": "12:01"
+      },
+      {
+       "clockIn": "13:57",
+       "clockOut": "19:16"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-17",
+     "clockIn": "13:57",
+     "clockOut": "19:03",
+     "clockedHours": 5.086588055555556,
+     "segments": [
+      {
+       "clockIn": "13:57",
+       "clockOut": "19:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-20",
+     "clockIn": "07:58",
+     "clockOut": "19:00",
+     "clockedHours": 8.218431666666667,
+     "segments": [
+      {
+       "clockIn": "07:58",
+       "clockOut": "11:01"
+      },
+      {
+       "clockIn": "13:51",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-21",
+     "clockIn": "14:50",
+     "clockOut": "19:00",
+     "clockedHours": 4.172660277777777,
+     "segments": [
+      {
+       "clockIn": "14:50",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-22",
+     "clockIn": "14:58",
+     "clockOut": "19:00",
+     "clockedHours": 4.036208333333334,
+     "segments": [
+      {
+       "clockIn": "14:58",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-23",
+     "clockIn": "09:58",
+     "clockOut": "19:00",
+     "clockedHours": 7.313084999999999,
+     "segments": [
+      {
+       "clockIn": "09:58",
+       "clockOut": "12:11"
+      },
+      {
+       "clockIn": "13:54",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-24",
+     "clockIn": "13:57",
+     "clockOut": "19:01",
+     "clockedHours": 5.072149444444444,
+     "segments": [
+      {
+       "clockIn": "13:57",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-27",
+     "clockIn": "07:56",
+     "clockOut": "19:02",
+     "clockedHours": 7.490977222222222,
+     "segments": [
+      {
+       "clockIn": "07:56",
+       "clockOut": "11:18"
+      },
+      {
+       "clockIn": "14:55",
+       "clockOut": "19:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-28",
+     "clockIn": "14:55",
+     "clockOut": "19:00",
+     "clockedHours": 4.08799,
+     "segments": [
+      {
+       "clockIn": "14:55",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-29",
+     "clockIn": "08:56",
+     "clockOut": "19:03",
+     "clockedHours": 7.248188611111111,
+     "segments": [
+      {
+       "clockIn": "08:56",
+       "clockOut": "12:02"
+      },
+      {
+       "clockIn": "14:54",
+       "clockOut": "19:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-30",
+     "clockIn": "09:59",
+     "clockOut": "19:04",
+     "clockedHours": 7.129229166666666,
+     "segments": [
+      {
+       "clockIn": "09:59",
+       "clockOut": "13:01"
+      },
+      {
+       "clockIn": "14:58",
+       "clockOut": "19:04"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-31",
+     "clockIn": "13:54",
+     "clockOut": "19:01",
+     "clockedHours": 5.100503055555556,
+     "segments": [
+      {
+       "clockIn": "13:54",
+       "clockOut": "19:01"
+      }
+     ]
+    }
+   ],
+   "overtime": [
+    {
+     "date": "2026-07-01",
+     "hours": 2.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    },
+    {
+     "date": "2026-07-02",
+     "hours": 1.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    },
+    {
+     "date": "2026-07-03",
+     "hours": 2.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    },
+    {
+     "date": "2026-07-06",
+     "hours": 1.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    },
+    {
+     "date": "2026-07-20",
+     "hours": 1.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    }
+   ],
+   "paidBySheet": {
+    "2026-07-01": 2.0,
+    "2026-07-02": 1.0,
+    "2026-07-03": 2.0,
+    "2026-07-04": 0.0,
+    "2026-07-05": 0.0,
+    "2026-07-06": 1.0,
+    "2026-07-07": 0.0,
+    "2026-07-08": 0.0,
+    "2026-07-09": 0.0,
+    "2026-07-10": 0.0,
+    "2026-07-11": 0.0,
+    "2026-07-12": 0.0,
+    "2026-07-13": 0.0,
+    "2026-07-14": 0.0,
+    "2026-07-15": 0.0,
+    "2026-07-16": 0.0,
+    "2026-07-17": 0.0,
+    "2026-07-18": 0.0,
+    "2026-07-19": 0.0,
+    "2026-07-20": 1.0,
+    "2026-07-21": 0.0,
+    "2026-07-22": 0.0,
+    "2026-07-23": 0.0,
+    "2026-07-24": 0.0,
+    "2026-07-25": 0.0,
+    "2026-07-26": 0.0,
+    "2026-07-27": 0.0,
+    "2026-07-28": 0.0,
+    "2026-07-29": 0.0,
+    "2026-07-30": 0.0,
+    "2026-07-31": 0.0
+   }
+  },
+  {
+   "agent": "Micaela Abraham",
+   "schedule": [
+    {
+     "day_of_week": 1,
+     "start_time": "08:00",
+     "end_time": "14:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 1,
+     "start_time": "16:00",
+     "end_time": "18:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 2,
+     "start_time": "08:00",
+     "end_time": "15:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 3,
+     "start_time": "08:00",
+     "end_time": "15:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 4,
+     "start_time": "08:00",
+     "end_time": "12:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 5,
+     "start_time": "08:00",
+     "end_time": "12:00",
+     "client_id": "c1"
+    }
+   ],
+   "observations": [
+    {
+     "date": "2026-07-01",
+     "clockIn": "07:51",
+     "clockOut": "15:32",
+     "clockedHours": 7.681935,
+     "segments": [
+      {
+       "clockIn": "07:51",
+       "clockOut": "15:32"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-02",
+     "clockIn": "07:49",
+     "clockOut": "12:01",
+     "clockedHours": 4.204884166666667,
+     "segments": [
+      {
+       "clockIn": "07:49",
+       "clockOut": "12:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-03",
+     "clockIn": "07:48",
+     "clockOut": "12:02",
+     "clockedHours": 4.234810555555556,
+     "segments": [
+      {
+       "clockIn": "07:48",
+       "clockOut": "12:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-06",
+     "clockIn": "07:49",
+     "clockOut": "18:04",
+     "clockedHours": 8.481632777777778,
+     "segments": [
+      {
+       "clockIn": "07:49",
+       "clockOut": "14:05"
+      },
+      {
+       "clockIn": "15:51",
+       "clockOut": "18:04"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-07",
+     "clockIn": "07:46",
+     "clockOut": "15:00",
+     "clockedHours": 7.2245800000000004,
+     "segments": [
+      {
+       "clockIn": "07:46",
+       "clockOut": "15:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-08",
+     "clockIn": "07:52",
+     "clockOut": "15:00",
+     "clockedHours": 7.132242777777778,
+     "segments": [
+      {
+       "clockIn": "07:52",
+       "clockOut": "15:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-13",
+     "clockIn": "07:39",
+     "clockOut": "18:00",
+     "clockedHours": 8.678622777777777,
+     "segments": [
+      {
+       "clockIn": "07:39",
+       "clockOut": "14:08"
+      },
+      {
+       "clockIn": "15:48",
+       "clockOut": "18:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-14",
+     "clockIn": "07:43",
+     "clockOut": "15:06",
+     "clockedHours": 7.378495277777778,
+     "segments": [
+      {
+       "clockIn": "07:43",
+       "clockOut": "15:06"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-15",
+     "clockIn": "07:47",
+     "clockOut": "15:00",
+     "clockedHours": 7.2163844444444445,
+     "segments": [
+      {
+       "clockIn": "07:47",
+       "clockOut": "15:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-16",
+     "clockIn": "07:49",
+     "clockOut": "12:04",
+     "clockedHours": 4.249190277777777,
+     "segments": [
+      {
+       "clockIn": "07:49",
+       "clockOut": "12:04"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-17",
+     "clockIn": "07:42",
+     "clockOut": "12:01",
+     "clockedHours": 4.301737222222222,
+     "segments": [
+      {
+       "clockIn": "07:42",
+       "clockOut": "12:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-20",
+     "clockIn": "07:48",
+     "clockOut": "18:00",
+     "clockedHours": 9.330106666666666,
+     "segments": [
+      {
+       "clockIn": "07:48",
+       "clockOut": "15:00"
+      },
+      {
+       "clockIn": "15:52",
+       "clockOut": "18:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-21",
+     "clockIn": "07:49",
+     "clockOut": "15:00",
+     "clockedHours": 7.1755325,
+     "segments": [
+      {
+       "clockIn": "07:49",
+       "clockOut": "15:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-22",
+     "clockIn": "07:41",
+     "clockOut": "15:00",
+     "clockedHours": 7.31635,
+     "segments": [
+      {
+       "clockIn": "07:41",
+       "clockOut": "15:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-23",
+     "clockIn": "07:47",
+     "clockOut": "12:01",
+     "clockedHours": 4.226097222222222,
+     "segments": [
+      {
+       "clockIn": "07:47",
+       "clockOut": "12:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-24",
+     "clockIn": "07:43",
+     "clockOut": "12:01",
+     "clockedHours": 4.285084722222222,
+     "segments": [
+      {
+       "clockIn": "07:43",
+       "clockOut": "12:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-27",
+     "clockIn": "07:44",
+     "clockOut": "18:00",
+     "clockedHours": 8.457403333333332,
+     "segments": [
+      {
+       "clockIn": "07:44",
+       "clockOut": "14:00"
+      },
+      {
+       "clockIn": "15:49",
+       "clockOut": "18:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-28",
+     "clockIn": "07:47",
+     "clockOut": "15:02",
+     "clockedHours": 7.25363,
+     "segments": [
+      {
+       "clockIn": "07:47",
+       "clockOut": "15:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-29",
+     "clockIn": "08:45",
+     "clockOut": "16:07",
+     "clockedHours": 7.370528055555556,
+     "segments": [
+      {
+       "clockIn": "08:45",
+       "clockOut": "16:07"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-30",
+     "clockIn": "08:43",
+     "clockOut": "13:00",
+     "clockedHours": 4.297444166666667,
+     "segments": [
+      {
+       "clockIn": "08:43",
+       "clockOut": "13:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-31",
+     "clockIn": "10:00",
+     "clockOut": "14:02",
+     "clockedHours": 4.029763888888889,
+     "segments": [
+      {
+       "clockIn": "10:00",
+       "clockOut": "14:02"
+      }
+     ]
+    }
+   ],
+   "overtime": [
+    {
+     "date": "2026-07-20",
+     "hours": 1.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    }
+   ],
+   "paidBySheet": {
+    "2026-07-01": 0.0,
+    "2026-07-02": 0.0,
+    "2026-07-03": 0.0,
+    "2026-07-04": 0.0,
+    "2026-07-05": 0.0,
+    "2026-07-06": 0.0,
+    "2026-07-07": 0.0,
+    "2026-07-08": 0.0,
+    "2026-07-09": 0.0,
+    "2026-07-10": 0.0,
+    "2026-07-11": 0.0,
+    "2026-07-12": 0.0,
+    "2026-07-13": 0.0,
+    "2026-07-14": 0.0,
+    "2026-07-15": 0.0,
+    "2026-07-16": 0.0,
+    "2026-07-17": 0.0,
+    "2026-07-18": 0.0,
+    "2026-07-19": 0.0,
+    "2026-07-20": 1.0,
+    "2026-07-21": 0.0,
+    "2026-07-22": 0.0,
+    "2026-07-23": 0.0,
+    "2026-07-24": 0.0,
+    "2026-07-25": 0.0,
+    "2026-07-26": 0.0,
+    "2026-07-27": 0.0,
+    "2026-07-28": 0.0,
+    "2026-07-29": 0.0,
+    "2026-07-30": 0.0,
+    "2026-07-31": 0.0
+   }
+  },
+  {
+   "agent": "Ascona Gonzalo",
+   "schedule": [
+    {
+     "day_of_week": 1,
+     "start_time": "12:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 2,
+     "start_time": "15:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 3,
+     "start_time": "15:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 4,
+     "start_time": "13:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 5,
+     "start_time": "10:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    }
+   ],
+   "observations": [
+    {
+     "date": "2026-07-01",
+     "clockIn": "12:46",
+     "clockOut": "19:01",
+     "clockedHours": 6.237030555555556,
+     "segments": [
+      {
+       "clockIn": "12:46",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-02",
+     "clockIn": "12:50",
+     "clockOut": "19:00",
+     "clockedHours": 6.17337,
+     "segments": [
+      {
+       "clockIn": "12:50",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-03",
+     "clockIn": "09:49",
+     "clockOut": "19:00",
+     "clockedHours": 9.178508611111111,
+     "segments": [
+      {
+       "clockIn": "09:49",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-06",
+     "clockIn": "11:46",
+     "clockOut": "19:00",
+     "clockedHours": 7.245896666666667,
+     "segments": [
+      {
+       "clockIn": "11:46",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-07",
+     "clockIn": "13:45",
+     "clockOut": "19:00",
+     "clockedHours": 5.25430361111111,
+     "segments": [
+      {
+       "clockIn": "13:45",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-08",
+     "clockIn": "14:45",
+     "clockOut": "19:00",
+     "clockedHours": 4.257695277777778,
+     "segments": [
+      {
+       "clockIn": "14:45",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-13",
+     "clockIn": "11:46",
+     "clockOut": "19:00",
+     "clockedHours": 7.2405775000000006,
+     "segments": [
+      {
+       "clockIn": "11:46",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-14",
+     "clockIn": "14:45",
+     "clockOut": "19:00",
+     "clockedHours": 4.250993055555556,
+     "segments": [
+      {
+       "clockIn": "14:45",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-15",
+     "clockIn": "14:46",
+     "clockOut": "19:01",
+     "clockedHours": 4.245109444444444,
+     "segments": [
+      {
+       "clockIn": "14:46",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-16",
+     "clockIn": "12:47",
+     "clockOut": "19:02",
+     "clockedHours": 6.247174166666667,
+     "segments": [
+      {
+       "clockIn": "12:47",
+       "clockOut": "19:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-17",
+     "clockIn": "09:48",
+     "clockOut": "19:01",
+     "clockedHours": 9.220143888888888,
+     "segments": [
+      {
+       "clockIn": "09:48",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-20",
+     "clockIn": "11:47",
+     "clockOut": "19:03",
+     "clockedHours": 7.270135833333334,
+     "segments": [
+      {
+       "clockIn": "11:47",
+       "clockOut": "19:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-21",
+     "clockIn": "14:48",
+     "clockOut": "19:01",
+     "clockedHours": 4.215126388888889,
+     "segments": [
+      {
+       "clockIn": "14:48",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-22",
+     "clockIn": "14:47",
+     "clockOut": "19:00",
+     "clockedHours": 4.222537222222222,
+     "segments": [
+      {
+       "clockIn": "14:47",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-23",
+     "clockIn": "12:51",
+     "clockOut": "19:04",
+     "clockedHours": 6.213996666666667,
+     "segments": [
+      {
+       "clockIn": "12:51",
+       "clockOut": "19:04"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-24",
+     "clockIn": "09:47",
+     "clockOut": "19:00",
+     "clockedHours": 9.229342500000001,
+     "segments": [
+      {
+       "clockIn": "09:47",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-27",
+     "clockIn": "11:44",
+     "clockOut": "19:01",
+     "clockedHours": 7.274749999999999,
+     "segments": [
+      {
+       "clockIn": "11:44",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-28",
+     "clockIn": "14:45",
+     "clockOut": "19:02",
+     "clockedHours": 4.2717205555555555,
+     "segments": [
+      {
+       "clockIn": "14:45",
+       "clockOut": "19:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-29",
+     "clockIn": "14:45",
+     "clockOut": "19:01",
+     "clockedHours": 4.267982777777777,
+     "segments": [
+      {
+       "clockIn": "14:45",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-30",
+     "clockIn": "12:48",
+     "clockOut": "19:01",
+     "clockedHours": 6.216890555555556,
+     "segments": [
+      {
+       "clockIn": "12:48",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-31",
+     "clockIn": "09:49",
+     "clockOut": "19:01",
+     "clockedHours": 9.192029999999999,
+     "segments": [
+      {
+       "clockIn": "09:49",
+       "clockOut": "19:01"
+      }
+     ]
+    }
+   ],
+   "overtime": [
+    {
+     "date": "2026-07-01",
+     "hours": 2.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    },
+    {
+     "date": "2026-07-02",
+     "hours": 2.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    },
+    {
+     "date": "2026-07-07",
+     "hours": 1.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    }
+   ],
+   "paidBySheet": {
+    "2026-07-01": 2.0,
+    "2026-07-02": 2.0,
+    "2026-07-03": 0.0,
+    "2026-07-04": 0.0,
+    "2026-07-05": 0.0,
+    "2026-07-06": 0.0,
+    "2026-07-07": 1.0,
+    "2026-07-08": 0.0,
+    "2026-07-09": 0.0,
+    "2026-07-10": 0.0,
+    "2026-07-11": 0.0,
+    "2026-07-12": 0.0,
+    "2026-07-13": 0.0,
+    "2026-07-14": 0.0,
+    "2026-07-15": 0.0,
+    "2026-07-16": 0.0,
+    "2026-07-17": 0.0,
+    "2026-07-18": 0.0,
+    "2026-07-19": 0.0,
+    "2026-07-20": 0.0,
+    "2026-07-21": 0.0,
+    "2026-07-22": 0.0,
+    "2026-07-23": 0.0,
+    "2026-07-24": 0.0,
+    "2026-07-25": 0.0,
+    "2026-07-26": 0.0,
+    "2026-07-27": 0.0,
+    "2026-07-28": 0.0,
+    "2026-07-29": 0.0,
+    "2026-07-30": 0.0,
+    "2026-07-31": 0.0
+   }
+  },
+  {
+   "agent": "Chirino Facundo",
+   "schedule": [
+    {
+     "day_of_week": 1,
+     "start_time": "08:00",
+     "end_time": "15:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 2,
+     "start_time": "10:00",
+     "end_time": "17:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 3,
+     "start_time": "08:00",
+     "end_time": "15:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 4,
+     "start_time": "09:00",
+     "end_time": "14:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 5,
+     "start_time": "10:00",
+     "end_time": "14:00",
+     "client_id": "c1"
+    }
+   ],
+   "observations": [
+    {
+     "date": "2026-07-01",
+     "clockIn": "07:59",
+     "clockOut": "15:00",
+     "clockedHours": 7.015961944444444,
+     "segments": [
+      {
+       "clockIn": "07:59",
+       "clockOut": "15:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-02",
+     "clockIn": "08:57",
+     "clockOut": "14:02",
+     "clockedHours": 5.092411944444445,
+     "segments": [
+      {
+       "clockIn": "08:57",
+       "clockOut": "14:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-03",
+     "clockIn": "09:56",
+     "clockOut": "14:00",
+     "clockedHours": 4.0615813888888885,
+     "segments": [
+      {
+       "clockIn": "09:56",
+       "clockOut": "14:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-06",
+     "clockIn": "08:00",
+     "clockOut": "15:05",
+     "clockedHours": 7.093519166666667,
+     "segments": [
+      {
+       "clockIn": "08:00",
+       "clockOut": "15:05"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-07",
+     "clockIn": "09:58",
+     "clockOut": "17:01",
+     "clockedHours": 7.04498,
+     "segments": [
+      {
+       "clockIn": "09:58",
+       "clockOut": "17:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-08",
+     "clockIn": "07:43",
+     "clockOut": "15:01",
+     "clockedHours": 7.306011111111111,
+     "segments": [
+      {
+       "clockIn": "07:43",
+       "clockOut": "15:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-13",
+     "clockIn": "07:57",
+     "clockOut": "15:01",
+     "clockedHours": 7.057056111111111,
+     "segments": [
+      {
+       "clockIn": "07:57",
+       "clockOut": "15:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-14",
+     "clockIn": "09:42",
+     "clockOut": "17:00",
+     "clockedHours": 7.297820833333333,
+     "segments": [
+      {
+       "clockIn": "09:42",
+       "clockOut": "17:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-15",
+     "clockIn": "07:58",
+     "clockOut": "15:00",
+     "clockedHours": 7.0431341666666665,
+     "segments": [
+      {
+       "clockIn": "07:58",
+       "clockOut": "15:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-16",
+     "clockIn": "08:56",
+     "clockOut": "14:03",
+     "clockedHours": 5.116905277777778,
+     "segments": [
+      {
+       "clockIn": "08:56",
+       "clockOut": "14:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-17",
+     "clockIn": "09:57",
+     "clockOut": "14:03",
+     "clockedHours": 4.1043980555555555,
+     "segments": [
+      {
+       "clockIn": "09:57",
+       "clockOut": "14:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-20",
+     "clockIn": "07:54",
+     "clockOut": "15:00",
+     "clockedHours": 7.105625555555556,
+     "segments": [
+      {
+       "clockIn": "07:54",
+       "clockOut": "15:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-21",
+     "clockIn": "09:57",
+     "clockOut": "17:00",
+     "clockedHours": 7.049372777777777,
+     "segments": [
+      {
+       "clockIn": "09:57",
+       "clockOut": "17:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-22",
+     "clockIn": "07:57",
+     "clockOut": "15:01",
+     "clockedHours": 7.076542222222222,
+     "segments": [
+      {
+       "clockIn": "07:57",
+       "clockOut": "15:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-23",
+     "clockIn": "08:32",
+     "clockOut": "14:01",
+     "clockedHours": 5.480920555555556,
+     "segments": [
+      {
+       "clockIn": "08:32",
+       "clockOut": "14:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-24",
+     "clockIn": "09:55",
+     "clockOut": "14:00",
+     "clockedHours": 4.0840105555555555,
+     "segments": [
+      {
+       "clockIn": "09:55",
+       "clockOut": "14:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-27",
+     "clockIn": "07:57",
+     "clockOut": "15:00",
+     "clockedHours": 7.056502777777777,
+     "segments": [
+      {
+       "clockIn": "07:57",
+       "clockOut": "15:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-28",
+     "clockIn": "09:57",
+     "clockOut": "17:04",
+     "clockedHours": 7.12325138888889,
+     "segments": [
+      {
+       "clockIn": "09:57",
+       "clockOut": "17:04"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-29",
+     "clockIn": "08:57",
+     "clockOut": "15:00",
+     "clockedHours": 6.0439875,
+     "segments": [
+      {
+       "clockIn": "08:57",
+       "clockOut": "15:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-30",
+     "clockIn": "13:37",
+     "clockOut": "19:00",
+     "clockedHours": 5.383170277777778,
+     "segments": [
+      {
+       "clockIn": "13:37",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-31",
+     "clockIn": "09:26",
+     "clockOut": "15:02",
+     "clockedHours": 5.584060000000001,
+     "segments": [
+      {
+       "clockIn": "09:26",
+       "clockOut": "15:02"
+      }
+     ]
+    }
+   ],
+   "overtime": [],
+   "paidBySheet": {
+    "2026-07-01": 0.0,
+    "2026-07-02": 0.0,
+    "2026-07-03": 0.0,
+    "2026-07-04": 0.0,
+    "2026-07-05": 0.0,
+    "2026-07-06": 0.0,
+    "2026-07-07": 0.0,
+    "2026-07-08": 0.0,
+    "2026-07-09": 0.0,
+    "2026-07-10": 0.0,
+    "2026-07-11": 0.0,
+    "2026-07-12": 0.0,
+    "2026-07-13": 0.0,
+    "2026-07-14": 0.0,
+    "2026-07-15": 0.0,
+    "2026-07-16": 0.0,
+    "2026-07-17": 0.0,
+    "2026-07-18": 0.0,
+    "2026-07-19": 0.0,
+    "2026-07-20": 0.0,
+    "2026-07-21": 0.0,
+    "2026-07-22": 0.0,
+    "2026-07-23": 0.0,
+    "2026-07-24": 0.0,
+    "2026-07-25": 0.0,
+    "2026-07-26": 0.0,
+    "2026-07-27": 0.0,
+    "2026-07-28": 0.0,
+    "2026-07-29": 0.0,
+    "2026-07-30": 0.0,
+    "2026-07-31": 0.0
+   }
+  },
+  {
+   "agent": "Rodríguez Liliana",
+   "schedule": [
+    {
+     "day_of_week": 1,
+     "start_time": "12:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 2,
+     "start_time": "13:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 3,
+     "start_time": "13:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 4,
+     "start_time": "13:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 5,
+     "start_time": "14:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    }
+   ],
+   "observations": [
+    {
+     "date": "2026-07-01",
+     "clockIn": "07:53",
+     "clockOut": "19:03",
+     "clockedHours": 9.319325277777779,
+     "segments": [
+      {
+       "clockIn": "07:53",
+       "clockOut": "11:01"
+      },
+      {
+       "clockIn": "12:51",
+       "clockOut": "19:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-02",
+     "clockIn": "07:52",
+     "clockOut": "19:04",
+     "clockedHours": 9.392460277777777,
+     "segments": [
+      {
+       "clockIn": "07:52",
+       "clockOut": "11:06"
+      },
+      {
+       "clockIn": "12:56",
+       "clockOut": "19:04"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-03",
+     "clockIn": "07:44",
+     "clockOut": "19:00",
+     "clockedHours": 9.43637027777778,
+     "segments": [
+      {
+       "clockIn": "07:44",
+       "clockOut": "12:01"
+      },
+      {
+       "clockIn": "13:51",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-06",
+     "clockIn": "11:44",
+     "clockOut": "19:01",
+     "clockedHours": 7.281430277777778,
+     "segments": [
+      {
+       "clockIn": "11:44",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-07",
+     "clockIn": "12:45",
+     "clockOut": "19:02",
+     "clockedHours": 6.2766536111111115,
+     "segments": [
+      {
+       "clockIn": "12:45",
+       "clockOut": "19:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-08",
+     "clockIn": "12:51",
+     "clockOut": "19:03",
+     "clockedHours": 6.2029386111111116,
+     "segments": [
+      {
+       "clockIn": "12:51",
+       "clockOut": "19:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-13",
+     "clockIn": "11:49",
+     "clockOut": "19:02",
+     "clockedHours": 7.216120833333333,
+     "segments": [
+      {
+       "clockIn": "11:49",
+       "clockOut": "19:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-14",
+     "clockIn": "12:43",
+     "clockOut": "19:02",
+     "clockedHours": 6.320151666666666,
+     "segments": [
+      {
+       "clockIn": "12:43",
+       "clockOut": "19:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-15",
+     "clockIn": "12:45",
+     "clockOut": "19:02",
+     "clockedHours": 6.285186944444444,
+     "segments": [
+      {
+       "clockIn": "12:45",
+       "clockOut": "19:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-16",
+     "clockIn": "12:51",
+     "clockOut": "19:02",
+     "clockedHours": 6.171243611111111,
+     "segments": [
+      {
+       "clockIn": "12:51",
+       "clockOut": "19:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-17",
+     "clockIn": "12:50",
+     "clockOut": "18:04",
+     "clockedHours": 5.2271777777777775,
+     "segments": [
+      {
+       "clockIn": "12:50",
+       "clockOut": "18:04"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-20",
+     "clockIn": "11:46",
+     "clockOut": "19:01",
+     "clockedHours": 7.253768055555555,
+     "segments": [
+      {
+       "clockIn": "11:46",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-21",
+     "clockIn": "07:47",
+     "clockOut": "19:01",
+     "clockedHours": 8.495909444444445,
+     "segments": [
+      {
+       "clockIn": "07:47",
+       "clockOut": "10:08"
+      },
+      {
+       "clockIn": "12:52",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-22",
+     "clockIn": "07:42",
+     "clockOut": "10:05",
+     "clockedHours": 2.384605,
+     "segments": [
+      {
+       "clockIn": "07:42",
+       "clockOut": "10:05"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-23",
+     "clockIn": "12:55",
+     "clockOut": "19:03",
+     "clockedHours": 6.1223994444444445,
+     "segments": [
+      {
+       "clockIn": "12:55",
+       "clockOut": "19:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-24",
+     "clockIn": "13:41",
+     "clockOut": "19:05",
+     "clockedHours": 5.411674444444444,
+     "segments": [
+      {
+       "clockIn": "13:41",
+       "clockOut": "19:05"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-27",
+     "clockIn": "11:42",
+     "clockOut": "19:03",
+     "clockedHours": 7.355361111111111,
+     "segments": [
+      {
+       "clockIn": "11:42",
+       "clockOut": "19:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-28",
+     "clockIn": "12:42",
+     "clockOut": "19:02",
+     "clockedHours": 6.3411833333333325,
+     "segments": [
+      {
+       "clockIn": "12:42",
+       "clockOut": "19:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-29",
+     "clockIn": "12:47",
+     "clockOut": "19:03",
+     "clockedHours": 6.27429,
+     "segments": [
+      {
+       "clockIn": "12:47",
+       "clockOut": "19:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-30",
+     "clockIn": "12:54",
+     "clockOut": "19:03",
+     "clockedHours": 6.1598425,
+     "segments": [
+      {
+       "clockIn": "12:54",
+       "clockOut": "19:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-31",
+     "clockIn": "09:48",
+     "clockOut": "19:02",
+     "clockedHours": 8.496345277777777,
+     "segments": [
+      {
+       "clockIn": "09:48",
+       "clockOut": "13:04"
+      },
+      {
+       "clockIn": "13:48",
+       "clockOut": "19:02"
+      }
+     ]
+    }
+   ],
+   "overtime": [
+    {
+     "date": "2026-07-01",
+     "hours": 3.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    },
+    {
+     "date": "2026-07-02",
+     "hours": 3.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    },
+    {
+     "date": "2026-07-03",
+     "hours": 4.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    },
+    {
+     "date": "2026-07-06",
+     "hours": 1.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    },
+    {
+     "date": "2026-07-21",
+     "hours": 2.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    },
+    {
+     "date": "2026-07-22",
+     "hours": 2.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    }
+   ],
+   "paidBySheet": {
+    "2026-07-01": 3.0,
+    "2026-07-02": 3.0,
+    "2026-07-03": 4.0,
+    "2026-07-04": 0.0,
+    "2026-07-05": 0.0,
+    "2026-07-06": 1.0,
+    "2026-07-07": 0.0,
+    "2026-07-08": 0.0,
+    "2026-07-09": 0.0,
+    "2026-07-10": 0.0,
+    "2026-07-11": 0.0,
+    "2026-07-12": 0.0,
+    "2026-07-13": 0.0,
+    "2026-07-14": 0.0,
+    "2026-07-15": 0.0,
+    "2026-07-16": 0.0,
+    "2026-07-17": 0.0,
+    "2026-07-18": 0.0,
+    "2026-07-19": 0.0,
+    "2026-07-20": 0.0,
+    "2026-07-21": 2.0,
+    "2026-07-22": 2.0,
+    "2026-07-23": 0.0,
+    "2026-07-24": 0.0,
+    "2026-07-25": 0.0,
+    "2026-07-26": 0.0,
+    "2026-07-27": 0.0,
+    "2026-07-28": 0.0,
+    "2026-07-29": 0.0,
+    "2026-07-30": 0.0,
+    "2026-07-31": 0.0
+   }
+  },
+  {
+   "agent": "Alanis Brenda",
+   "schedule": [
+    {
+     "day_of_week": 1,
+     "start_time": "13:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 2,
+     "start_time": "12:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 3,
+     "start_time": "13:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 4,
+     "start_time": "14:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 5,
+     "start_time": "13:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    }
+   ],
+   "observations": [
+    {
+     "date": "2026-07-01",
+     "clockIn": "09:56",
+     "clockOut": "19:01",
+     "clockedHours": 9.079151944444444,
+     "segments": [
+      {
+       "clockIn": "09:56",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-02",
+     "clockIn": "13:55",
+     "clockOut": "19:04",
+     "clockedHours": 5.146700833333333,
+     "segments": [
+      {
+       "clockIn": "13:55",
+       "clockOut": "19:04"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-03",
+     "clockIn": "10:00",
+     "clockOut": "19:01",
+     "clockedHours": 9.022386666666668,
+     "segments": [
+      {
+       "clockIn": "10:00",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-06",
+     "clockIn": "12:59",
+     "clockOut": "19:01",
+     "clockedHours": 6.0362519444444445,
+     "segments": [
+      {
+       "clockIn": "12:59",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-07",
+     "clockIn": "11:58",
+     "clockOut": "19:02",
+     "clockedHours": 7.077551111111111,
+     "segments": [
+      {
+       "clockIn": "11:58",
+       "clockOut": "19:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-08",
+     "clockIn": "12:53",
+     "clockOut": "19:00",
+     "clockedHours": 6.123960277777778,
+     "segments": [
+      {
+       "clockIn": "12:53",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-13",
+     "clockIn": "12:57",
+     "clockOut": "19:02",
+     "clockedHours": 6.094184722222222,
+     "segments": [
+      {
+       "clockIn": "12:57",
+       "clockOut": "19:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-14",
+     "clockIn": "12:00",
+     "clockOut": "19:01",
+     "clockedHours": 7.025299722222223,
+     "segments": [
+      {
+       "clockIn": "12:00",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-15",
+     "clockIn": "12:56",
+     "clockOut": "19:01",
+     "clockedHours": 6.076645277777778,
+     "segments": [
+      {
+       "clockIn": "12:56",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-16",
+     "clockIn": "13:58",
+     "clockOut": "19:08",
+     "clockedHours": 5.1681172222222225,
+     "segments": [
+      {
+       "clockIn": "13:58",
+       "clockOut": "19:08"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-17",
+     "clockIn": "13:00",
+     "clockOut": "19:01",
+     "clockedHours": 6.0066572222222225,
+     "segments": [
+      {
+       "clockIn": "13:00",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-20",
+     "clockIn": "12:58",
+     "clockOut": "19:06",
+     "clockedHours": 6.132795833333333,
+     "segments": [
+      {
+       "clockIn": "12:58",
+       "clockOut": "19:06"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-21",
+     "clockIn": "12:00",
+     "clockOut": "19:00",
+     "clockedHours": 7.008728333333333,
+     "segments": [
+      {
+       "clockIn": "12:00",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-22",
+     "clockIn": "12:54",
+     "clockOut": "19:01",
+     "clockedHours": 6.109018333333333,
+     "segments": [
+      {
+       "clockIn": "12:54",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-23",
+     "clockIn": "13:58",
+     "clockOut": "19:11",
+     "clockedHours": 5.203709166666666,
+     "segments": [
+      {
+       "clockIn": "13:58",
+       "clockOut": "19:11"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-24",
+     "clockIn": "12:55",
+     "clockOut": "19:00",
+     "clockedHours": 6.083770555555556,
+     "segments": [
+      {
+       "clockIn": "12:55",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-27",
+     "clockIn": "13:01",
+     "clockOut": "19:01",
+     "clockedHours": 6.0003536111111115,
+     "segments": [
+      {
+       "clockIn": "13:01",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-28",
+     "clockIn": "11:58",
+     "clockOut": "19:01",
+     "clockedHours": 7.048125277777777,
+     "segments": [
+      {
+       "clockIn": "11:58",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-29",
+     "clockIn": "12:57",
+     "clockOut": "19:01",
+     "clockedHours": 6.065738055555555,
+     "segments": [
+      {
+       "clockIn": "12:57",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-31",
+     "clockIn": "12:57",
+     "clockOut": "19:00",
+     "clockedHours": 6.055906666666666,
+     "segments": [
+      {
+       "clockIn": "12:57",
+       "clockOut": "19:00"
+      }
+     ]
+    }
+   ],
+   "overtime": [
+    {
+     "date": "2026-07-01",
+     "hours": 3.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    },
+    {
+     "date": "2026-07-02",
+     "hours": 3.5,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    },
+    {
+     "date": "2026-07-03",
+     "hours": 3.0,
+     "tier": "additional",
+     "start_time": null,
+     "end_time": null,
+     "client_id": "c1"
+    }
+   ],
+   "paidBySheet": {
+    "2026-07-01": 3.0,
+    "2026-07-02": 3.5,
+    "2026-07-03": 3.0,
+    "2026-07-04": 0.0,
+    "2026-07-05": 0.0,
+    "2026-07-06": 0.0,
+    "2026-07-07": 0.0,
+    "2026-07-08": 0.0,
+    "2026-07-09": 0.0,
+    "2026-07-10": 0.0,
+    "2026-07-11": 0.0,
+    "2026-07-12": 0.0,
+    "2026-07-13": 0.0,
+    "2026-07-14": 0.0,
+    "2026-07-15": 0.0,
+    "2026-07-16": 0.0,
+    "2026-07-17": 0.0,
+    "2026-07-18": 0.0,
+    "2026-07-19": 0.0,
+    "2026-07-20": 0.0,
+    "2026-07-21": 0.0,
+    "2026-07-22": 0.0,
+    "2026-07-23": 0.0,
+    "2026-07-24": 0.0,
+    "2026-07-25": 0.0,
+    "2026-07-26": 0.0,
+    "2026-07-27": 0.0,
+    "2026-07-28": 0.0,
+    "2026-07-29": 0.0,
+    "2026-07-30": 0.0,
+    "2026-07-31": 0.0
+   }
+  },
+  {
+   "agent": "Moreno Laura",
+   "schedule": [
+    {
+     "day_of_week": 1,
+     "start_time": "13:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 2,
+     "start_time": "12:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 3,
+     "start_time": "13:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 4,
+     "start_time": "14:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 5,
+     "start_time": "13:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    }
+   ],
+   "observations": [
+    {
+     "date": "2026-07-01",
+     "clockIn": "13:00",
+     "clockOut": "19:01",
+     "clockedHours": 6.007561111111111,
+     "segments": [
+      {
+       "clockIn": "13:00",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-02",
+     "clockIn": "14:03",
+     "clockOut": "19:05",
+     "clockedHours": 5.034600555555556,
+     "segments": [
+      {
+       "clockIn": "14:03",
+       "clockOut": "19:05"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-03",
+     "clockIn": "12:53",
+     "clockOut": "19:01",
+     "clockedHours": 6.1291327777777775,
+     "segments": [
+      {
+       "clockIn": "12:53",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-06",
+     "clockIn": "12:55",
+     "clockOut": "19:01",
+     "clockedHours": 6.094283888888889,
+     "segments": [
+      {
+       "clockIn": "12:55",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-07",
+     "clockIn": "11:58",
+     "clockOut": "19:03",
+     "clockedHours": 7.090802777777777,
+     "segments": [
+      {
+       "clockIn": "11:58",
+       "clockOut": "19:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-08",
+     "clockIn": "13:00",
+     "clockOut": "19:01",
+     "clockedHours": 6.012115833333333,
+     "segments": [
+      {
+       "clockIn": "13:00",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-13",
+     "clockIn": "13:03",
+     "clockOut": "19:10",
+     "clockedHours": 6.117166111111111,
+     "segments": [
+      {
+       "clockIn": "13:03",
+       "clockOut": "19:10"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-15",
+     "clockIn": "13:01",
+     "clockOut": "20:06",
+     "clockedHours": 7.078015,
+     "segments": [
+      {
+       "clockIn": "13:01",
+       "clockOut": "20:06"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-16",
+     "clockIn": "14:05",
+     "clockOut": "19:03",
+     "clockedHours": 4.9676841666666665,
+     "segments": [
+      {
+       "clockIn": "14:05",
+       "clockOut": "19:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-17",
+     "clockIn": "13:03",
+     "clockOut": "19:03",
+     "clockedHours": 5.992953055555556,
+     "segments": [
+      {
+       "clockIn": "13:03",
+       "clockOut": "19:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-20",
+     "clockIn": "13:00",
+     "clockOut": "19:01",
+     "clockedHours": 6.011475833333333,
+     "segments": [
+      {
+       "clockIn": "13:00",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-21",
+     "clockIn": "12:01",
+     "clockOut": "19:02",
+     "clockedHours": 7.015776944444444,
+     "segments": [
+      {
+       "clockIn": "12:01",
+       "clockOut": "19:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-22",
+     "clockIn": "12:59",
+     "clockOut": "19:02",
+     "clockedHours": 6.051901666666667,
+     "segments": [
+      {
+       "clockIn": "12:59",
+       "clockOut": "19:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-23",
+     "clockIn": "13:55",
+     "clockOut": "19:09",
+     "clockedHours": 5.2420519444444444,
+     "segments": [
+      {
+       "clockIn": "13:55",
+       "clockOut": "19:09"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-24",
+     "clockIn": "12:52",
+     "clockOut": "19:00",
+     "clockedHours": 6.1347933333333335,
+     "segments": [
+      {
+       "clockIn": "12:52",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-27",
+     "clockIn": "17:11",
+     "clockOut": "17:11",
+     "clockedHours": 0.003956111111111112,
+     "segments": [
+      {
+       "clockIn": "17:11",
+       "clockOut": "17:11"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-29",
+     "clockIn": "12:46",
+     "clockOut": "19:01",
+     "clockedHours": 6.243530833333333,
+     "segments": [
+      {
+       "clockIn": "12:46",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-30",
+     "clockIn": "13:52",
+     "clockOut": "19:01",
+     "clockedHours": 5.150156111111111,
+     "segments": [
+      {
+       "clockIn": "13:52",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-31",
+     "clockIn": "12:50",
+     "clockOut": "19:01",
+     "clockedHours": 6.195217222222222,
+     "segments": [
+      {
+       "clockIn": "12:50",
+       "clockOut": "19:01"
+      }
+     ]
+    }
+   ],
+   "overtime": [],
+   "paidBySheet": {
+    "2026-07-01": 0.0,
+    "2026-07-02": 0.0,
+    "2026-07-03": 0.0,
+    "2026-07-04": 0.0,
+    "2026-07-05": 0.0,
+    "2026-07-06": 0.0,
+    "2026-07-07": 0.0,
+    "2026-07-08": 0.0,
+    "2026-07-09": 0.0,
+    "2026-07-10": 0.0,
+    "2026-07-11": 0.0,
+    "2026-07-12": 0.0,
+    "2026-07-13": 0.0,
+    "2026-07-14": 0.0,
+    "2026-07-15": 0.0,
+    "2026-07-16": 0.0,
+    "2026-07-17": 0.0,
+    "2026-07-18": 0.0,
+    "2026-07-19": 0.0,
+    "2026-07-20": 0.0,
+    "2026-07-21": 0.0,
+    "2026-07-22": 0.0,
+    "2026-07-23": 0.0,
+    "2026-07-24": 0.0,
+    "2026-07-25": 0.0,
+    "2026-07-26": 0.0,
+    "2026-07-27": 0.0,
+    "2026-07-28": 0.0,
+    "2026-07-29": 0.0,
+    "2026-07-30": 0.0,
+    "2026-07-31": 0.0
+   }
+  },
+  {
+   "agent": "Bissuti Stefano",
+   "schedule": [
+    {
+     "day_of_week": 1,
+     "start_time": "12:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 2,
+     "start_time": "13:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 3,
+     "start_time": "13:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 4,
+     "start_time": "13:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    },
+    {
+     "day_of_week": 5,
+     "start_time": "14:00",
+     "end_time": "19:00",
+     "client_id": "c1"
+    }
+   ],
+   "observations": [
+    {
+     "date": "2026-07-01",
+     "clockIn": "13:00",
+     "clockOut": "19:00",
+     "clockedHours": 5.999202222222222,
+     "segments": [
+      {
+       "clockIn": "13:00",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-06",
+     "clockIn": "11:57",
+     "clockOut": "19:03",
+     "clockedHours": 7.092034444444445,
+     "segments": [
+      {
+       "clockIn": "11:57",
+       "clockOut": "19:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-07",
+     "clockIn": "12:55",
+     "clockOut": "19:14",
+     "clockedHours": 6.324958333333333,
+     "segments": [
+      {
+       "clockIn": "12:55",
+       "clockOut": "19:14"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-08",
+     "clockIn": "12:55",
+     "clockOut": "19:00",
+     "clockedHours": 6.088698888888889,
+     "segments": [
+      {
+       "clockIn": "12:55",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-13",
+     "clockIn": "11:54",
+     "clockOut": "19:01",
+     "clockedHours": 7.126092222222223,
+     "segments": [
+      {
+       "clockIn": "11:54",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-14",
+     "clockIn": "12:54",
+     "clockOut": "19:01",
+     "clockedHours": 6.11676,
+     "segments": [
+      {
+       "clockIn": "12:54",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-15",
+     "clockIn": "12:54",
+     "clockOut": "19:01",
+     "clockedHours": 6.124454166666666,
+     "segments": [
+      {
+       "clockIn": "12:54",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-16",
+     "clockIn": "12:57",
+     "clockOut": "19:19",
+     "clockedHours": 6.368932777777777,
+     "segments": [
+      {
+       "clockIn": "12:57",
+       "clockOut": "19:19"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-17",
+     "clockIn": "13:57",
+     "clockOut": "19:01",
+     "clockedHours": 5.0627125,
+     "segments": [
+      {
+       "clockIn": "13:57",
+       "clockOut": "19:01"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-20",
+     "clockIn": "11:56",
+     "clockOut": "19:00",
+     "clockedHours": 7.0685575,
+     "segments": [
+      {
+       "clockIn": "11:56",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-21",
+     "clockIn": "12:57",
+     "clockOut": "19:02",
+     "clockedHours": 6.073401388888889,
+     "segments": [
+      {
+       "clockIn": "12:57",
+       "clockOut": "19:02"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-22",
+     "clockIn": "12:59",
+     "clockOut": "19:10",
+     "clockedHours": 6.190129444444445,
+     "segments": [
+      {
+       "clockIn": "12:59",
+       "clockOut": "19:10"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-23",
+     "clockIn": "12:57",
+     "clockOut": "19:00",
+     "clockedHours": 6.049277777777778,
+     "segments": [
+      {
+       "clockIn": "12:57",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-27",
+     "clockIn": "12:06",
+     "clockOut": "19:08",
+     "clockedHours": 7.026807777777778,
+     "segments": [
+      {
+       "clockIn": "12:06",
+       "clockOut": "19:08"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-28",
+     "clockIn": "12:57",
+     "clockOut": "19:00",
+     "clockedHours": 6.051808888888888,
+     "segments": [
+      {
+       "clockIn": "12:57",
+       "clockOut": "19:00"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-29",
+     "clockIn": "12:50",
+     "clockOut": "19:03",
+     "clockedHours": 6.219534166666667,
+     "segments": [
+      {
+       "clockIn": "12:50",
+       "clockOut": "19:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-30",
+     "clockIn": "12:59",
+     "clockOut": "19:03",
+     "clockedHours": 6.072588888888888,
+     "segments": [
+      {
+       "clockIn": "12:59",
+       "clockOut": "19:03"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-31",
+     "clockIn": "13:53",
+     "clockOut": "19:09",
+     "clockedHours": 5.268714722222222,
+     "segments": [
+      {
+       "clockIn": "13:53",
+       "clockOut": "19:09"
+      }
+     ]
+    }
+   ],
+   "overtime": [],
+   "paidBySheet": {
+    "2026-07-01": 0.0,
+    "2026-07-02": 0.0,
+    "2026-07-03": 0.0,
+    "2026-07-04": 0.0,
+    "2026-07-05": 0.0,
+    "2026-07-06": 0.0,
+    "2026-07-07": 0.0,
+    "2026-07-08": 0.0,
+    "2026-07-09": 0.0,
+    "2026-07-10": 0.0,
+    "2026-07-11": 0.0,
+    "2026-07-12": 0.0,
+    "2026-07-13": 0.0,
+    "2026-07-14": 0.0,
+    "2026-07-15": 0.0,
+    "2026-07-16": 0.0,
+    "2026-07-17": 0.0,
+    "2026-07-18": 0.0,
+    "2026-07-19": 0.0,
+    "2026-07-20": 0.0,
+    "2026-07-21": 0.0,
+    "2026-07-22": 0.0,
+    "2026-07-23": 0.0,
+    "2026-07-24": 0.0,
+    "2026-07-25": 0.0,
+    "2026-07-26": 0.0,
+    "2026-07-27": 0.0,
+    "2026-07-28": 0.0,
+    "2026-07-29": 0.0,
+    "2026-07-30": 0.0,
+    "2026-07-31": 0.0
+   }
+  }
+ ]
+}

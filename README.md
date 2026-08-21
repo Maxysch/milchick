@@ -40,6 +40,18 @@ de Supabase.
 - `005` a `007` — modelo de liquidación (bandas, tramos, conceptos, período 26→25).
   La `006` y la `007` son idempotentes: se pueden volver a correr sobre una base
   donde ya se aplicaron, entera o a medias.
+- `009` — tabla de desvíos de la preliquidación.
+- `010` — período = mes calendario + conciliación del período anterior.
+- `011` — el REG y el SUPER REG pasan a cargarse por agente y por mes.
+- `012` — reintegro de monotributo por agente y por mes.
+- `013` — tramo `normal` en las horas fuera del esquema (coberturas sin recargo).
+- `014` — rastro de las correcciones en el desglose diario (horas originales, quién y cuándo).
+- `015` — desvío por trabajar más horas de las que se liquidan.
+- `016` — las horas cargadas por el supervisor se topean contra lo trabajado,
+  con un umbral configurable.
+- `017` — los ítems declaran cómo se calculan: importe fijo, porcentaje del
+  subtotal, o cantidad de tiempo a un valor hora elegido.
+  De la `009` en adelante son idempotentes.
 - `008` — datos reales de operación: 3 clientes, 13 agentes con sus tarifas,
   esquemas y parámetros de liquidación, feriados, excepciones, horas adicionales
   y 721 marcaciones desde el 01/06/2026. Es idempotente.
@@ -147,6 +159,13 @@ los Excel originales.
 ### Pre-Settlements (Preliquidación)
 - `GET /api/pre-settlements` - Listar
 - `GET /api/pre-settlements/period?year=&month=` - Período por defecto (va del 26 al 25)
+- `GET /api/pre-settlements/periods` - Períodos que ya tienen preliquidaciones
+- `GET /api/pre-settlements/summary?from=&to=` - Resumen por agente del período
+- `GET /api/pre-settlements/summary?from=&to=&format=csv` - El mismo resumen en CSV
+- `POST /api/pre-settlements/generate-bulk` - Generar el período para varios agentes
+- `PATCH /api/pre-settlements/warnings/:id` - Revisar un desvío
+- `POST /api/pre-settlements/:id/daily` - Agregar una línea diaria a mano
+- `DELETE /api/pre-settlements/daily/:lineId` - Borrar una línea agregada a mano
 - `POST /api/pre-settlements/generate` - Generar nueva
 - `GET /api/pre-settlements/:id` - Detalle con desglose
 - `PATCH /api/pre-settlements/daily/:lineId` - Editar línea diaria
@@ -154,6 +173,18 @@ los Excel originales.
 - `PATCH /api/pre-settlements/items/:itemId` - Editar ítem
 - `DELETE /api/pre-settlements/items/:itemId` - Eliminar ítem
 - `PATCH /api/pre-settlements/:id/status` - Confirmar/cancelar
+
+### Period Params (Evaluación mensual)
+- `GET /api/period-params?year=&month=` - REG, SUPER REG y reintegro de monotributo del mes
+- `PUT /api/period-params` - Guardar la evaluación del mes
+
+### Settings (Configuración global)
+- `GET /api/settings` - Multiplicadores y período
+- `PUT /api/settings/rate-factors` - Actualizar multiplicadores
+- `PUT /api/settings/period` - Día de corte del período
+
+### Dashboard
+- `GET /api/dashboard/summary` - Pendientes: desvíos, quién no marcó, config incompleta
 
 ### Agent Chat (Agentes IA)
 - `POST /api/agent/normalization` - Chat con agente de normalización

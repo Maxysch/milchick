@@ -94,7 +94,7 @@ profiles ──────────┬──── agent_rates
 | `schedules` | Esquema horario con fecha de vigencia | FK a profiles, clients |
 | `clock_entries` | Marcaciones brutas de entrada/salida | FK a profiles, clients |
 | `exceptions` | Vacaciones, ausencias, cambios, coberturas | FK a profiles, clients |
-| `overtime` | Horas adicionales y extra, con tramo y horarios opcionales | FK a profiles, clients |
+| `overtime` | Horas fuera del esquema: coberturas, adicionales y extras | FK a profiles, clients |
 | `holidays` | Feriados nacionales y de empresa por año | — |
 | `normalization_rules` | Reglas de normalización (texto para LangChain) | FK a profiles (creator) |
 | `settlement_rules` | Reglas de liquidación (texto para LangChain) | FK a profiles (creator) |
@@ -103,6 +103,8 @@ profiles ──────────┬──── agent_rates
 | `pre_settlement_daily` | Desglose diario por banda × tramo | FK a pre_settlements, clients |
 | `pre_settlement_items` | Conceptos calculados e ítems manuales | FK a pre_settlements |
 | `settlement_settings` | Configuración del período de liquidación (26 → 25) | — |
+| `pre_settlement_warnings` | Desvíos entre lo pagado por esquema y las marcaciones | FK a pre_settlements |
+| `agent_period_params` | Valores del mes: REG, SUPER REG y reintegro de monotributo | FK a profiles |
 
 La migración `008` siembra los datos reales de operación (clientes, agentes,
 tarifas, esquemas, feriados, excepciones, horas extra y marcaciones desde el
@@ -203,11 +205,53 @@ Calcula honorarios para un agente en un período dado.
 | `day_hd` / `night_hd` | todo el resto: vie 20:00 → dom 24:00, con corte día/noche en 06:00 y 21:00 |
 
 **Conceptos calculados:** REG (Premio a la Excelencia), SUPER REG, antigüedad,
-reintegro por uso de equipos, compensación por feriado no trabajado y plus
-vacacional. Los parámetros de cada uno viven en `profiles`. Todo lo demás
-(adelantos, reintegros de monotributo, comisiones, bonos) entra como ítem manual.
+reintegro por uso de equipos, compensación por feriado no trabajado, plus
+vacacional y reintegro de monotributo.
+
+Los que dependen del mes —REG, SUPER REG y monotributo— salen de
+`agent_period_params`; el resto vive en `profiles`.
+
+**Cada ítem declara cómo se calcula** (`pre_settlement_items.kind`):
+
+| kind | Cálculo | Ejemplo |
+|------|---------|---------|
+| `fixed` | el importe cargado | reintegro de monotributo, un adelanto |
+| `percentage` | subtotal × porcentaje | REG, SUPER REG, antigüedad, equipos |
+| `hourly` | horas × valor hora (banda × tramo) × factor | compensación por feriado, plus vacacional, 45 min diarios de compensación especial |
+
+Los de tipo `percentage` y `hourly` **se recomponen cuando cambia el subtotal**.
+Antes guardaban un importe fijo, así que corregir las horas de un día dejaba el
+REG calculado sobre un subtotal que ya no existía. En un agente con 23% de
+conceptos porcentuales, corregir una hora dejaba ~$950 obsoletos.
+
+Los `hourly` guardan además `unit_minutes` y `days`, para que el rastro diga
+"45 min × 21 días" en vez de "15,75 h".
 
 **Decisiones:**
+- **El período es el mes calendario.** Los días que todavía no ocurrieron se pagan
+  proyectados desde el esquema y quedan marcados con `is_projected`. Al generar el
+  período siguiente, `buildPreviousPeriodAdjustments` los recalcula contra los datos
+  actuales y arrastra la diferencia como líneas con `source = 'adjustment'`, que
+  conservan la fecha original. Saltea los días que alguien editó a mano.
+- **Las excepciones operan SOBRE las horas del esquema.** Un día sin esquema no
+  genera nada aunque tenga excepción cargada: hay que usar `overtime` (con el
+  tramo que corresponda, incluido `normal`) o agregar la línea a mano.
+- **Las horas cargadas por el supervisor se topean contra lo trabajado.** No se
+  suman al esquema sin más:
+
+      normales  = esquema
+      adicional = min(cargado, excedente trabajado)  si el excedente > umbral
+                = 0                                   si no
+
+  El excedente sale de intersectar cada tramo marcado con el esquema, y cuenta
+  lo de antes de entrar junto con lo de después de salir contra un único umbral
+  (`settlement_settings.additional_threshold_minutes`, 30 por defecto). Se mide
+  tramo por tramo, no sobre el span del día: si no, una cobertura desconectada
+  del esquema quedaría tapada por el hueco entre bloques.
+
+  Cada recorte se avisa: `additional_without_excess` cuando se cargaron horas y
+  no hubo excedente, `additional_over_worked` cuando se autorizó más de lo que
+  estuvo, y `worked_more_than_schedule` cuando trabajó de más y no está cubierto.
 - **Se paga el esquema, no la marcación.** Verificado de punta a punta contra la
   liquidación de julio 2026: partiendo del esquema, **6 de los 12 agentes con
   esquema cargado llegan al neto exacto**. Los otros 6 difieren en total ~$186 mil
@@ -215,8 +259,13 @@ vacacional. Los parámetros de cada uno viven en `profiles`. Todo lo demás
   —esquemas desactualizados, excepciones sin cargar, un arrastre del mes
   anterior—, no en el cálculo. Los desvíos están fijados en
   `settlement-calc.test.ts` con su motivo.
-- Las **marcaciones** producen advertencias (`no_clock_in`, `arrived_late`,
-  `left_early`, `worked_without_schedule`) que quien liquida revisa y corrige.
+- Las **marcaciones** producen desvíos (`no_clock_in`, `no_clock_out`,
+  `arrived_late`, `left_early`, `worked_more_than_schedule`,
+  `worked_without_schedule`, `absence`) que se
+  guardan en `pre_settlement_warnings` con su estado de revisión. El detalle de
+  la preliquidación los muestra arriba de todo: cada uno se acepta como está o se
+  corrige editando las horas de ese día sin salir de la pantalla.
+  Sobre julio 2026 con datos reales, el período genera 21 desvíos en 12 agentes.
 - Las **ausencias** se excluyen del cálculo (no se pagan)
 - Los **feriados no trabajados** no generan horas: se compensan con un concepto
   aparte, proporcional a las horas de esquema que caían ese día
@@ -447,7 +496,9 @@ El sistema fue diseñado para que esto se pueda agregar sin reestructurar:
   que lo validan contra la liquidación real de julio 2026 (`npm test`), incluida
   la cadena completa esquema → neto para los 12 agentes con esquema cargado.
   El resto del backend y el frontend siguen sin cobertura.
-- **Sin exports/reportes**: No hay exportación a Excel/PDF. El proyecto Roz tenía `exceljs`.
+- **Exportación sólo en CSV**: el resumen del período se baja como CSV
+  (`GET /api/pre-settlements/summary?format=csv`). No hay PDF ni un Excel con
+  formato como el que arma la planilla actual.
 - **Normalización básica**: Solo recorta setup y ajuste a esquema. No hay tolerancias configurables, redondeo, ni lógica avanzada aún.
 - **Agente LangChain sin memoria persistente**: Cada request crea un agente nuevo. No hay historial de conversación entre requests.
 - **Sin websockets/real-time**: Las actualizaciones requieren refresh manual.
@@ -483,6 +534,16 @@ El sistema fue diseñado para que esto se pueda agregar sin reestructurar:
 | 12 | Feriado como concepto, no como tipo de hora | La planilla nunca cargó horas de feriado; compensa aparte | Mantener `holiday_daytime`/`holiday_nighttime` con factor ×2 |
 | 13 | Período del 26 al 25 | Es el corte real del negocio; el mes calendario obligaba a arrastres manuales | Mes calendario |
 | 14 | Tramo "Adicional" al 25% para todos | Tres planillas lo tenían escrito como 20%; se resolvió que es error de carga | Porcentaje por agente |
+| 15 | Período = mes calendario | Es como venía liquidando la planilla | Corte 26→25, que obliga a explicar cada mes por qué no coincide |
+| 16 | Los días proyectados se concilian al mes siguiente | La liquidación se arma antes de cerrar el mes; si la realidad cambió, se arrastra la diferencia en vez de tocar un período cerrado | Corregir a mano la liquidación anterior |
+| 17 | El REG se carga por agente y por mes | Depende de cómo performó ese mes: no es un atributo del agente | Dejarlo en `profiles` y pisarlo cada mes, perdiendo el historial |
+| 18 | El reintegro de monotributo también es del par (agente, mes) | Cambia con la categoría y no es igual para todos | Ítem manual por preliquidación |
+| 19 | `overtime` admite el tramo `normal` | Un día cubierto fuera del esquema se paga a tarifa común; antes había que pagarlo de más o no pagarlo | Que la excepción de cobertura extraordinaria llevara horario, duplicando lo que ya hace `overtime` |
+| 20 | Se pueden agregar líneas diarias a mano | Salida para lo que el motor no puede generar solo | Sólo ítems, que pierden el detalle de día y banda |
+| 21 | Las correcciones guardan el valor anterior | Sin él no se puede responder "cuánto decía antes y quién lo cambió" al revisar | Confiar en `source = 'manual'`, que sólo dice que se tocó |
+| 22 | Trabajar de más también es un desvío | Se liquida el esquema, así que las horas de más se perdían sin que nadie se enterara | Pagar automáticamente lo marcado, que rompe el modelo de "se paga el esquema" |
+| 24 | Los ítems declaran su forma de cálculo | Varios conceptos de la planilla son "cantidad × valor hora × factor" y había que calcularlos afuera; y los porcentuales quedaban congelados al corregir horas | Guardar sólo el importe, que obliga a recalcular a mano y se desincroniza en silencio |
+| 23 | Las horas cargadas se topean contra lo trabajado | Verificado sobre julio 2026: el excedente detectado sólo se paga en un tercio de los casos, y decidir cuál tercio es una autorización, no una medición | Pagar lo marcado, que convierte la marcación en un cheque en blanco; o sumar lo cargado sin tope, que paga horas que nadie trabajó |
 | 9 | Preliquidación totalmente editable | El liquidador necesita flexibilidad total | Campos bloqueados, solo override |
 | 10 | Clientes simples (solo ABM) | No se necesita configuración compleja | Config de billing/rates por cliente |
 

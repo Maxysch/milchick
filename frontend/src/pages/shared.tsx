@@ -7,7 +7,7 @@ export type Role = 'admin' | 'supervisor' | 'agent';
 export type ExceptionType = 'vacation' | 'absence' | 'schedule_change' | 'extraordinary_coverage';
 export type Band = 'day_ld' | 'night_ld' | 'day_hd' | 'night_hd';
 export type Tier = 'normal' | 'additional' | 'overtime_50' | 'overtime_100';
-export type LineSource = 'schedule' | 'exception' | 'overtime' | 'manual';
+export type LineSource = 'schedule' | 'exception' | 'overtime' | 'manual' | 'adjustment';
 export type PreSettlementStatus = 'draft' | 'confirmed' | 'cancelled';
 
 export interface Profile {
@@ -71,6 +71,8 @@ export interface OvertimeRecord {
   id: string;
   profile_id: string;
   date: string;
+  /** Recargo aplicado. `normal` = horas fuera del esquema a tarifa común. */
+  tier: Tier;
   hours: number;
   start_time: string | null;
   end_time: string | null;
@@ -139,10 +141,26 @@ export interface PreSettlementDailyLine {
   is_projected: boolean;
   client_id: string | null;
   source: LineSource;
+  /** Horas que había calculado el motor, si la línea se corrigió a mano */
+  original_hours?: number | null;
+  corrected_at?: string | null;
+  corrector?: { first_name: string; last_name: string } | null;
   clients?: NameRelation | null;
   clock_times?: TimeEntry[] | null;
+  /** Excepción vigente ese día (vacaciones, licencia, ausencia…) */
+  day_exception?: { exception_type: string; notes: string | null } | null;
+  /** Horas fuera del esquema cargadas ese día */
+  day_overtime?: {
+    hours: number;
+    tier: Tier;
+    start_time: string | null;
+    end_time: string | null;
+    notes: string | null;
+  }[] | null;
   normalized_times?: NormalizedTimeEntry[] | null;
 }
+
+export type ItemKind = 'fixed' | 'percentage' | 'hourly';
 
 export interface PreSettlementItem {
   id: string;
@@ -152,18 +170,105 @@ export interface PreSettlementItem {
   amount: number;
   is_percentage: boolean;
   percentage_base: string | null;
+  /** Forma de cálculo: percentage y hourly se recomponen con el subtotal */
+  kind?: ItemKind;
+  percentage?: number | null;
+  quantity?: number | null;
+  band?: Band | null;
+  tier?: Tier | null;
+  factor?: number | null;
+  unit_minutes?: number | null;
+  days?: number | null;
 }
 
 export interface PreSettlementWarnings {
   has_projected: boolean;
-  dates_without_clock_in: string[];
+}
+
+export type WarningCode =
+  | 'no_clock_in'
+  | 'no_clock_out'
+  | 'arrived_late'
+  | 'left_early'
+  | 'worked_without_schedule'
+  | 'worked_more_than_schedule'
+  | 'additional_without_excess'
+  | 'additional_over_worked'
+  | 'absence'
+  | 'missing_period_params';
+
+export type WarningStatus = 'pending' | 'accepted' | 'corrected';
+
+/** Desvío entre lo que se pagó (esquema) y lo que dicen las marcaciones. */
+export interface SettlementWarning {
+  id: string;
+  date: string;
+  code: WarningCode;
+  detail: string;
+  status: WarningStatus;
+  note: string | null;
+  reviewed_at: string | null;
+  daily_lines: PreSettlementDailyLine[];
+  clock_times: TimeEntry[] | null;
 }
 
 export interface PreSettlementDetail extends PreSettlementRecord {
   daily: PreSettlementDailyLine[];
   items: PreSettlementItem[];
   totals_by_type: Record<string, { hours: number; amount: number }>;
+  settlement_warnings: SettlementWarning[];
+  pending_warnings: number;
   warnings: PreSettlementWarnings;
+}
+
+export interface PeriodSummaryRow {
+  pre_settlement_id: string;
+  profile_id: string;
+  employee_id: string | null;
+  name: string;
+  status: string;
+  hours: number;
+  subtotal: number;
+  concepts: Record<string, number>;
+  manual_items: number;
+  net: number;
+  pending_warnings: number;
+}
+
+export interface BulkResult {
+  profile_id: string;
+  name: string;
+  status: 'generated' | 'skipped' | 'failed';
+  pre_settlement_id?: string;
+  total_amount?: number;
+  warnings?: number;
+  reason?: string;
+}
+
+export interface DashboardSummary {
+  active_agents: number;
+  draft_settlements: number;
+  pending_warnings: number;
+  missing_clock_in_today: { profile_id: string; name: string; starts_at: string }[];
+  open_clock_entries: { profile_id: string; name: string; date: string; clock_in: string }[];
+  agents_without_schedule: { profile_id: string; name: string }[];
+  agents_without_rate: { profile_id: string; name: string }[];
+}
+
+export interface RateFactorRow {
+  id: string;
+  factor_key: string;
+  factor_value: number;
+  description: string | null;
+}
+
+export interface GlobalSettings {
+  rate_factors: RateFactorRow[];
+  settlement_settings: {
+    id?: string;
+    period_start_day: number;
+    additional_threshold_minutes?: number;
+  };
 }
 
 type NameRelation = { name: string } | Array<{ name: string }>;

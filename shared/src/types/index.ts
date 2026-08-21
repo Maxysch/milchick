@@ -178,7 +178,7 @@ export type Band = 'day_ld' | 'night_ld' | 'day_hd' | 'night_hd';
 export type Tier = 'normal' | 'additional' | 'overtime_50' | 'overtime_100';
 
 /** De dónde salió la línea, para poder auditar la preliquidación. */
-export type LineSource = 'schedule' | 'exception' | 'overtime' | 'manual';
+export type LineSource = 'schedule' | 'exception' | 'overtime' | 'manual' | 'adjustment';
 
 export interface PreSettlementDaily {
   id: string;
@@ -192,6 +192,46 @@ export interface PreSettlementDaily {
   is_projected: boolean;
   client_id: string | null;
   source: LineSource;
+}
+
+export type WarningCode =
+  | 'no_clock_in'
+  | 'no_clock_out'
+  | 'arrived_late'
+  | 'left_early'
+  | 'worked_without_schedule'
+  | 'worked_more_than_schedule'
+  | 'additional_without_excess'
+  | 'additional_over_worked'
+  | 'absence'
+  | 'missing_period_params';
+
+export type WarningStatus = 'pending' | 'accepted' | 'corrected';
+
+/** Desvío entre lo que se pagó (esquema) y lo que dicen las marcaciones. */
+export interface PreSettlementWarning {
+  id: string;
+  pre_settlement_id: string;
+  date: string;
+  code: WarningCode;
+  detail: string;
+  status: WarningStatus;
+  note: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+}
+
+export interface RateFactor2 {
+  factor_key: RateFactorKey;
+  factor_value: number;
+}
+
+export interface SettlementSettings {
+  id: string;
+  period_start_day: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface PreSettlementItem {

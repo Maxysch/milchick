@@ -97,7 +97,7 @@ export const createOvertimeSchema = z.object({
   profile_id: z.string().uuid(),
   date: z.string(),
   hours: z.number().positive(),
-  tier: z.enum(['additional', 'overtime_50', 'overtime_100']).default('overtime_50'),
+  tier: z.enum(['normal', 'additional', 'overtime_50', 'overtime_100']).default('overtime_50'),
   start_time: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
   end_time: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
   client_id: z.string().uuid().nullable().optional(),
@@ -153,10 +153,85 @@ export const createPreSettlementItemSchema = z.object({
   amount: z.number(),
   is_percentage: z.boolean().default(false),
   percentage_base: z.string().nullable().optional(),
-});
+  // Forma de cálculo. `percentage` y `hourly` se recomponen cuando cambia el subtotal.
+  kind: z.enum(['fixed', 'percentage', 'hourly']).default('fixed'),
+  percentage: z.number().min(0).max(10).nullable().optional(),
+  quantity: z.number().min(0).nullable().optional(),
+  band: z.enum(['day_ld', 'night_ld', 'day_hd', 'night_hd']).nullable().optional(),
+  tier: z.enum(['normal', 'additional', 'overtime_50', 'overtime_100']).nullable().optional(),
+  factor: z.number().min(0).max(10).nullable().optional(),
+  // Rastro de cómo se armó la cantidad: "45 min × 21 días"
+  unit_minutes: z.number().int().min(0).nullable().optional(),
+  days: z.number().int().min(0).nullable().optional(),
+}).refine(
+  (v) => v.kind !== 'hourly' || (v.quantity != null && v.band != null && v.tier != null),
+  { message: 'Un ítem por horas necesita cantidad, banda y tramo' }
+).refine(
+  (v) => v.kind !== 'percentage' || v.percentage != null,
+  { message: 'Un ítem por porcentaje necesita el porcentaje' }
+);
 export type CreatePreSettlementItemInput = z.infer<typeof createPreSettlementItemSchema>;
 
-export const updatePreSettlementItemSchema = createPreSettlementItemSchema.partial().omit({
-  pre_settlement_id: true,
+export const updatePreSettlementItemSchema = z.object({
+  concept: z.string().min(1).optional(),
+  description: z.string().nullable().optional(),
+  amount: z.number().optional(),
+  kind: z.enum(['fixed', 'percentage', 'hourly']).optional(),
+  percentage: z.number().min(0).max(10).nullable().optional(),
+  quantity: z.number().min(0).nullable().optional(),
+  band: z.enum(['day_ld', 'night_ld', 'day_hd', 'night_hd']).nullable().optional(),
+  tier: z.enum(['normal', 'additional', 'overtime_50', 'overtime_100']).nullable().optional(),
+  factor: z.number().min(0).max(10).nullable().optional(),
+  unit_minutes: z.number().int().min(0).nullable().optional(),
+  days: z.number().int().min(0).nullable().optional(),
 });
 export type UpdatePreSettlementItemInput = z.infer<typeof updatePreSettlementItemSchema>;
+
+// ─── Configuración global de liquidación ───
+export const updateRateFactorsSchema = z.object({
+  factors: z.array(z.object({
+    factor_key: z.enum(['nighttime', 'hd', 'additional', 'overtime_50', 'overtime_100']),
+    factor_value: z.number().positive().max(10),
+  })).min(1),
+});
+export type UpdateRateFactorsInput = z.infer<typeof updateRateFactorsSchema>;
+
+export const updateSettlementSettingsSchema = z.object({
+  period_start_day: z.number().int().min(1).max(28),
+  /** Excedente mínimo del día para que se liquiden las horas cargadas */
+  additional_threshold_minutes: z.number().int().min(0).max(240).optional(),
+});
+export type UpdateSettlementSettingsInput = z.infer<typeof updateSettlementSettingsSchema>;
+
+// ─── Revisión de desvíos ───
+export const reviewWarningSchema = z.object({
+  status: z.enum(['pending', 'accepted', 'corrected']),
+  note: z.string().nullable().optional(),
+});
+export type ReviewWarningInput = z.infer<typeof reviewWarningSchema>;
+
+// ─── Evaluación mensual del agente ───
+export const upsertPeriodParamsSchema = z.object({
+  year: z.number().int().min(2000).max(2100),
+  month: z.number().int().min(1).max(12),
+  agents: z.array(z.object({
+    profile_id: z.string().uuid(),
+    reg_people_pct: pct,
+    reg_quantitative_pct: pct,
+    reg_qualitative_pct: pct,
+    super_reg_pct: pct,
+    monotributo_reimbursement: z.number().min(0).default(0),
+    notes: z.string().nullable().optional(),
+  })).min(1),
+});
+export type UpsertPeriodParamsInput = z.infer<typeof upsertPeriodParamsSchema>;
+
+// ─── Línea diaria agregada a mano ───
+export const addDailyLineSchema = z.object({
+  date: z.string(),
+  band: z.enum(['day_ld', 'night_ld', 'day_hd', 'night_hd']),
+  tier: z.enum(['normal', 'additional', 'overtime_50', 'overtime_100']),
+  hours: z.number().positive(),
+  client_id: z.string().uuid().nullable().optional(),
+});
+export type AddDailyLineInput = z.infer<typeof addDailyLineSchema>;

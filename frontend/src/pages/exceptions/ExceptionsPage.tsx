@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
-import { EXCEPTION_TYPE_LABELS, formatDate } from '../../lib/utils';
+import {
+  EXCEPTION_TYPE_LABELS,
+  formatDate,
+  OVERTIME_TIER_OPTIONS,
+  TIER_LABELS,
+} from '../../lib/utils';
 import {
   cardClass,
   EmptyState,
@@ -41,6 +46,9 @@ const emptyExceptionForm: ExceptionFormState = {
 const emptyOvertimeForm = {
   id: '',
   date: getToday(),
+  // Sin preseleccionar: elegir mal el tramo cambia lo que se paga, así que se
+  // obliga a decidirlo en vez de dejar que pase uno por omisión.
+  tier: '',
   hours: '1',
   start_time: '',
   end_time: '',
@@ -106,6 +114,7 @@ export default function ExceptionsPage() {
       const payload = {
         profile_id: profileId,
         date: overtimeForm.date,
+        tier: overtimeForm.tier,
         hours: Number(overtimeForm.hours),
         start_time: overtimeForm.start_time || null,
         end_time: overtimeForm.end_time || null,
@@ -257,8 +266,26 @@ export default function ExceptionsPage() {
         ) : null}
 
         <section className={cardClass}>
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">Horas extra</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Horas fuera del esquema</h2>
+          <p className="mb-4 mt-1 text-sm text-gray-500">
+            Coberturas, adicionales y extras: todo lo que no sale del esquema del agente.
+            El tramo define el recargo, así que hay que elegirlo.
+          </p>
           <form className="grid gap-4 md:grid-cols-3 lg:grid-cols-5" onSubmit={(event) => { event.preventDefault(); saveOvertimeMutation.mutate(); }}>
+            <div className="md:col-span-3 lg:col-span-2">
+              <label className="mb-1 block text-sm font-medium text-gray-700">Tramo</label>
+              <select
+                className={inputClass}
+                value={overtimeForm.tier}
+                onChange={(event) => setOvertimeForm((current) => ({ ...current, tier: event.target.value }))}
+                required
+              >
+                <option value="">Elegir tramo…</option>
+                {OVERTIME_TIER_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label} ({o.hint})</option>
+                ))}
+              </select>
+            </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Fecha</label>
               <input className={inputClass} type="date" value={overtimeForm.date} onChange={(event) => setOvertimeForm((current) => ({ ...current, date: event.target.value }))} required />
@@ -288,8 +315,8 @@ export default function ExceptionsPage() {
             </div>
             {saveOvertimeMutation.error ? <p className="md:col-span-3 lg:col-span-5 text-sm text-red-600">{(saveOvertimeMutation.error as Error).message}</p> : null}
             <div className="md:col-span-3 lg:col-span-5 flex gap-3">
-              <button type="submit" className={primaryButtonClass} disabled={saveOvertimeMutation.isPending || !profileId}>
-                {saveOvertimeMutation.isPending ? 'Guardando...' : overtimeForm.id ? 'Actualizar extra' : 'Agregar horas extra'}
+              <button type="submit" className={primaryButtonClass} disabled={saveOvertimeMutation.isPending || !profileId || !overtimeForm.tier}>
+                {saveOvertimeMutation.isPending ? 'Guardando...' : overtimeForm.id ? 'Actualizar' : 'Agregar horas'}
               </button>
               <button type="button" className={secondaryButtonClass} onClick={() => setOvertimeForm(emptyOvertimeForm)}>Limpiar</button>
             </div>
@@ -301,13 +328,14 @@ export default function ExceptionsPage() {
         {!overtimeQuery.isLoading && !overtimeQuery.error ? (
           <section className={cardClass}>
             {(overtimeQuery.data ?? []).length === 0 ? (
-              <EmptyState message="No hay horas extra en el rango seleccionado." />
+              <EmptyState message="No hay horas fuera del esquema en el rango seleccionado." />
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Fecha</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Tramo</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Horas</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Inicio</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Fin</th>
@@ -320,6 +348,7 @@ export default function ExceptionsPage() {
                     {(overtimeQuery.data ?? []).map((overtime) => (
                       <tr key={overtime.id}>
                         <td className="px-4 py-3 text-sm text-gray-700">{formatDate(overtime.date)}</td>
+                        <td className="px-4 py-3 text-sm text-gray-700">{TIER_LABELS[overtime.tier] ?? overtime.tier}</td>
                         <td className="px-4 py-3 text-sm text-gray-700">{overtime.hours}</td>
                         <td className="px-4 py-3 text-sm text-gray-700">{overtime.start_time?.slice(0, 5) ?? '—'}</td>
                         <td className="px-4 py-3 text-sm text-gray-700">{overtime.end_time?.slice(0, 5) ?? '—'}</td>
@@ -330,6 +359,7 @@ export default function ExceptionsPage() {
                             <button type="button" className={secondaryButtonClass} onClick={() => setOvertimeForm({
                               id: overtime.id,
                               date: overtime.date,
+                              tier: overtime.tier ?? '',
                               hours: String(overtime.hours),
                               start_time: overtime.start_time?.slice(0, 5) ?? '',
                               end_time: overtime.end_time?.slice(0, 5) ?? '',

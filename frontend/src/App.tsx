@@ -17,6 +17,8 @@ const ExceptionsPage = lazy(() => import('./pages/exceptions/ExceptionsPage'));
 const NormalizationPage = lazy(() => import('./pages/normalization/NormalizationPage'));
 const PreSettlementsListPage = lazy(() => import('./pages/preSettlements/PreSettlementsListPage'));
 const PreSettlementDetailPage = lazy(() => import('./pages/preSettlements/PreSettlementDetailPage'));
+const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'));
+const PeriodParamsPage = lazy(() => import('./pages/periodParams/PeriodParamsPage'));
 
 function Loading() {
   return (
@@ -57,6 +59,8 @@ function App() {
               <Route path="/normalization" element={<NormalizationPage />} />
               <Route path="/pre-settlements" element={<PreSettlementsListPage />} />
               <Route path="/pre-settlements/:id" element={<PreSettlementDetailPage />} />
+              <Route path="/period-params" element={<PeriodParamsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

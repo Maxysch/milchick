@@ -25,6 +25,10 @@ import {
   useProfilesQuery,
 } from '../shared';
 
+// Los porcentajes se editan como número entero (4 = 4%) y se guardan en tanto
+// por uno, que es lo que espera el motor.
+const pctField = z.coerce.number().min(0).max(100);
+
 const baseSchema = z.object({
   first_name: z.string().min(1, 'Ingresá el nombre'),
   last_name: z.string().min(1, 'Ingresá el apellido'),
@@ -32,6 +36,15 @@ const baseSchema = z.object({
   employee_id: z.string().optional(),
   role: z.enum(['admin', 'supervisor', 'agent']),
   password: z.string().optional(),
+  hire_date: z.string().optional(),
+  reg_people_pct: pctField,
+  reg_quantitative_pct: pctField,
+  reg_qualitative_pct: pctField,
+  super_reg_pct: pctField,
+  equipment_pct: pctField,
+  seniority_months: z.coerce.number().int().min(0),
+  holiday_compensation_factor: z.coerce.number().min(0).max(2),
+  vacation_plus_factor: z.coerce.number().min(0).max(2),
 });
 
 type ProfileFormValues = z.infer<typeof baseSchema>;
@@ -71,12 +84,28 @@ export default function AgentFormPage() {
       employee_id: '',
       role: 'agent',
       password: '',
+      hire_date: '',
+      reg_people_pct: 0,
+      reg_quantitative_pct: 0,
+      reg_qualitative_pct: 0,
+      super_reg_pct: 0,
+      equipment_pct: 5,
+      seniority_months: 0,
+      holiday_compensation_factor: 0.5,
+      vacation_plus_factor: 0,
     },
   });
 
   const profileQuery = useQuery({
     queryKey: ['profiles', id],
-    queryFn: () => api.get<{ id: string; first_name: string; last_name: string; email: string; employee_id: string | null; role: 'admin' | 'supervisor' | 'agent' }>(`/profiles/${id}`),
+    queryFn: () => api.get<{
+      id: string; first_name: string; last_name: string; email: string;
+      employee_id: string | null; role: 'admin' | 'supervisor' | 'agent';
+      hire_date: string | null;
+      reg_people_pct: number; reg_quantitative_pct: number; reg_qualitative_pct: number;
+      super_reg_pct: number; equipment_pct: number; seniority_months: number;
+      holiday_compensation_factor: number; vacation_plus_factor: number;
+    }>(`/profiles/${id}`),
     enabled: isEditing,
   });
 
@@ -95,17 +124,39 @@ export default function AgentFormPage() {
       employee_id: profileQuery.data.employee_id ?? '',
       role: profileQuery.data.role,
       password: '',
+      hire_date: profileQuery.data.hire_date ?? '',
+      reg_people_pct: Number(profileQuery.data.reg_people_pct ?? 0) * 100,
+      reg_quantitative_pct: Number(profileQuery.data.reg_quantitative_pct ?? 0) * 100,
+      reg_qualitative_pct: Number(profileQuery.data.reg_qualitative_pct ?? 0) * 100,
+      super_reg_pct: Number(profileQuery.data.super_reg_pct ?? 0) * 100,
+      equipment_pct: Number(profileQuery.data.equipment_pct ?? 0) * 100,
+      seniority_months: Number(profileQuery.data.seniority_months ?? 0),
+      holiday_compensation_factor: Number(profileQuery.data.holiday_compensation_factor ?? 0),
+      vacation_plus_factor: Number(profileQuery.data.vacation_plus_factor ?? 0),
     });
   }, [form, profileQuery.data]);
 
   const saveProfileMutation = useMutation({
     mutationFn: async (values: ProfileFormValues) => {
+      const settlementParams = {
+        hire_date: values.hire_date || null,
+        reg_people_pct: values.reg_people_pct / 100,
+        reg_quantitative_pct: values.reg_quantitative_pct / 100,
+        reg_qualitative_pct: values.reg_qualitative_pct / 100,
+        super_reg_pct: values.super_reg_pct / 100,
+        equipment_pct: values.equipment_pct / 100,
+        seniority_months: values.seniority_months,
+        holiday_compensation_factor: values.holiday_compensation_factor,
+        vacation_plus_factor: values.vacation_plus_factor,
+      };
+
       if (isEditing && id) {
         return api.patch(`/profiles/${id}`, {
           first_name: values.first_name,
           last_name: values.last_name,
           employee_id: values.employee_id || null,
           role: values.role,
+          ...settlementParams,
         });
       }
 
@@ -116,6 +167,7 @@ export default function AgentFormPage() {
         employee_id: values.employee_id || null,
         role: values.role,
         password: values.password,
+        ...settlementParams,
       });
     },
     onSuccess: async (result) => {
@@ -160,6 +212,14 @@ export default function AgentFormPage() {
   });
 
   const handleProfileSubmit = form.handleSubmit((values) => saveProfileMutation.mutate(values));
+
+  // Se recalculan mientras se escribe, para no tener que sumar de cabeza
+  const watched = form.watch();
+  const regTotal =
+    Number(watched.reg_people_pct || 0) +
+    Number(watched.reg_quantitative_pct || 0) +
+    Number(watched.reg_qualitative_pct || 0);
+  const seniorityMonths = Number(watched.seniority_months || 0);
 
   const handleRatesSubmit = rateForm.handleSubmit((values) => {
     if (!id) return;
@@ -224,6 +284,10 @@ export default function AgentFormPage() {
                 <option value="agent">Agente</option>
               </select>
             </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Fecha de ingreso</label>
+              <input className={inputClass} type="date" {...form.register('hire_date')} />
+            </div>
             {!isEditing ? (
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">Contraseña</label>
@@ -231,6 +295,92 @@ export default function AgentFormPage() {
                 <p className="mt-1 text-xs text-red-600">{form.formState.errors.password?.message}</p>
               </div>
             ) : null}
+          </div>
+
+          {/* ── Parámetros de liquidación ── */}
+          <div className="border-t border-gray-200 pt-4">
+            <h2 className="text-base font-semibold text-gray-900">Parámetros de liquidación</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Los conceptos que el motor calcula sobre el subtotal de horas de cada período.
+            </p>
+
+            <div className="mt-4 rounded-lg border border-gray-200 p-4">
+              <div className="mb-1 flex items-baseline justify-between gap-3">
+                <h3 className="text-sm font-medium text-gray-900">
+                  Premio a la Excelencia (REG) — valores por defecto
+                </h3>
+                <span className="text-sm text-gray-500">
+                  Total: <strong className="text-gray-900">{regTotal.toLocaleString('es-AR', { maximumFractionDigits: 2 })}%</strong>
+                </span>
+              </div>
+              <p className="mb-3 text-xs text-gray-500">
+                Lo que se liquida sale de{' '}
+                <Link to="/period-params" className="text-blue-600 hover:text-blue-700">
+                  Evaluación mensual
+                </Link>
+                : el REG depende de cómo performó el agente cada mes. Esto es sólo el valor
+                con el que se precarga un mes nuevo.
+              </p>
+              <div className="grid gap-4 md:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Gestión de personas</label>
+                  <div className="relative">
+                    <input className={inputClass} type="number" min="0" max="100" step="0.5" {...form.register('reg_people_pct')} />
+                    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-gray-400">%</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Cuantitativo</label>
+                  <div className="relative">
+                    <input className={inputClass} type="number" min="0" max="100" step="0.5" {...form.register('reg_quantitative_pct')} />
+                    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-gray-400">%</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Cualitativo</label>
+                  <div className="relative">
+                    <input className={inputClass} type="number" min="0" max="100" step="0.5" {...form.register('reg_qualitative_pct')} />
+                    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-gray-400">%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">SUPER REG (por defecto)</label>
+                <div className="relative">
+                  <input className={inputClass} type="number" min="0" max="100" step="0.5" {...form.register('super_reg_pct')} />
+                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-gray-400">%</span>
+                </div>
+                <p className="mt-1 text-xs text-gray-500">Se carga por mes en Evaluación mensual</p>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Reintegro por uso de equipos</label>
+                <div className="relative">
+                  <input className={inputClass} type="number" min="0" max="100" step="0.5" {...form.register('equipment_pct')} />
+                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-gray-400">%</span>
+                </div>
+                <p className="mt-1 text-xs text-gray-500">Sobre el subtotal</p>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Meses de antigüedad reconocidos</label>
+                <input className={inputClass} type="number" min="0" step="1" {...form.register('seniority_months')} />
+                <p className="mt-1 text-xs text-gray-500">
+                  0,08333% por mes = {(seniorityMonths * 0.08333).toLocaleString('es-AR', { maximumFractionDigits: 4 })}% del subtotal
+                </p>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Factor de compensación por feriado</label>
+                <input className={inputClass} type="number" min="0" max="2" step="0.05" {...form.register('holiday_compensation_factor')} />
+                <p className="mt-1 text-xs text-gray-500">Proporción del valor hora por feriado no trabajado</p>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Factor de plus vacacional</label>
+                <input className={inputClass} type="number" min="0" max="2" step="0.05" {...form.register('vacation_plus_factor')} />
+                <p className="mt-1 text-xs text-gray-500">0 = sin plus</p>
+              </div>
+            </div>
           </div>
 
           {saveProfileMutation.error ? <p className="text-sm text-red-600">{(saveProfileMutation.error as Error).message}</p> : null}
