@@ -1,0 +1,33 @@
+# ─────────────────────────────────────────────────────────────────
+# Netlify — sólo el frontend
+# ─────────────────────────────────────────────────────────────────
+# El repo es un monorepo con workspaces, así que la base queda en la raíz
+# (donde está el package-lock) y se publica únicamente el build de `frontend`.
+#
+# Falta una variable, que se carga en el dashboard porque cambia según el
+# entorno: VITE_API_URL, con la raíz del backend en Render.
+# ─────────────────────────────────────────────────────────────────
+
+[build]
+  command = "npm run build -w frontend"
+  publish = "frontend/dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# El ruteo es del lado del cliente. Sin esta redirección, entrar directo a
+# /pre-settlements —o simplemente recargar la página— devuelve 404, porque
+# Netlify busca un archivo con ese nombre y no existe.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# La app muestra datos de liquidación de gente real: no hay razón para que
+# se pueda embeber en un iframe ajeno ni para filtrar la URL al navegar afuera
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"

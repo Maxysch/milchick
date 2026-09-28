@@ -1,6 +1,16 @@
 import { supabase } from './supabase';
 
-const API_BASE = '/api';
+/**
+ * Raíz de la API.
+ *
+ * Sin `VITE_API_URL` las llamadas salen a `/api` relativo: es lo que hace
+ * falta en desarrollo, donde el proxy de Vite las manda al backend, y también
+ * si algún día front y back terminan en el mismo dominio.
+ *
+ * Con el backend en otro dominio —Render, por ejemplo— la variable lleva su
+ * raíz, sin `/api`: `https://milchick-api.onrender.com`.
+ */
+const API_BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '') + '/api';
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const { data: { session } } = await supabase.auth.getSession();

@@ -1,0 +1,39 @@
+# ─────────────────────────────────────────────────────────────────
+# Render — sólo el backend
+# ─────────────────────────────────────────────────────────────────
+# Con este archivo en el repo, "New > Blueprint" levanta el servicio sin
+# configurar nada a mano salvo los secretos.
+#
+# El servicio de agentes (`agent/`) no está acá a propósito: necesita una API
+# key de OpenAI que se paga aparte, y sin él la app funciona entera salvo los
+# dos chats. Cuando haga falta, es otro bloque igual a este.
+# ─────────────────────────────────────────────────────────────────
+
+services:
+  - type: web
+    name: milchick-api
+    runtime: node
+    plan: free
+
+    # `--include=dev` porque Render define NODE_ENV=production, y sin las
+    # devDependencies no está esbuild para compilar
+    buildCommand: npm ci --include=dev && npm run build -w backend
+    startCommand: npm start -w backend
+
+    healthCheckPath: /api/health
+
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+
+      # Los secretos se cargan en el dashboard. `sync: false` es lo que evita
+      # que terminen versionados en el repo.
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+
+      # La URL del frontend en Netlify. Mientras quede vacía la API acepta
+      # llamadas de cualquier origen.
+      - key: CORS_ORIGIN
+        sync: false
