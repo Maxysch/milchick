@@ -28,6 +28,7 @@ import {
 } from './settlement-calc.js';
 import fixture from './__fixtures__/julio-2026.json' with { type: 'json' };
 import tope from './__fixtures__/tope-julio-2026.json' with { type: 'json' };
+import agosto from './__fixtures__/agosto-2026.json' with { type: 'json' };
 
 // ─────────────────────────────────────────────────────────────────────
 // Clasificación de bandas
@@ -1120,5 +1121,192 @@ describe('computeItemAmount', () => {
     expect(computeItemAmount(reg, nuevo)).toBeCloseTo(reg.amount / 2, 4);
     expect(computeItemAmount(fnt, nuevo)).toBeCloseTo(fnt.amount, 4);
     expect(computeItemAmount(mono, nuevo)).toBe(mono.amount);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// Agosto 2026
+// ─────────────────────────────────────────────────────────────────────
+describe('de punta a punta: esquema → neto (agosto 2026)', () => {
+  /**
+   * Agosto cambia la nómina: se va Priscila Ferreyra y entran seis agentes.
+   * Cinco de ellos arrancan el 07/08 con inducción y una semana de
+   * capacitación, así que su primera quincena no sale del esquema.
+   *
+   * Cada desvío declara el dato que falta. El test no se conforma con fijar la
+   * diferencia: exige que ese dato la cierre al centavo, que es la única forma
+   * de saber que la causa es esa y no otra que da parecido.
+   */
+  interface Ajuste {
+    slots?: (s: ScheduleSlot[]) => ScheduleSlot[];
+    /** Líneas que un supervisor tendría que haber cargado */
+    extra?: OvertimeRecord[];
+    /** El esquema recién entra en vigencia en esta fecha */
+    esquemaDesde?: string;
+    /** Días anteriores a la vigencia, tomados de lo que se liquidó */
+    reconstruirPrevios?: boolean;
+    /** La planilla calcula el feriado sobre otra cantidad de horas */
+    fnt?: number;
+    /** Un ítem por horas a valor diurna LD */
+    itemHoras?: number;
+  }
+
+  const DESVIOS: Record<string, { horas: number; motivo: string; arregla: Ajuste }> = {
+    'Paola Farías': {
+      horas: -15,
+      motivo: '45 min por día de compensación adentro de la jornada, más un ajuste de 40 min',
+      arregla: {
+        slots: (s) => s.map((x) => ({ ...x, end_time: '18:45' })),
+        fnt: 9,          // la planilla compensa el feriado sobre las 9 h base
+        itemHoras: 0.66, // '=(9*E43*D59)+(E43*0,66)'
+      },
+    },
+    'María Sol Olaviaga': {
+      horas: -2,
+      motivo: 'cobertura del viernes 14, liquidada como horas normales y sin excepción cargada',
+      arregla: {
+        extra: [{ date: '2026-08-14', hours: 2, tier: 'normal' } as OvertimeRecord],
+      },
+    },
+    'Walter Palavecino': {
+      horas: -4,
+      motivo: 'el esquema sigue diciendo 4 h los jueves y las marcaciones muestran 5',
+      arregla: {
+        slots: (s) => s.map((x) => (x.day_of_week === 4 ? { ...x, end_time: '13:00' } : x)),
+      },
+    },
+    'Vidal Bárbara': {
+      horas: -6,
+      motivo: 'capacitación el sábado 01/08, fuera de todo esquema',
+      arregla: {
+        extra: [{ date: '2026-08-01', hours: 6, tier: 'normal' } as OvertimeRecord],
+      },
+    },
+    ...Object.fromEntries(
+      ['Di Mario Norberto', 'Menéndez Lourdes', 'Noverazco Pamela',
+       'Papaianni Sabrina', 'Rodriguez Gabriela'].map((nombre) => [
+        nombre,
+        {
+          horas: 31,
+          motivo: 'alta el 07/08: el motor proyecta el mes entero porque no conoce la fecha de ingreso',
+          // El feriado del 17 queda adentro de la vigencia para que la
+          // compensación salga igual que en la planilla.
+          arregla: { esquemaDesde: '2026-08-17', reconstruirPrevios: true },
+        },
+      ])
+    ),
+  };
+
+  /** Micaela es el único cambio deliberado: el Adicional pasa de 20% a 25%. */
+  const CORRECCION_ADICIONAL: Record<string, number> = { 'Micaela Abraham': 1034.95 };
+
+  const diasDeAgosto2026 = (): DayContext[] => {
+    const feriados = new Set(agosto.holidays);
+    const days: DayContext[] = [];
+    for (let d = 1; d <= 31; d++) {
+      const date = `2026-08-${String(d).padStart(2, '0')}`;
+      days.push({ date, isHoliday: feriados.has(date), exception: null });
+    }
+    return days;
+  };
+
+  function liquidar(a: (typeof agosto.agents)[number], aj: Ajuste = {}) {
+    const slots = aj.slots ? aj.slots(a.schedule as ScheduleSlot[]) : (a.schedule as ScheduleSlot[]);
+
+    const previos: OvertimeRecord[] = aj.reconstruirPrevios
+      ? Object.entries(a.dailyNormalHours)
+          .filter(([date, h]) => date < aj.esquemaDesde! && h > 0)
+          .map(([date, hours]) => ({ date, hours, tier: 'normal' }) as OvertimeRecord)
+      : [];
+
+    const built = buildDailyLines({
+      days: diasDeAgosto2026(),
+      schedulesByDate: (date) => {
+        if (aj.esquemaDesde && date < aj.esquemaDesde) return [];
+        const jsDow = new Date(date + 'T12:00:00').getDay();
+        return slots.filter((s) => s.day_of_week === jsDow);
+      },
+      overtime: [...(a.overtime as OvertimeRecord[]), ...(aj.extra ?? []), ...previos],
+    });
+
+    const subtotal = built.lines.reduce(
+      (s, l) => s + l.hours * computeRate(a.baseRate, l.band, l.tier, DEFAULT_RATE_FACTORS),
+      0
+    );
+    const conceptos = computeConcepts({
+      subtotal,
+      baseRate: a.baseRate,
+      unworkedHolidayHours: aj.fnt ?? built.unworkedHolidayHours,
+      vacationHours: built.vacationHours,
+      params: a.params as SettlementParams,
+    });
+    const item = aj.itemHoras
+      ? computeItemAmount(
+          { kind: 'hourly', quantity: aj.itemHoras, band: 'day_ld', tier: 'normal', factor: 1 },
+          { subtotal, baseRate: a.baseRate, factors: DEFAULT_RATE_FACTORS }
+        )
+      : 0;
+
+    return {
+      horas: built.lines.reduce((s, l) => s + l.hours, 0),
+      neto: roundCents(subtotal + conceptos.reduce((s, c) => s + c.amount, 0) + a.manualItemsTotal + item),
+    };
+  }
+
+  const sinDesvio = agosto.agents.filter((a) => !(a.agent in DESVIOS));
+
+  it('la nómina pasa a 18 agentes y todos tienen esquema', () => {
+    expect(agosto.agents).toHaveLength(18);
+    expect(agosto.agents.filter((a) => a.schedule === null)).toHaveLength(0);
+    // Priscila Ferreyra, la única sin esquema en julio, ya no está
+    expect(agosto.agents.map((a) => a.agent)).not.toContain('Ferreyra Priscila');
+  });
+
+  it.each(sinDesvio.map((a) => [a.agent, a] as const))(
+    'parte del esquema y llega al neto exacto de %s',
+    (nombre, a) => {
+      const r = liquidar(a);
+      expect(r.horas).toBeCloseTo(a.expectedHours, 4);
+      expect(r.neto).toBeCloseTo(a.expected.net + (CORRECCION_ADICIONAL[nombre] ?? 0), 2);
+    }
+  );
+
+  it.each(Object.entries(DESVIOS))(
+    'el desvío de %s es el conocido y lo cierra el dato que falta',
+    (nombre, esperado) => {
+      const a = agosto.agents.find((x) => x.agent === nombre)!;
+
+      expect(liquidar(a).horas - a.expectedHours).toBeCloseTo(esperado.horas, 3);
+
+      const corregido = liquidar(a, esperado.arregla);
+      expect(corregido.horas).toBeCloseTo(a.expectedHours, 4);
+      expect(corregido.neto).toBeCloseTo(a.expected.net, 2);
+    }
+  );
+
+  it('no queda ninguna diferencia sin explicar', () => {
+    const conDiferencia = agosto.agents
+      .filter((a) => Math.abs(liquidar(a).neto - a.expected.net) > 0.01)
+      .map((a) => a.agent)
+      .sort();
+
+    expect(conDiferencia).toEqual(
+      [...Object.keys(DESVIOS), ...Object.keys(CORRECCION_ADICIONAL)].sort()
+    );
+  });
+
+  it('con los datos cargados, los 18 cierran contra la planilla', () => {
+    const neto = (a: (typeof agosto.agents)[number]) =>
+      liquidar(a, DESVIOS[a.agent]?.arregla ?? {}).neto;
+
+    const netoMotor = agosto.agents.reduce((s, a) => s + neto(a), 0);
+    const netoPlanilla = agosto.agents.reduce((s, a) => s + a.expected.net, 0);
+
+    // Lo único que sobra es la corrección del Adicional de Micaela: la planilla
+    // le liquidó 20% donde el resto de las hojas dicen 25%.
+    const correccion = Object.values(CORRECCION_ADICIONAL).reduce((s, v) => s + v, 0);
+    // Un dígito de tolerancia: cada neto se redondea a centavos por separado y
+    // sumar dieciocho arrastra menos de un centavo de diferencia.
+    expect(netoMotor - netoPlanilla).toBeCloseTo(correccion, 1);
   });
 });

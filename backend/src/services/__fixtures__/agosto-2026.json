@@ -1,0 +1,1973 @@
+{
+  "_comment": "Datos reales de la liquidación de 2026-08, extraídos con validacion/generar_fixture.py. No editar a mano.",
+  "gridPeriod": {
+    "from": "2026-08-01",
+    "to": "2026-08-31"
+  },
+  "holidays": [
+    "2026-08-17"
+  ],
+  "agents": [
+    {
+      "agent": "Yanina Benitez",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 120.0
+        },
+        {
+          "band": "day_ld",
+          "tier": "additional",
+          "hours": 5.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "09:00",
+          "end_time": "13:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 1,
+          "start_time": "15:00",
+          "end_time": "18:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "08:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "11:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "12:00",
+          "end_time": "16:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "12:00",
+          "end_time": "16:00",
+          "client_id": null
+        }
+      ],
+      "dailyNormalHours": {
+        "2026-08-03": 7.0,
+        "2026-08-04": 7.0,
+        "2026-08-05": 8.0,
+        "2026-08-06": 4.0,
+        "2026-08-07": 4.0,
+        "2026-08-10": 7.0,
+        "2026-08-11": 7.0,
+        "2026-08-12": 8.0,
+        "2026-08-13": 4.0,
+        "2026-08-14": 4.0,
+        "2026-08-18": 7.0,
+        "2026-08-19": 8.0,
+        "2026-08-20": 4.0,
+        "2026-08-21": 4.0,
+        "2026-08-24": 7.0,
+        "2026-08-25": 7.0,
+        "2026-08-26": 8.0,
+        "2026-08-27": 4.0,
+        "2026-08-28": 4.0,
+        "2026-08-31": 7.0
+      },
+      "overtime": [
+        {
+          "date": "2026-08-04",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-06",
+          "hours": 2.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-07",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-25",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        }
+      ],
+      "expectedHours": 125.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.04,
+        "super_reg_pct": 0.1,
+        "equipment_pct": 0.05,
+        "seniority_months": 68,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 7.0,
+      "vacationHours": 72.0,
+      "manualItemsTotal": 61032.18,
+      "manualItems": [
+        {
+          "concepto": "Reintegro Gastos",
+          "importe": 61032.18
+        }
+      ],
+      "expected": {
+        "subtotal": 510070.2366,
+        "net": 741663.3606,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Paola Farías",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 195.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "09:00",
+          "end_time": "18:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "09:00",
+          "end_time": "18:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "09:00",
+          "end_time": "18:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "09:00",
+          "end_time": "18:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "09:00",
+          "end_time": "18:00",
+          "client_id": null
+        }
+      ],
+      "dailyNormalHours": {
+        "2026-08-03": 9.75,
+        "2026-08-04": 9.75,
+        "2026-08-05": 9.75,
+        "2026-08-06": 9.75,
+        "2026-08-07": 9.75,
+        "2026-08-10": 9.75,
+        "2026-08-11": 9.75,
+        "2026-08-12": 9.75,
+        "2026-08-13": 9.75,
+        "2026-08-14": 9.75,
+        "2026-08-18": 9.75,
+        "2026-08-19": 9.75,
+        "2026-08-20": 9.75,
+        "2026-08-21": 9.75,
+        "2026-08-24": 9.75,
+        "2026-08-25": 9.75,
+        "2026-08-26": 9.75,
+        "2026-08-27": 9.75,
+        "2026-08-28": 9.75,
+        "2026-08-31": 9.75
+      },
+      "overtime": [],
+      "expectedHours": 195.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.04,
+        "super_reg_pct": 0.1,
+        "equipment_pct": 0.05,
+        "seniority_months": 33,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 9.0,
+      "vacationHours": 0.0,
+      "manualItemsTotal": 241370.9,
+      "manualItems": [
+        {
+          "concepto": "Reintegro traslados hijos 20 días hábiles Agosto 2026",
+          "importe": 90000.0
+        },
+        {
+          "concepto": "Comisión x Ventas Variable No Habitual JULIO 2026 El Práctico",
+          "importe": 80873.72
+        },
+        {
+          "concepto": "Reintegro Gastos Monotributo",
+          "importe": 70497.18
+        }
+      ],
+      "expected": {
+        "subtotal": 787831.2565,
+        "net": 1268671.691,
+        "additionalPctInSheet": 0.2
+      }
+    },
+    {
+      "agent": "María Sol Olaviaga",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 122.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "09:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "09:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "09:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "09:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "09:00",
+          "end_time": "15:00",
+          "client_id": null
+        }
+      ],
+      "dailyNormalHours": {
+        "2026-08-03": 6.0,
+        "2026-08-04": 6.0,
+        "2026-08-05": 6.0,
+        "2026-08-06": 6.0,
+        "2026-08-07": 6.0,
+        "2026-08-10": 6.0,
+        "2026-08-11": 6.0,
+        "2026-08-12": 6.0,
+        "2026-08-13": 6.0,
+        "2026-08-14": 8.0,
+        "2026-08-18": 6.0,
+        "2026-08-19": 6.0,
+        "2026-08-20": 6.0,
+        "2026-08-21": 6.0,
+        "2026-08-24": 6.0,
+        "2026-08-25": 6.0,
+        "2026-08-26": 6.0,
+        "2026-08-27": 6.0,
+        "2026-08-28": 6.0,
+        "2026-08-31": 6.0
+      },
+      "overtime": [],
+      "expectedHours": 122.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.03,
+        "reg_qualitative_pct": 0.03,
+        "super_reg_pct": 0.1,
+        "equipment_pct": 0.05,
+        "seniority_months": 76,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 6.0,
+      "vacationHours": 72.0,
+      "manualItemsTotal": 70497.18,
+      "manualItems": [
+        {
+          "concepto": "Reintegro Gastos Monotributo",
+          "importe": 70497.18
+        }
+      ],
+      "expected": {
+        "subtotal": 492899.5553,
+        "net": 729957.8282,
+        "additionalPctInSheet": 0.2
+      }
+    },
+    {
+      "agent": "Walter Palavecino",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 120.0
+        },
+        {
+          "band": "day_ld",
+          "tier": "additional",
+          "hours": 4.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "08:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "08:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "08:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "08:00",
+          "end_time": "12:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "08:00",
+          "end_time": "12:00",
+          "client_id": null
+        }
+      ],
+      "dailyNormalHours": {
+        "2026-08-03": 7.0,
+        "2026-08-04": 7.0,
+        "2026-08-05": 7.0,
+        "2026-08-06": 5.0,
+        "2026-08-07": 4.0,
+        "2026-08-10": 7.0,
+        "2026-08-11": 7.0,
+        "2026-08-12": 7.0,
+        "2026-08-13": 5.0,
+        "2026-08-14": 4.0,
+        "2026-08-18": 7.0,
+        "2026-08-19": 7.0,
+        "2026-08-20": 5.0,
+        "2026-08-21": 4.0,
+        "2026-08-24": 7.0,
+        "2026-08-25": 7.0,
+        "2026-08-26": 7.0,
+        "2026-08-27": 5.0,
+        "2026-08-28": 4.0,
+        "2026-08-31": 7.0
+      },
+      "overtime": [
+        {
+          "date": "2026-08-20",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-21",
+          "hours": 3.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        }
+      ],
+      "expectedHours": 124.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.0,
+        "super_reg_pct": 0.0,
+        "equipment_pct": 0.05,
+        "seniority_months": 58,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 7.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 61032.18,
+      "manualItems": [
+        {
+          "concepto": "Reintegro Gastos Monotributo",
+          "importe": 61032.18
+        }
+      ],
+      "expected": {
+        "subtotal": 505020.0362,
+        "net": 660153.3066,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Giuliana Yaccusi",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 120.0
+        },
+        {
+          "band": "day_ld",
+          "tier": "additional",
+          "hours": 5.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "08:00",
+          "end_time": "11:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 1,
+          "start_time": "15:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "15:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "09:00",
+          "end_time": "12:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "15:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "10:00",
+          "end_time": "12:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        }
+      ],
+      "dailyNormalHours": {
+        "2026-08-03": 7.0,
+        "2026-08-04": 4.0,
+        "2026-08-05": 7.0,
+        "2026-08-06": 7.0,
+        "2026-08-07": 5.0,
+        "2026-08-10": 7.0,
+        "2026-08-11": 4.0,
+        "2026-08-12": 7.0,
+        "2026-08-13": 7.0,
+        "2026-08-14": 5.0,
+        "2026-08-18": 4.0,
+        "2026-08-19": 7.0,
+        "2026-08-20": 7.0,
+        "2026-08-21": 5.0,
+        "2026-08-24": 7.0,
+        "2026-08-25": 4.0,
+        "2026-08-26": 7.0,
+        "2026-08-27": 7.0,
+        "2026-08-28": 5.0,
+        "2026-08-31": 7.0
+      },
+      "overtime": [
+        {
+          "date": "2026-08-04",
+          "hours": 2.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-21",
+          "hours": 2.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-24",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        }
+      ],
+      "expectedHours": 125.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.04,
+        "super_reg_pct": 0.1,
+        "equipment_pct": 0.05,
+        "seniority_months": 54,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 7.0,
+      "vacationHours": 89.0,
+      "manualItemsTotal": 70497.18,
+      "manualItems": [
+        {
+          "concepto": "Reintegro Gastos Monotributo",
+          "importe": 70497.18
+        }
+      ],
+      "expected": {
+        "subtotal": 510070.2366,
+        "net": 745177.7792,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Micaela Abraham",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 120.0
+        },
+        {
+          "band": "day_ld",
+          "tier": "additional",
+          "hours": 4.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "08:00",
+          "end_time": "14:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 1,
+          "start_time": "16:00",
+          "end_time": "18:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "08:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "08:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "08:00",
+          "end_time": "12:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "08:00",
+          "end_time": "12:00",
+          "client_id": null
+        }
+      ],
+      "dailyNormalHours": {
+        "2026-08-03": 8.0,
+        "2026-08-04": 7.0,
+        "2026-08-05": 7.0,
+        "2026-08-06": 4.0,
+        "2026-08-07": 4.0,
+        "2026-08-10": 8.0,
+        "2026-08-11": 7.0,
+        "2026-08-12": 7.0,
+        "2026-08-13": 4.0,
+        "2026-08-14": 4.0,
+        "2026-08-18": 7.0,
+        "2026-08-19": 7.0,
+        "2026-08-20": 4.0,
+        "2026-08-21": 4.0,
+        "2026-08-24": 8.0,
+        "2026-08-25": 7.0,
+        "2026-08-26": 7.0,
+        "2026-08-27": 4.0,
+        "2026-08-28": 4.0,
+        "2026-08-31": 8.0
+      },
+      "overtime": [
+        {
+          "date": "2026-08-06",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-21",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-24",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-25",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        }
+      ],
+      "expectedHours": 124.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.04,
+        "super_reg_pct": 0.1,
+        "equipment_pct": 0.05,
+        "seniority_months": 37,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 8.0,
+      "vacationHours": 78.0,
+      "manualItemsTotal": 49527.18,
+      "manualItems": [
+        {
+          "concepto": "Reintegro Gastos Monotributo",
+          "importe": 49527.18
+        }
+      ],
+      "expected": {
+        "subtotal": 504212.0041,
+        "net": 711498.7413,
+        "additionalPctInSheet": 0.2
+      }
+    },
+    {
+      "agent": "Ascona Gonzalo",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 120.0
+        },
+        {
+          "band": "day_ld",
+          "tier": "additional",
+          "hours": 2.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "15:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "10:00",
+          "end_time": "19:00",
+          "client_id": null
+        }
+      ],
+      "dailyNormalHours": {
+        "2026-08-03": 7.0,
+        "2026-08-04": 4.0,
+        "2026-08-05": 4.0,
+        "2026-08-06": 6.0,
+        "2026-08-07": 9.0,
+        "2026-08-10": 6.0,
+        "2026-08-11": 5.0,
+        "2026-08-12": 4.0,
+        "2026-08-13": 6.0,
+        "2026-08-14": 9.0,
+        "2026-08-18": 5.0,
+        "2026-08-19": 4.0,
+        "2026-08-20": 6.0,
+        "2026-08-21": 9.0,
+        "2026-08-24": 6.0,
+        "2026-08-25": 5.0,
+        "2026-08-26": 4.0,
+        "2026-08-27": 6.0,
+        "2026-08-28": 9.0,
+        "2026-08-31": 6.0
+      },
+      "overtime": [
+        {
+          "date": "2026-08-19",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-25",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        }
+      ],
+      "expectedHours": 122.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.04,
+        "super_reg_pct": 0.1,
+        "equipment_pct": 0.05,
+        "seniority_months": 14,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 6.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 129527.18,
+      "manualItems": [
+        {
+          "concepto": "Bono Contribución Apoyo Gestión Calidad",
+          "importe": 80000.0
+        },
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 49527.18
+        }
+      ],
+      "expected": {
+        "subtotal": 494919.6355,
+        "net": 766071.0367,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Chirino Facundo",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 120.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "08:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "10:00",
+          "end_time": "17:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "08:00",
+          "end_time": "15:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "09:00",
+          "end_time": "14:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "10:00",
+          "end_time": "14:00",
+          "client_id": null
+        }
+      ],
+      "dailyNormalHours": {
+        "2026-08-03": 7.0,
+        "2026-08-04": 7.0,
+        "2026-08-05": 7.0,
+        "2026-08-06": 5.0,
+        "2026-08-07": 4.0,
+        "2026-08-10": 7.0,
+        "2026-08-11": 7.0,
+        "2026-08-12": 7.0,
+        "2026-08-13": 5.0,
+        "2026-08-14": 4.0,
+        "2026-08-18": 7.0,
+        "2026-08-19": 7.0,
+        "2026-08-20": 5.0,
+        "2026-08-21": 4.0,
+        "2026-08-24": 7.0,
+        "2026-08-25": 7.0,
+        "2026-08-26": 7.0,
+        "2026-08-27": 5.0,
+        "2026-08-28": 4.0,
+        "2026-08-31": 7.0
+      },
+      "overtime": [],
+      "expectedHours": 120.0,
+      "params": {
+        "reg_people_pct": 0.03,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.02,
+        "super_reg_pct": 0.0,
+        "equipment_pct": 0.05,
+        "seniority_months": 14,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 7.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 61032.18,
+      "manualItems": [
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 61032.18
+        }
+      ],
+      "expected": {
+        "subtotal": 484819.2348,
+        "net": 623826.2821,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Rodríguez Liliana",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 120.0
+        },
+        {
+          "band": "day_ld",
+          "tier": "additional",
+          "hours": 25.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "12:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        }
+      ],
+      "dailyNormalHours": {
+        "2026-08-03": 7.0,
+        "2026-08-04": 6.0,
+        "2026-08-05": 6.0,
+        "2026-08-06": 6.0,
+        "2026-08-07": 5.0,
+        "2026-08-10": 7.0,
+        "2026-08-11": 6.0,
+        "2026-08-12": 6.0,
+        "2026-08-13": 6.0,
+        "2026-08-14": 5.0,
+        "2026-08-18": 6.0,
+        "2026-08-19": 6.0,
+        "2026-08-20": 6.0,
+        "2026-08-21": 5.0,
+        "2026-08-24": 7.0,
+        "2026-08-25": 6.0,
+        "2026-08-26": 6.0,
+        "2026-08-27": 6.0,
+        "2026-08-28": 5.0,
+        "2026-08-31": 7.0
+      },
+      "overtime": [
+        {
+          "date": "2026-08-03",
+          "hours": 3.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": "Del 31//07/26"
+        },
+        {
+          "date": "2026-08-04",
+          "hours": 3.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-05",
+          "hours": 3.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-06",
+          "hours": 3.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-07",
+          "hours": 3.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-14",
+          "hours": 1.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-21",
+          "hours": 4.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-24",
+          "hours": 2.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-25",
+          "hours": 3.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        }
+      ],
+      "expectedHours": 145.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.04,
+        "super_reg_pct": 0.1,
+        "equipment_pct": 0.05,
+        "seniority_months": 3,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 7.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 61032.18,
+      "manualItems": [
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 61032.18
+        }
+      ],
+      "expected": {
+        "subtotal": 611074.2438,
+        "net": 840543.1703,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Alanis Brenda",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 120.0
+        },
+        {
+          "band": "day_ld",
+          "tier": "additional",
+          "hours": 8.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "12:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        }
+      ],
+      "dailyNormalHours": {
+        "2026-08-03": 6.0,
+        "2026-08-04": 7.0,
+        "2026-08-05": 6.0,
+        "2026-08-06": 5.0,
+        "2026-08-07": 6.0,
+        "2026-08-10": 6.0,
+        "2026-08-11": 7.0,
+        "2026-08-12": 6.0,
+        "2026-08-13": 5.0,
+        "2026-08-14": 6.0,
+        "2026-08-18": 7.0,
+        "2026-08-19": 6.0,
+        "2026-08-20": 5.0,
+        "2026-08-21": 6.0,
+        "2026-08-24": 6.0,
+        "2026-08-25": 7.0,
+        "2026-08-26": 6.0,
+        "2026-08-27": 5.0,
+        "2026-08-28": 6.0,
+        "2026-08-31": 6.0
+      },
+      "overtime": [
+        {
+          "date": "2026-08-05",
+          "hours": 3.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-21",
+          "hours": 3.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        },
+        {
+          "date": "2026-08-25",
+          "hours": 2.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        }
+      ],
+      "expectedHours": 128.0,
+      "params": {
+        "reg_people_pct": 0.03,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.04,
+        "super_reg_pct": 0.05,
+        "equipment_pct": 0.05,
+        "seniority_months": 3,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 6.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 49527.18,
+      "manualItems": [
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 49527.18
+        }
+      ],
+      "expected": {
+        "subtotal": 525220.8377,
+        "net": 687973.4573,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Moreno Laura",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 120.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "12:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        }
+      ],
+      "dailyNormalHours": {
+        "2026-08-03": 6.0,
+        "2026-08-04": 7.0,
+        "2026-08-05": 6.0,
+        "2026-08-06": 5.0,
+        "2026-08-07": 6.0,
+        "2026-08-10": 6.0,
+        "2026-08-11": 7.0,
+        "2026-08-12": 6.0,
+        "2026-08-13": 5.0,
+        "2026-08-14": 3.0,
+        "2026-08-18": 7.0,
+        "2026-08-19": 6.0,
+        "2026-08-20": 5.0,
+        "2026-08-21": 6.0,
+        "2026-08-24": 6.0,
+        "2026-08-25": 7.0,
+        "2026-08-26": 7.0,
+        "2026-08-27": 6.0,
+        "2026-08-28": 7.0,
+        "2026-08-31": 6.0
+      },
+      "overtime": [],
+      "expectedHours": 120.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.01,
+        "reg_qualitative_pct": 0.0,
+        "super_reg_pct": 0.0,
+        "equipment_pct": 0.05,
+        "seniority_months": 3,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 6.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 49527.18,
+      "manualItems": [
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 49527.18
+        }
+      ],
+      "expected": {
+        "subtotal": 484819.2348,
+        "net": 596160.8187,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Bissuti Stefano",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 120.0
+        },
+        {
+          "band": "day_ld",
+          "tier": "additional",
+          "hours": 2.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "12:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        }
+      ],
+      "dailyNormalHours": {
+        "2026-08-03": 7.0,
+        "2026-08-04": 6.0,
+        "2026-08-05": 6.0,
+        "2026-08-06": 6.0,
+        "2026-08-07": 5.0,
+        "2026-08-10": 7.0,
+        "2026-08-11": 6.0,
+        "2026-08-12": 6.0,
+        "2026-08-13": 6.0,
+        "2026-08-14": 5.0,
+        "2026-08-18": 6.0,
+        "2026-08-19": 6.0,
+        "2026-08-20": 6.0,
+        "2026-08-21": 5.0,
+        "2026-08-24": 7.0,
+        "2026-08-25": 6.0,
+        "2026-08-26": 6.0,
+        "2026-08-27": 6.0,
+        "2026-08-28": 5.0,
+        "2026-08-31": 7.0
+      },
+      "overtime": [
+        {
+          "date": "2026-08-25",
+          "hours": 2.0,
+          "tier": "additional",
+          "start_time": null,
+          "end_time": null,
+          "client_id": null,
+          "note": null
+        }
+      ],
+      "expectedHours": 122.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.02,
+        "super_reg_pct": 0.05,
+        "equipment_pct": 0.05,
+        "seniority_months": 2,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 7.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 75221.73,
+      "manualItems": [
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 75221.73
+        }
+      ],
+      "expected": {
+        "subtotal": 494919.6355,
+        "net": 674192.2939,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Di Mario Norberto",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 89.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "11:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "13:00",
+          "end_time": "18:00",
+          "client_id": null
+        }
+      ],
+      "dailyNormalHours": {
+        "2026-08-07": 1.0,
+        "2026-08-10": 4.0,
+        "2026-08-11": 6.0,
+        "2026-08-12": 6.0,
+        "2026-08-13": 6.0,
+        "2026-08-14": 6.0,
+        "2026-08-18": 6.0,
+        "2026-08-19": 6.0,
+        "2026-08-20": 5.0,
+        "2026-08-21": 5.0,
+        "2026-08-24": 8.0,
+        "2026-08-25": 6.0,
+        "2026-08-26": 6.0,
+        "2026-08-27": 5.0,
+        "2026-08-28": 5.0,
+        "2026-08-31": 8.0
+      },
+      "overtime": [],
+      "expectedHours": 89.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.04,
+        "super_reg_pct": 0.1,
+        "equipment_pct": 0.05,
+        "seniority_months": 1,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 8.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 72621.08,
+      "manualItems": [
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 72621.08
+        }
+      ],
+      "expected": {
+        "subtotal": 359574.2658,
+        "net": 538549.1866,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Menéndez Lourdes",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 89.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "11:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "13:00",
+          "end_time": "18:00",
+          "client_id": null
+        }
+      ],
+      "dailyNormalHours": {
+        "2026-08-07": 1.0,
+        "2026-08-10": 4.0,
+        "2026-08-11": 6.0,
+        "2026-08-12": 6.0,
+        "2026-08-13": 6.0,
+        "2026-08-14": 6.0,
+        "2026-08-18": 6.0,
+        "2026-08-19": 6.0,
+        "2026-08-20": 5.0,
+        "2026-08-21": 5.0,
+        "2026-08-24": 8.0,
+        "2026-08-25": 6.0,
+        "2026-08-26": 6.0,
+        "2026-08-27": 5.0,
+        "2026-08-28": 5.0,
+        "2026-08-31": 8.0
+      },
+      "overtime": [],
+      "expectedHours": 89.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.04,
+        "super_reg_pct": 0.1,
+        "equipment_pct": 0.05,
+        "seniority_months": 1,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 8.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 49527.18,
+      "manualItems": [
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 49527.18
+        }
+      ],
+      "expected": {
+        "subtotal": 359574.2658,
+        "net": 515455.2866,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Noverazco Pamela",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 89.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "12:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "12:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        }
+      ],
+      "dailyNormalHours": {
+        "2026-08-07": 1.0,
+        "2026-08-10": 4.0,
+        "2026-08-11": 6.0,
+        "2026-08-12": 6.0,
+        "2026-08-13": 6.0,
+        "2026-08-14": 6.0,
+        "2026-08-18": 6.0,
+        "2026-08-19": 7.0,
+        "2026-08-20": 5.0,
+        "2026-08-21": 5.0,
+        "2026-08-24": 7.0,
+        "2026-08-25": 6.0,
+        "2026-08-26": 7.0,
+        "2026-08-27": 5.0,
+        "2026-08-28": 5.0,
+        "2026-08-31": 7.0
+      },
+      "overtime": [],
+      "expectedHours": 89.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.04,
+        "super_reg_pct": 0.1,
+        "equipment_pct": 0.05,
+        "seniority_months": 1,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 7.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 61032.18,
+      "manualItems": [
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 61032.18
+        }
+      ],
+      "expected": {
+        "subtotal": 359574.2658,
+        "net": 524940.2065,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Papaianni Sabrina",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 89.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "12:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "12:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        }
+      ],
+      "dailyNormalHours": {
+        "2026-08-07": 1.0,
+        "2026-08-10": 4.0,
+        "2026-08-11": 6.0,
+        "2026-08-12": 6.0,
+        "2026-08-13": 6.0,
+        "2026-08-14": 6.0,
+        "2026-08-18": 6.0,
+        "2026-08-19": 7.0,
+        "2026-08-20": 5.0,
+        "2026-08-21": 5.0,
+        "2026-08-24": 7.0,
+        "2026-08-25": 6.0,
+        "2026-08-26": 7.0,
+        "2026-08-27": 5.0,
+        "2026-08-28": 5.0,
+        "2026-08-31": 7.0
+      },
+      "overtime": [],
+      "expectedHours": 89.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.03,
+        "super_reg_pct": 0.05,
+        "equipment_pct": 0.05,
+        "seniority_months": 1,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 7.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 61032.18,
+      "manualItems": [
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 61032.18
+        }
+      ],
+      "expected": {
+        "subtotal": 359574.2658,
+        "net": 503365.7505,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Rodriguez Gabriela",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 89.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "11:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "13:00",
+          "end_time": "18:00",
+          "client_id": null
+        }
+      ],
+      "dailyNormalHours": {
+        "2026-08-07": 1.0,
+        "2026-08-10": 4.0,
+        "2026-08-11": 6.0,
+        "2026-08-12": 6.0,
+        "2026-08-13": 6.0,
+        "2026-08-14": 6.0,
+        "2026-08-18": 6.0,
+        "2026-08-19": 6.0,
+        "2026-08-20": 5.0,
+        "2026-08-21": 5.0,
+        "2026-08-24": 8.0,
+        "2026-08-25": 6.0,
+        "2026-08-26": 6.0,
+        "2026-08-27": 5.0,
+        "2026-08-28": 5.0,
+        "2026-08-31": 8.0
+      },
+      "overtime": [],
+      "expectedHours": 89.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.03,
+        "super_reg_pct": 0.05,
+        "equipment_pct": 0.05,
+        "seniority_months": 1,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 8.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 61032.18,
+      "manualItems": [
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 61032.18
+        }
+      ],
+      "expected": {
+        "subtotal": 359574.2658,
+        "net": 505385.8307,
+        "additionalPctInSheet": 0.25
+      }
+    },
+    {
+      "agent": "Vidal Bárbara",
+      "baseRate": 4040.16029,
+      "buckets": [
+        {
+          "band": "day_ld",
+          "tier": "normal",
+          "hours": 126.0
+        }
+      ],
+      "schedule": [
+        {
+          "day_of_week": 1,
+          "start_time": "12:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 2,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 3,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 4,
+          "start_time": "13:00",
+          "end_time": "19:00",
+          "client_id": null
+        },
+        {
+          "day_of_week": 5,
+          "start_time": "14:00",
+          "end_time": "19:00",
+          "client_id": null
+        }
+      ],
+      "dailyNormalHours": {
+        "2026-08-01": 6.0,
+        "2026-08-03": 7.0,
+        "2026-08-04": 6.0,
+        "2026-08-05": 6.0,
+        "2026-08-06": 6.0,
+        "2026-08-07": 5.0,
+        "2026-08-10": 7.0,
+        "2026-08-11": 6.0,
+        "2026-08-12": 6.0,
+        "2026-08-13": 6.0,
+        "2026-08-14": 5.0,
+        "2026-08-18": 6.0,
+        "2026-08-19": 6.0,
+        "2026-08-20": 6.0,
+        "2026-08-21": 5.0,
+        "2026-08-24": 7.0,
+        "2026-08-25": 6.0,
+        "2026-08-26": 6.0,
+        "2026-08-27": 6.0,
+        "2026-08-28": 5.0,
+        "2026-08-31": 7.0
+      },
+      "overtime": [],
+      "expectedHours": 126.0,
+      "params": {
+        "reg_people_pct": 0.04,
+        "reg_quantitative_pct": 0.02,
+        "reg_qualitative_pct": 0.03,
+        "super_reg_pct": 0.05,
+        "equipment_pct": 0.05,
+        "seniority_months": 1,
+        "holiday_compensation_factor": 0.5,
+        "vacation_plus_factor": 0.0
+      },
+      "unworkedHolidayHours": 7.0,
+      "vacationHours": 36.0,
+      "manualItemsTotal": 61032.18,
+      "manualItems": [
+        {
+          "concepto": "Anticipo Monotributo mes en curso",
+          "importe": 61032.18
+        }
+      ],
+      "expected": {
+        "subtotal": 509060.1965,
+        "net": 681378.5747,
+        "additionalPctInSheet": 0.25
+      }
+    }
+  ]
+}
