@@ -14,7 +14,6 @@ const ClientFormPage = lazy(() => import('./pages/clients/ClientFormPage'));
 const ScheduleManagerPage = lazy(() => import('./pages/schedules/ScheduleManagerPage'));
 const ClockEntriesPage = lazy(() => import('./pages/clockEntries/ClockEntriesPage'));
 const ExceptionsPage = lazy(() => import('./pages/exceptions/ExceptionsPage'));
-const NormalizationPage = lazy(() => import('./pages/normalization/NormalizationPage'));
 const PreSettlementsListPage = lazy(() => import('./pages/preSettlements/PreSettlementsListPage'));
 const PreSettlementDetailPage = lazy(() => import('./pages/preSettlements/PreSettlementDetailPage'));
 const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'));
@@ -57,7 +56,6 @@ function App() {
               <Route path="/schedules" element={<ScheduleManagerPage />} />
               <Route path="/clock-entries" element={<ClockEntriesPage />} />
               <Route path="/exceptions" element={<ExceptionsPage />} />
-              <Route path="/normalization" element={<NormalizationPage />} />
               <Route path="/pre-settlements" element={<PreSettlementsListPage />} />
               <Route path="/pre-settlements/:id" element={<PreSettlementDetailPage />} />
               <Route path="/period-params" element={<PeriodParamsPage />} />

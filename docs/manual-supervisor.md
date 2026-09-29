@@ -137,17 +137,6 @@ esquema.
 > Un feriado que falta se liquida como día normal. Revisá que estén todos antes
 > de generar el mes.
 
-## Normalización
-
-Produce una versión ajustada de las marcaciones: recorta lo marcado antes de
-entrar y después de salir contra el esquema, y separa diurnas de nocturnas. Podés
-revisarla y corregirla a mano.
-
-> **No alimenta la liquidación.** La preliquidación lee las marcaciones crudas.
-> Es una herramienta de revisión, resabio del modelo anterior en el que se pagaba
-> lo marcado. Si querés ver quién se desvía del horario, sirve; para liquidar, no
-> hace falta pasar por acá.
-
 ## Evaluación mensual
 
 Por agente y por mes:

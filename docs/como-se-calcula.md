@@ -210,16 +210,3 @@ pagando.
 
 Corregir las horas de un día desde la tabla resuelve automáticamente el aviso de
 ese día y deja registro de quién lo cambió.
-
----
-
-## 8. Qué NO entra en el cálculo
-
-**Las marcaciones normalizadas.** El módulo de Normalización produce una versión
-ajustada de las marcaciones —recorta lo marcado antes de entrar y después de
-salir, contra el esquema— pero **la preliquidación no la usa**: lee las
-marcaciones crudas.
-
-Es un resabio del modelo anterior, cuando se pagaba lo marcado. Hoy sirve como
-herramienta de revisión, no como insumo del pago. Ver el [manual del
-administrador](manual-admin.md).

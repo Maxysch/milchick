@@ -85,15 +85,6 @@ en vez de borrar**: hay liquidaciones viejas que referencian al cliente.
 Los multiplicadores por defecto son: nocturno 1,13 · HD 1,0125 · adicional 1,25 ·
 extra 50% 1,5 · extra 100% 2,0.
 
-## Normalización
-
-Las reglas que ajustan las marcaciones crudas: recortan lo marcado antes de entrar
-y después de salir contra el esquema, y separan diurnas de nocturnas.
-
-> **No alimenta la liquidación.** La preliquidación lee las marcaciones crudas.
-> Quedó como herramienta de revisión del modelo anterior, cuando se pagaba lo
-> marcado.
-
 ## Feriados
 
 En **Feriados**: nombre, fecha y tipo —nacional o de la empresa—, y un selector de
