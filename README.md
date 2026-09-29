@@ -2,6 +2,15 @@
 
 Sistema de control de presentismo y preliquidación de honorarios para call center.
 
+## Manuales de uso
+
+Cómo se opera el sistema, por rol:
+
+- [Manual del agente](docs/manual-agente.md) — marcar, y nada más
+- [Manual del supervisor](docs/manual-supervisor.md) — el ciclo del mes, módulo por módulo
+- [Manual del administrador](docs/manual-admin.md) — altas, tarifas, esquemas y configuración
+- [Cómo se calcula la liquidación](docs/como-se-calcula.md) — la referencia del motor
+
 ## Estructura
 
 ```
