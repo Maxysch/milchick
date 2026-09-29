@@ -1,17 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-
-  "//": "shared se compila en el install para que ya esté cuando Vercel arma la función de api/",
   "installCommand": "npm install --include=dev && npm run build -w shared",
   "buildCommand": "npm run build -w frontend",
   "outputDirectory": "frontend/dist",
-
-  "//rewrites": "El ruteo es del lado del cliente: cualquier ruta que no sea de la API ni un archivo del build cae en index.html",
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
-
   "headers": [
     {
       "source": "/(.*)",
