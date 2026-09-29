@@ -87,6 +87,44 @@ Fecha, cantidad de horas, opcionalmente inicio y fin, cliente y nota. Y sobre to
 | | 7 h 20 | sólo 7 normales (no llega al umbral de 30 min) |
 | | 7 h 40 | 7 normales + 0,67 adicionales |
 
+## Cuál de los dos uso
+
+Las dos mitades de *Excepciones* responden preguntas distintas:
+
+| | Excepción | Horas fuera del esquema |
+|---|---|---|
+| Responde | **¿Qué clase de día fue?** | **¿Cuántas horas de más hizo?** |
+| Alcance | Un rango de días | Un día |
+| Lleva cantidad de horas | No | Sí |
+| Lleva tramo (recargo) | No | Sí |
+| Sobre las horas del esquema | Las **reinterpreta**: las suprime, las marca | Les **suma** |
+| Se topea contra lo marcado | No | Sí |
+
+Dicho corto: **la excepción habla del día, las horas hablan del trabajo extra.**
+Una resta o reclasifica lo que ya está; la otra agrega.
+
+No son excluyentes: un mismo día puede tener las dos.
+
+### Qué cargar en cada caso
+
+| Qué pasó | Qué cargás |
+|---|---|
+| Vacaciones del 1 al 15 | Excepción · Vacaciones, 01→15 |
+| Faltó sin aviso | Excepción · Ausencia |
+| Licencia por examen o duelo | Excepción · Licencia paga |
+| Se quedó 2 h después de su horario | Horas fuera del esquema · 2 h, tramo Adicional |
+| Vino un sábado que no le tocaba | Horas fuera del esquema · las horas que hizo |
+| Trabajó en un feriado, y ese día tenía esquema | Excepción · Cobertura extraordinaria |
+| Trabajó en un feriado que no era día suyo | Excepción · Cobertura extraordinaria **+** las horas |
+| Cubrió a un compañero en su propio horario | Nada: el esquema ya lo paga |
+| Entró y salió distinto, mismas horas | Nada: el total no cambia |
+| Ese día trabajó menos, de común acuerdo | Corregir las horas en la preliquidación |
+
+> **El único caso que no tiene una carga natural** es cuando el día se pagó
+> distinto del esquema: ni la excepción ni las horas extra lo cubren, porque una
+> no lleva cantidad y la otra sólo suma. Va corregido a mano en la preliquidación,
+> que deja registro de quién lo cambió.
+
 ## Feriados
 
 Nombre, fecha y tipo. El año se toma de la fecha.
