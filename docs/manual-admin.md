@@ -96,15 +96,15 @@ y después de salir contra el esquema, y separan diurnas de nocturnas.
 
 ## Feriados
 
-**No tienen pantalla todavía.** El sistema los usa —un feriado no trabajado no
-paga horas y genera la compensación— pero hoy se cargan por base de datos:
+En **Feriados**: nombre, fecha y tipo —nacional o de la empresa—, y un selector de
+año para ver los cargados.
 
-```sql
-insert into holidays (date, name) values ('2026-08-17', 'Paso a la Inmortalidad del Gral. San Martín');
-```
+Un feriado no trabajado **no paga horas**: las del esquema pasan a la
+*compensación por feriado no trabajado*. Si un agente igual trabajó ese día, se le
+carga una excepción de **cobertura extraordinaria**.
 
-Conviene cargar el año entero de una. **Si falta un feriado, ese día se liquida
-como día normal.**
+> **Si falta un feriado, ese día se liquida como día normal.** Conviene cargar el
+> año entero de una vez, apenas salen las fechas.
 
 ---
 
@@ -126,5 +126,5 @@ Antes de que se generen las preliquidaciones:
 - [ ] **Agentes sin esquema** y **Agentes sin tarifa** en cero
 - [ ] Las altas y bajas del mes están cargadas, con sus vigencias
 - [ ] Los cambios de horario se cargaron como esquema nuevo, no editando el viejo
-- [ ] Los feriados del mes están en la base
+- [ ] Los feriados del mes están cargados en **Feriados**
 - [ ] La **Evaluación mensual** está completa para todos

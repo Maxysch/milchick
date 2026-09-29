@@ -87,6 +87,18 @@ Fecha, cantidad de horas, opcionalmente inicio y fin, cliente y nota. Y sobre to
 | | 7 h 20 | sólo 7 normales (no llega al umbral de 30 min) |
 | | 7 h 40 | 7 normales + 0,67 adicionales |
 
+## Feriados
+
+Nombre, fecha y tipo. El año se toma de la fecha.
+
+Un feriado no trabajado no paga horas: las del esquema pasan a la *compensación
+por feriado*. Si alguien igual trabajó, cargale una **cobertura extraordinaria**
+en Excepciones, y las horas en *Horas fuera del esquema* si ese día no tenía
+esquema.
+
+> Un feriado que falta se liquida como día normal. Revisá que estén todos antes
+> de generar el mes.
+
 ## Normalización
 
 Produce una versión ajustada de las marcaciones: recorta lo marcado antes de
