@@ -30,11 +30,16 @@ devuelven *"Agent service unavailable"*.
   función fallaría.
 - **`buildCommand`** compila el frontend a `frontend/dist`, que es lo que
   Vercel publica.
-- **`api/[...path].ts`** es la API entera. Vercel no mantiene un proceso
+- **`api/index.ts`** es la API entera. Vercel no mantiene un proceso
   escuchando un puerto: invoca ese archivo una vez por request. Por eso la app
   de Express vive en `backend/src/app.ts` sin `listen`, y el archivo de `api/`
-  sólo la expone. El nombre `[...path]` hace que atienda todo lo que cuelga de
-  `/api` y que la ruta llegue entera a Express.
+  sólo la expone.
+- **La reescritura de `/api/*`** manda todo a esa función y le adjunta la ruta
+  original en `__ruta`, que el handler le devuelve a Express antes de pasarle
+  la request. No se usa la convención de archivos de Vercel a propósito: un
+  catch-all `api/[...path].ts` matcheaba **un solo segmento**, así que
+  `/api/health` llegaba y `/api/auth/me` moría en un NOT_FOUND del propio
+  Vercel, antes de tocar la app.
 - **La reescritura** manda a `index.html` cualquier ruta que no sea de la API
   ni un archivo del build. Sin eso, entrar directo a `/pre-settlements` —o
   recargar la página— da 404.
