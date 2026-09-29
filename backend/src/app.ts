@@ -4,6 +4,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
+import { supabaseAdmin } from './config/supabase.js';
+
 import authRoutes from './routes/auth.routes.js';
 import profileRoutes from './routes/profiles.routes.js';
 import clientRoutes from './routes/clients.routes.js';
@@ -49,9 +51,40 @@ app.use(cors(allowedOrigins.length > 0 ? { origin: allowedOrigins } : {}));
 app.use(express.json());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
-// Health check
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// Health check.
+//
+// Además de decir que la función arrancó, hace una lectura mínima a la base.
+// Eso distingue dos fallas que desde afuera se ven igual: la app caída y la
+// app viva pero sin poder leer —credencial equivocada, RLS, proyecto que no
+// es—. El identificador del proyecto no es secreto: ya viaja en el bundle que
+// descarga el navegador.
+app.get('/api/health', async (_req, res) => {
+  type Estado = { ok: boolean; code?: string | null; message?: string };
+
+  // Con tope: un health check que se cuelga esperando a la base es peor que
+  // uno que dice que la base no contesta.
+  const error = await Promise.race<Estado>([
+    supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .limit(1)
+      .then(({ error: e }) =>
+        e ? { ok: false, code: e.code ?? null, message: e.message } : { ok: true }
+      ),
+    new Promise<Estado>((resolve) => {
+      setTimeout(
+        () => resolve({ ok: false, code: 'TIMEOUT', message: 'La base no respondió en 3 s' }),
+        3000
+      ).unref?.();
+    }),
+  ]).then((estado) => (estado.ok ? null : estado));
+
+  res.json({
+    status: 'ok',
+    project: (process.env.SUPABASE_URL ?? '').replace(/^https?:\/\//, '').split('.')[0] || null,
+    database: error ?? { ok: true },
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // Routes

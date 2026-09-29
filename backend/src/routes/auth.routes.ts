@@ -39,7 +39,18 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
     .single();
 
   if (error) {
-    res.status(404).json({ error: 'Profile not found' });
+    // No es lo mismo "este usuario no tiene perfil" que "no pude leer la
+    // tabla". Los dos volvían como 404 y el frontend los mostraba igual: como
+    // si la sesión no valiera. Diagnosticar eso costaba varias vueltas.
+    const sinFila = error.code === 'PGRST116';
+    res.status(sinFila ? 404 : 500).json({
+      error: sinFila
+        ? 'No encontramos tu perfil'
+        : 'No se pudo leer el perfil',
+      detail: error.message,
+      code: error.code ?? null,
+      user_id: req.userId,
+    });
     return;
   }
 

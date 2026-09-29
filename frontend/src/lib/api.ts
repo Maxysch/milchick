@@ -18,6 +18,22 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   return { Authorization: `Bearer ${session.access_token}` };
 }
 
+/**
+ * Error de la API con lo necesario para entender qué pasó sin abrir las
+ * DevTools: el código HTTP y, cuando el backend lo manda, el detalle.
+ */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly detail?: string,
+    readonly code?: string | null
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
 async function request<T>(
   method: string,
   path: string,
@@ -36,8 +52,31 @@ async function request<T>(
 
   if (res.status === 204) return undefined as T;
 
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Request failed');
+  // Se lee como texto y después se parsea: si la API no está donde creemos,
+  // lo que vuelve es el HTML de la app y un `res.json()` pelado explota con
+  // un error de sintaxis que no dice nada del problema real.
+  const crudo = await res.text();
+  let data: Record<string, unknown> | null = null;
+  try {
+    data = crudo ? (JSON.parse(crudo) as Record<string, unknown>) : null;
+  } catch {
+    throw new ApiError(
+      `El servidor respondió algo que no es JSON (HTTP ${res.status})`,
+      res.status,
+      crudo.slice(0, 200)
+    );
+  }
+
+  if (!res.ok) {
+    const mensaje = typeof data?.error === 'string' ? data.error : 'La solicitud falló';
+    throw new ApiError(
+      mensaje,
+      res.status,
+      typeof data?.detail === 'string' ? data.detail : undefined,
+      typeof data?.code === 'string' ? data.code : null
+    );
+  }
+
   return data as T;
 }
 
