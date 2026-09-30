@@ -6,7 +6,8 @@ import { supabaseAdmin } from '../config/supabase.js';
 import { localToday } from '../config/time.js';
 import { addDays, type TimeBlock } from './settlement-calc.js';
 import { detectScheduleDrift, type DriftSuggestion } from './schedule-drift.js';
-import { BusinessError, loadAgentInputs, refreshDrafts } from './presettlement.service.js';
+import { loadAgentInputs } from './presettlement.service.js';
+import { changeDaySchedule } from './schedules.service.js';
 
 export interface AgentSuggestion extends DriftSuggestion {
   profile_id: string;
@@ -65,51 +66,5 @@ export async function applyScheduleSuggestion(input: {
   blocks: TimeBlock[];
   effective_from: string;
 }) {
-  const hasta = addDays(input.effective_from, -1);
-
-  const { data: vigentes } = await supabaseAdmin
-    .from('schedules')
-    .select('id, client_id, effective_from, effective_until')
-    .eq('profile_id', input.profile_id)
-    .eq('day_of_week', input.day_of_week)
-    .or(`effective_until.is.null,effective_until.gte.${input.effective_from}`);
-
-  const rows = (vigentes ?? []) as { id: string; client_id: string; effective_from: string }[];
-
-  // El cliente es obligatorio en el esquema: se toma el del bloque que se
-  // reemplaza, o el de cualquier otro día del agente
-  let clientId: string | null = rows.length ? rows[0].client_id : null;
-  if (!clientId) {
-    const { data: otro } = await supabaseAdmin
-      .from('schedules')
-      .select('client_id')
-      .eq('profile_id', input.profile_id)
-      .limit(1)
-      .maybeSingle();
-    clientId = (otro?.client_id as string | undefined) ?? null;
-  }
-  if (!clientId) throw new BusinessError('El agente no tiene ningún esquema del que tomar el cliente');
-  const cliente: string = clientId;
-
-  for (const r of rows) {
-    // Un bloque que empezaba en esa misma fecha o después se reemplaza entero
-    const { error } = r.effective_from >= input.effective_from
-      ? await supabaseAdmin.from('schedules').delete().eq('id', r.id)
-      : await supabaseAdmin.from('schedules').update({ effective_until: hasta }).eq('id', r.id);
-    if (error) throw new Error(error.message);
-  }
-
-  const { error } = await supabaseAdmin.from('schedules').insert(
-    input.blocks.map((b) => ({
-      profile_id: input.profile_id,
-      client_id: cliente,
-      day_of_week: input.day_of_week,
-      start_time: b.start_time,
-      end_time: b.end_time,
-      effective_from: input.effective_from,
-    }))
-  );
-  if (error) throw new Error(error.message);
-
-  await refreshDrafts({ profileId: input.profile_id, from: input.effective_from });
+  await changeDaySchedule(input);
 }

@@ -290,6 +290,15 @@ export const applyScheduleSuggestionSchema = z.object({
 });
 export type ApplyScheduleSuggestionInput = z.infer<typeof applyScheduleSuggestionSchema>;
 
+// Cambiar el horario de un día desde una fecha. Sin tramos, desde esa fecha es franco
+export const changeDayScheduleSchema = z.object({
+  profile_id: z.string().uuid(),
+  day_of_week: z.number().int().min(0).max(6),
+  blocks: z.array(timeBlockSchema.extend({ client_id: z.string().uuid().nullable().optional() })),
+  effective_from: z.string(),
+});
+export type ChangeDayScheduleInput = z.infer<typeof changeDayScheduleSchema>;
+
 export const setDayLinesSchema = z.object({
   lines: z.array(z.object({ band: bandEnum, tier: tierEnum, hours: z.number().min(0) })),
   note: z.string().nullable().optional(),

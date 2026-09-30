@@ -3,7 +3,13 @@ import { supabaseAdmin } from '../config/supabase.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { afterChange, minDate, sendError } from './_util.js';
 import { applyScheduleSuggestion, getScheduleSuggestions } from '../services/schedule-suggestions.service.js';
-import { applyScheduleSuggestionSchema, createScheduleSchema, updateScheduleSchema } from '@milchick/shared';
+import { changeDaySchedule, findOverlap, overlapMessage } from '../services/schedules.service.js';
+import {
+  applyScheduleSuggestionSchema,
+  changeDayScheduleSchema,
+  createScheduleSchema,
+  updateScheduleSchema,
+} from '@milchick/shared';
 
 const router = Router();
 router.use(authMiddleware);
@@ -74,10 +80,29 @@ router.post('/apply-suggestion', requireRole('admin', 'supervisor'), async (req,
   }
 });
 
+// Cambiar el horario de un día desde una fecha: cierra el vigente y crea el nuevo
+router.post('/change-day', requireRole('admin', 'supervisor'), async (req, res: Response) => {
+  const parsed = changeDayScheduleSchema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
+  try {
+    await changeDaySchedule(parsed.data);
+    res.status(204).send();
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
 // Create schedule entry
 router.post('/', requireRole('admin', 'supervisor'), async (req, res: Response) => {
   const parsed = createScheduleSchema.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
+  if (parsed.data.start_time === parsed.data.end_time) {
+    res.status(400).json({ error: 'El bloque no dura nada: el inicio y el fin son iguales' });
+    return;
+  }
+  // Un bloque que pisa a otro se pagaría dos veces
+  const pisado = await findOverlap(parsed.data.profile_id, parsed.data);
+  if (pisado) { res.status(409).json({ error: overlapMessage(pisado) }); return; }
 
   const { data, error } = await supabaseAdmin
     .from('schedules')
@@ -94,7 +119,23 @@ router.post('/', requireRole('admin', 'supervisor'), async (req, res: Response) 
 router.patch('/:id', requireRole('admin', 'supervisor'), async (req, res: Response) => {
   const parsed = updateScheduleSchema.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
-  const { data: antes } = await supabaseAdmin.from('schedules').select('profile_id, effective_from').eq('id', req.params.id).single();
+  const { data: antes } = await supabaseAdmin
+    .from('schedules')
+    .select('profile_id, day_of_week, start_time, end_time, effective_from, effective_until')
+    .eq('id', req.params.id)
+    .single();
+
+  if (antes) {
+    const queda = { ...antes, ...parsed.data } as {
+      day_of_week: number; start_time: string; end_time: string; effective_from: string; effective_until: string | null;
+    };
+    if (queda.start_time.slice(0, 5) === queda.end_time.slice(0, 5)) {
+      res.status(400).json({ error: 'El bloque no dura nada: el inicio y el fin son iguales' });
+      return;
+    }
+    const pisado = await findOverlap(antes.profile_id as string, queda, [String(req.params.id)]);
+    if (pisado) { res.status(409).json({ error: overlapMessage(pisado) }); return; }
+  }
 
   const { data, error } = await supabaseAdmin
     .from('schedules')
