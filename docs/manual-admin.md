@@ -7,6 +7,10 @@ Dentro de la aplicación las dos funciones son casi idénticas: **lo único
 exclusivo del administrador es borrar clientes.** La diferencia real está en las
 tareas de abajo, que nadie más debería tocar.
 
+Los cambios en agentes, tarifas, esquemas, feriados y configuración
+**recalculan solos** las preliquidaciones en borrador. Las confirmadas no se
+tocan.
+
 ---
 
 # Dar de alta gente
@@ -21,13 +25,31 @@ una:
 | Legajo, nombre, apellido, email | Identificación |
 | Contraseña | La inicial. Conviene que la cambie después |
 | **Rol** | Agente, Supervisor o Admin |
-| Fecha de ingreso | De acá salen los meses de antigüedad |
+| **Fecha de ingreso** | La antigüedad, y desde cuándo rige el esquema (ver abajo) |
 | **Tarifa base por hora** + vigencia desde | Lo que cobra |
 | Parámetros de liquidación | Ver abajo |
+| **Compensación diaria fija** | Minutos que se pagan cada día trabajado, además del plan |
 
 > Si en cambio invitás a alguien desde Supabase, el perfil se crea solo pero
 > **siempre con rol `agent`**. Hay que corregírselo a mano. Si alguien entra y no
 > ve el menú que debería, casi siempre es esto.
+
+### La fecha de ingreso importa
+
+- **Antes de esa fecha el esquema no rige**: no se paga nada por esquema. Si hubo
+  capacitación previa al alta, se carga como excepción con horario.
+- **Las primeras dos semanas se revisan siempre**: todos los días que no cierran
+  van a la bandeja, sin sugerencia y aunque sea un olvido de marcación. La
+  inducción no sigue el esquema: en agosto, los cinco ingresos del 07/08
+  tuvieron sus dos primeras semanas distintas del plan. Los días se ajustan en
+  *Configuración*.
+
+### La compensación diaria fija
+
+Para acuerdos del tipo "se le pagan 45 minutos más por día". Minutos por día y la
+banda a la que se pagan. Entran al subtotal —el REG, el SUPER REG, la antigüedad
+y el reintegro de equipos se calculan encima— y no se pagan en feriados,
+licencias ni ausencias.
 
 ## Parámetros de liquidación del agente
 
@@ -35,6 +57,7 @@ Son los valores **por defecto** del agente:
 
 - Gestión de personas, Cuantitativo, Cualitativo — los tres componentes del REG
 - Reintegro por uso de equipos — % sobre el subtotal
+- Meses de antigüedad reconocidos
 - Factor de compensación por feriado
 - Factor de plus vacacional
 
@@ -50,9 +73,6 @@ Son los valores **por defecto** del agente:
 Cada agente tiene **una sola tarifa base por hora**. Todo lo demás son
 multiplicadores globales que el sistema aplica solo.
 
-> Si a un agente le figuran valores base distintos según la fecha sin que haya
-> habido un aumento, es un error de carga, no una situación válida.
-
 Las tarifas tienen **vigencia desde**: un aumento se carga como tarifa nueva, no
 editando la anterior. Así los meses ya liquidados conservan lo que se pagó.
 
@@ -60,14 +80,33 @@ editando la anterior. Así los meses ya liquidados conservan lo que se pagó.
 
 Los bloques de cada agente por día de la semana, con cliente y vigencia.
 
-- **Jornada partida** → un bloque por tramo, no uno solo de punta a punta.
+- **Jornada partida** → un bloque por tramo, no uno solo de punta a punta. Los
+  márgenes se miden tramo por tramo.
 - **Cambio de horario** → cerrá el esquema viejo con fecha de fin y creá uno
   nuevo. No edites el vigente.
 
-> Un esquema desactualizado es la causa número uno de diferencias, y es
-> silenciosa: como se paga el esquema, nadie se entera hasta que alguien compara
-> con las marcaciones. El aviso **"Trabajó de más"** repetido todas las semanas en
-> el mismo día de la semana es la señal típica.
+> Un esquema desactualizado es la causa número uno de días a normalizar: el
+> agente marca bien, pero contra un horario que ya no es el suyo, y el mismo día
+> cae en la bandeja todas las semanas.
+
+### Las sugerencias de esquema
+
+Arriba de *Esquemas* aparece **"N esquemas parecen desactualizados"** cuando el
+sistema encuentra un agente que, el mismo día de la semana, marcó distinto a su
+esquema casi todas las semanas de las últimas ocho.
+
+Cada sugerencia muestra el esquema actual, cuántas semanas marcó distinto, el
+horario sugerido y **cuántos días a normalizar se evitan**. Sólo se propone si el
+horario nuevo al menos reduce esos días a la mitad.
+
+- Revisá el horario —se puede ajustar antes de aplicarlo: la sugerencia sale de
+  lo marcado, el acuerdo lo decidís vos— y la fecha **Desde**.
+- **Aplicar** cierra el esquema actual el día anterior y crea el nuevo. Los meses
+  ya liquidados no cambian; los borradores se recalculan.
+- La **X** la ignora por ahora.
+
+Sobre julio 2026 propuso tres cambios: el jueves de Walter (08:00–13:00) y el
+lunes y martes de Ascona. En agosto, con horarios más irregulares, ninguno.
 
 ## Clientes
 
@@ -76,22 +115,45 @@ en vez de borrar**: hay liquidaciones viejas que referencian al cliente.
 
 ## Configuración
 
+### Multiplicadores y período
+
 | Qué | Efecto |
 |---|---|
-| **Multiplicadores** — nocturno, HD, adicional, extras | Afectan **todos** los cálculos futuros. Tocalos sólo si cambió el acuerdo |
+| **Multiplicadores** — nocturno, HD, adicional, extras | Afectan **todos** los cálculos. Tocalos sólo si cambió el acuerdo |
 | **Día de corte** | En qué día arranca el período. Con `1`, mes calendario |
-| **Umbral de minutos** | Cuánto hay que trabajar de más para que las horas adicionales se paguen. Por defecto 30 |
 
 Los multiplicadores por defecto son: nocturno 1,13 · HD 1,0125 · adicional 1,25 ·
 extra 50% 1,5 · extra 100% 2,0.
 
+### Normalización
+
+Deciden qué día se paga solo y cuál va a la bandeja.
+
+| Qué | Por defecto | Qué hace |
+|---|---|---|
+| **Llegó tarde** | 20 min | Tolerancia al entrar a cada tramo |
+| **Se fue antes** | 20 min | Tolerancia al salir de cada tramo |
+| **Trabajó de más** | 30 min | Por encima de esto se revisa, y es el mínimo para pagar horas autorizadas. Cuenta lo de antes de entrar más lo de después de salir |
+| **Un día sin ninguna marcación se revisa** | Apagado | Apagado, se paga el plan y queda un aviso |
+| **Un ingreso sin egreso se revisa** | Apagado | Mismo criterio, para las marcaciones a medias |
+| **Agentes nuevos: se revisa todo durante** | 14 días | Desde la fecha de ingreso |
+
+Los valores salen de las liquidaciones reales de julio y agosto 2026:
+
+- En los agentes con antigüedad, la planilla pagó el plan **en todos** los días
+  sin marcación o con la marcación a medias: siempre fue un olvido. Por eso esos
+  días no frenan.
+- De los días con 30 a 45 minutos de más, la planilla pagó algo extra sólo en 2
+  de 32. **Subir *Trabajó de más* a 45** saca esos días de la bandeja; queda en 30
+  hasta que lo decidas.
+
 ## Feriados
 
-En **Feriados**: nombre, fecha y tipo —nacional o de la empresa—, y un selector de
-año para ver los cargados.
+Nombre, fecha y tipo —nacional o de la empresa—, y un selector de año para ver
+los cargados.
 
 Un feriado no trabajado **no paga horas**: las del esquema pasan a la
-*compensación por feriado no trabajado*. Si un agente igual trabajó ese día, se le
+*compensación por feriado no trabajado*. Si un agente trabajó ese día, se le
 carga una excepción de **cobertura extraordinaria**.
 
 > **Si falta un feriado, ese día se liquida como día normal.** Conviene cargar el
@@ -103,19 +165,24 @@ carga una excepción de **cobertura extraordinaria**.
 
 - **Migraciones** — los `.sql` de `supabase/migrations/` se corren en orden desde
   el SQL Editor de Supabase. Una migración ya aplicada **no se edita**: si hay que
-  cambiar algo, va una nueva.
+  cambiar algo, va una nueva. La `018_normalizacion.sql` se puede volver a correr
+  sin romper nada.
 - **Deploy** — ver [DEPLOY.md](../DEPLOY.md). Cada push a `main` publica.
 - **Si algo no responde** — abrí `/api/health`. Dice si el servidor está vivo, si
   llega a la base y contra qué proyecto. Es el primer lugar donde mirar.
+- **La hora** — las marcaciones del portal se registran con la hora de Buenos
+  Aires, esté donde esté el servidor. Si la operación estuviera en otra zona, se
+  cambia con la variable `APP_TIMEZONE`.
 
 ---
 
 # Checklist de fin de mes
 
-Antes de que se generen las preliquidaciones:
+Antes de cerrar (el paso 1 de *Cierre del mes* muestra casi todo esto):
 
 - [ ] **Agentes sin esquema** y **Agentes sin tarifa** en cero
-- [ ] Las altas y bajas del mes están cargadas, con sus vigencias
+- [ ] Las altas del mes tienen **fecha de ingreso**, tarifa y esquema
 - [ ] Los cambios de horario se cargaron como esquema nuevo, no editando el viejo
+- [ ] Revisaste las **sugerencias de esquema**
 - [ ] Los feriados del mes están cargados en **Feriados**
 - [ ] La **Evaluación mensual** está completa para todos

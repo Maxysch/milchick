@@ -71,6 +71,10 @@ Las dos `VITE_` se leen **en el build**, no en runtime: si se cambian después,
 hay que volver a deployar para que tomen el valor nuevo. Las otras dos las lee
 la función en cada invocación, así que alcanza con redeployar para refrescarlas.
 
+La hora de las marcaciones y el "hoy" del sistema son los de Buenos Aires aunque
+la función corra en UTC. Sólo si la operación estuviera en otra zona hace falta
+una quinta variable, `APP_TIMEZONE` (por ejemplo `America/Montevideo`).
+
 ---
 
 ## Paso 2 — Verificar

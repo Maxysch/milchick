@@ -35,13 +35,12 @@ Es opcional.
   esa hora**, no a tu horario de siempre.
 - Volvés más tarde sólo para una tarea suelta → ese tramo también se marca aparte.
 
-Si un tramo queda sin marcar, para el sistema no existió.
-
 ---
 
 ## Si te equivocaste
 
-- **Marcaste el egreso antes de tiempo** → botón **Anular egreso**, y seguís.
+- **Marcaste el egreso antes de tiempo** → botón **Anular egreso** (tenés 5
+  minutos), y seguís.
 - **Te olvidaste de marcar** o quedó mal → avisale a tu supervisor. Él lo corrige.
 
 No borres ni inventes marcaciones: lo que importa es que quede lo que pasó de verdad.
@@ -50,7 +49,7 @@ No borres ni inventes marcaciones: lo que importa es que quede lo que pasó de v
 
 ## Qué más ves en tu portal
 
-- **Mi esquema** — tus horarios de hoy.
+- **Mi esquema** — tus horarios.
 - **Excepciones próximas** — vacaciones, licencias o cambios de jornada ya cargados.
 - **Horas extra próximas** — las horas adicionales que te autorizaron.
 
@@ -61,8 +60,9 @@ del cierre del mes.
 
 ## Por qué conviene marcar bien
 
-Tus honorarios se calculan sobre **tu esquema**, así que olvidarte de marcar no te
-descuenta plata de forma automática. Pero las marcaciones son lo que le permite a
-tu supervisor ver que trabajaste de más y pagártelo.
+Cuando tu marcación coincide con tu horario —con unos minutos de tolerancia al
+entrar y al salir—, el día se paga solo. Cuando no coincide, tu supervisor tiene
+que revisarlo a mano antes de cerrar el mes, y eso demora tu liquidación.
 
-Dicho al revés: **las horas de más que no marcaste son las que después no se pagan.**
+Y las horas de más: se pagan cuando están autorizadas, **hasta lo que marcaste**.
+Si te quedaste y no marcaste el egreso real, para el sistema no las trabajaste.

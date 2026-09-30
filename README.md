@@ -60,14 +60,16 @@ de Supabase.
   con un umbral configurable.
 - `017` — los ítems declaran cómo se calculan: importe fijo, porcentaje del
   subtotal, o cantidad de tiempo a un valor hora elegido.
+- `018` — normalización: las correcciones del día, el horario en las excepciones
+  de cambio de jornada y cobertura, las autorizaciones que se pagan sin tope, la
+  compensación diaria fija, los márgenes y los avisos que frenan la confirmación.
   De la `009` en adelante son idempotentes.
 - `008` — datos reales de operación: 3 clientes, 13 agentes con sus tarifas,
   esquemas y parámetros de liquidación, feriados, excepciones, horas adicionales
   y 721 marcaciones desde el 01/06/2026. Es idempotente.
 
 Los agentes del `008` se crean sin contraseña: no pueden iniciar sesión hasta que
-los invites desde Supabase. El rol `agent` todavía no tiene pantallas propias y
-las marcaciones las carga el supervisor.
+los invites desde Supabase. Una vez adentro marcan desde *Mi Portal*.
 
 Para regenerar el `008` desde los Excel originales:
 
@@ -98,8 +100,10 @@ npm run dev:all
 npm test
 ```
 
-Validan el núcleo de cálculo de honorarios contra la liquidación real de julio
-2026. Los scripts de `validacion/` reproducen la misma comprobación partiendo de
+Validan el núcleo de cálculo de honorarios contra las liquidaciones reales de
+julio y agosto 2026: cuántos días se resuelven solos, que la respuesta sugerida
+coincida con lo que decidió la planilla y que el neto de cada agente cierre al
+centavo. Los scripts de `validacion/` reproducen la misma comprobación partiendo de
 los Excel originales.
 
 ## Servicios
@@ -136,6 +140,8 @@ los Excel originales.
 - `GET /api/schedules/profile/:profileId?date=` - Listar vigentes
 - `POST /api/schedules` - Crear
 - `PATCH /api/schedules/:id/end` - Finalizar esquema
+- `GET /api/schedules/suggestions?from=&to=` - Esquemas que parecen desactualizados (por defecto, las últimas ocho semanas)
+- `POST /api/schedules/apply-suggestion` - Cerrar el esquema de un día de la semana y crear el nuevo desde una fecha
 
 ### Clock Entries (Marcaciones)
 - `GET /api/clock-entries/profile/:profileId?from=&to=` - Listar
@@ -144,15 +150,22 @@ los Excel originales.
 
 ### Exceptions (Excepciones)
 - `GET /api/exceptions/profile/:profileId?from=&to=&type=` - Listar
-- `POST /api/exceptions` - Crear
+- `POST /api/exceptions` - Crear (cambio de jornada y cobertura aceptan `blocks`, el horario del día)
+- `PATCH /api/exceptions/:id` · `DELETE /api/exceptions/:id`
 
-### Overtime (Horas extra)
+### Overtime (Horas autorizadas)
 - `GET /api/overtime/profile/:profileId?from=&to=` - Listar
-- `POST /api/overtime` - Crear
+- `POST /api/overtime` - Crear (`uncapped: true` se paga aunque la marcación no lo respalde)
+- `PATCH /api/overtime/:id` · `DELETE /api/overtime/:id`
 
 ### Holidays (Feriados)
 - `GET /api/holidays?year=` - Listar
 - `POST /api/holidays` - Crear
+- `PATCH /api/holidays/:id` · `DELETE /api/holidays/:id`
+
+Todo cambio en excepciones, horas autorizadas, feriados, tarifas, esquemas,
+marcaciones cargadas por un supervisor, evaluación mensual, agentes y
+configuración recalcula las preliquidaciones en borrador afectadas.
 
 ### Rules (Reglas)
 - `GET /api/rules/normalization` - Reglas de normalización
@@ -161,13 +174,21 @@ los Excel originales.
 - `POST /api/rules/settlement` - Crear regla
 
 ### Normalization (Normalización)
-- `GET /api/normalization/preview/:profileId?from=&to=` - Preview
-- `POST /api/normalization/run/:profileId` - Ejecutar y persistir
-- `GET /api/normalization/:profileId?from=&to=` - Consultar resultados
+- `GET /api/normalization/queue?from=&to=` - La bandeja: días que no cierran, por agente, con la resolución sugerida
+- `POST /api/normalization/resolve` - Resolver un día (`plan`, `marks`, `custom`, `none`, `authorize`, `pay_authorized`)
+- `POST /api/normalization/resolve-bulk` - Resolver varios días de una (aceptar las sugeridas)
+- `GET /api/normalization/corrections?from=&to=&profile_id=` - Correcciones aplicadas
+- `DELETE /api/normalization/corrections/:id` - Deshacer una corrección y lo que tocó
 
 ### Pre-Settlements (Preliquidación)
 - `GET /api/pre-settlements` - Listar
-- `GET /api/pre-settlements/period?year=&month=` - Período por defecto (va del 26 al 25)
+- `GET /api/pre-settlements/period?year=&month=` - Período de un mes según el día de corte
+- `GET /api/pre-settlements/period/to-close` - El mes que toca cerrar: el último período terminado
+- `GET /api/pre-settlements/close?year=&month=` - Estado del cierre del mes, paso por paso
+- `POST /api/pre-settlements/close/confirm-ready` - Confirmar las preliquidaciones listas del mes
+- `POST /api/pre-settlements/refresh` - Recalcular los borradores (trae las marcaciones nuevas)
+- `POST /api/pre-settlements/:id/recalculate` - Recalcular un borrador
+- `PUT /api/pre-settlements/:id/days/:date` - Fijar las horas de un día (corrección manual)
 - `GET /api/pre-settlements/periods` - Períodos que ya tienen preliquidaciones
 - `GET /api/pre-settlements/summary?from=&to=` - Resumen por agente del período
 - `GET /api/pre-settlements/summary?from=&to=&format=csv` - El mismo resumen en CSV
@@ -190,10 +211,10 @@ los Excel originales.
 ### Settings (Configuración global)
 - `GET /api/settings` - Multiplicadores y período
 - `PUT /api/settings/rate-factors` - Actualizar multiplicadores
-- `PUT /api/settings/period` - Día de corte del período
+- `PUT /api/settings/period` - Día de corte, umbral y márgenes de normalización
 
 ### Dashboard
-- `GET /api/dashboard/summary` - Pendientes: desvíos, quién no marcó, config incompleta
+- `GET /api/dashboard/summary` - Pendientes: días a normalizar por mes, quién no marcó, config incompleta
 
 ### Agent Chat (Agentes IA)
 - `POST /api/agent/normalization` - Chat con agente de normalización
