@@ -1,421 +1,353 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, Save } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { CheckCheck, ChevronDown, ChevronRight, Info, RefreshCw, Sparkles, Undo2 } from 'lucide-react';
 import { api } from '../../lib/api';
-import { formatDate } from '../../lib/utils';
+import {
+  ACTION_LABELS,
+  RESOLUTION_LABELS,
+  formatBlocks,
+  formatDayShort,
+  timeAgo,
+  type TimeBlock,
+} from '../../lib/utils';
+import { useInvalidateSettlement, useResolveMany, type Queue, type ResolvePayload } from '../../lib/normalization';
+import { useWorkingMonth } from '../../lib/month';
+import DayResolver from '../../components/normalization/DayResolver';
 import {
   cardClass,
   EmptyState,
   ErrorState,
-  getMonthStart,
-  getToday,
+  fieldClass,
   getBadgeClass,
-  inputClass,
   LoadingState,
-  NormalizationResult,
   pageTitleClass,
   primaryButtonClass,
   secondaryButtonClass,
-  useProfilesQuery,
 } from '../shared';
 
-function getOriginalTime(result: NormalizationResult, kind: 'clockin' | 'clockout') {
-  const adjustment = (result.adjustments ?? []).find((item) => item.type?.includes(kind));
-  return adjustment?.original ?? (kind === 'clockin' ? result.normalized_in : result.normalized_out);
-}
-
-/** Parse HH:mm to minutes since midnight */
-function timeToMinutes(time: string): number {
-  const parts = time.split(':');
-  return parseInt(parts[0]) * 60 + parseInt(parts[1]);
-}
-
-/** Check if difference between two times exceeds threshold (in minutes) */
-function timeDiffExceeds(original: string, normalized: string, thresholdMinutes: number): boolean {
-  const diff = Math.abs(timeToMinutes(original.slice(0, 5)) - timeToMinutes(normalized.slice(0, 5)));
-  return diff > thresholdMinutes;
-}
-
-const NIGHTTIME_START = 22 * 60; // 22:00
-const NIGHTTIME_END = 6 * 60;   // 06:00
-
-/** Locally compute daytime/nighttime hours from two HH:mm strings */
-function computeLocalHours(inTime: string, outTime: string): { daytime: number; nighttime: number } {
-  const inMin = timeToMinutes(inTime);
-  const outMin = timeToMinutes(outTime);
-  const totalMin = outMin > inMin ? outMin - inMin : outMin + 1440 - inMin;
-  if (totalMin <= 0) return { daytime: 0, nighttime: 0 };
-
-  let nighttimeMin = 0;
-  for (let m = 0; m < totalMin; m++) {
-    const current = (inMin + m) % 1440;
-    if (current >= NIGHTTIME_START || current < NIGHTTIME_END) {
-      nighttimeMin++;
-    }
-  }
-
-  const daytime = Math.round(((totalMin - nighttimeMin) / 60) * 100) / 100;
-  const nighttime = Math.round((nighttimeMin / 60) * 100) / 100;
-  return { daytime, nighttime };
-}
-
-const WARN_THRESHOLD = 15;
-
-function NormResultRow({
-  result,
-  index,
-  isPersisted,
-  onSave,
-  isSaving,
-}: {
-  result: NormalizationResult;
-  index: number;
-  isPersisted: boolean;
-  onSave: (id: string, payload: { normalized_in?: string; normalized_out?: string }) => void;
-  isSaving: boolean;
-}) {
-  const [normIn, setNormIn] = useState(result.normalized_in.slice(0, 5));
-  const [normOut, setNormOut] = useState(result.normalized_out.slice(0, 5));
-
-  useEffect(() => {
-    setNormIn(result.normalized_in.slice(0, 5));
-    setNormOut(result.normalized_out.slice(0, 5));
-  }, [result.normalized_in, result.normalized_out]);
-
-  const originalIn = String(getOriginalTime(result, 'clockin')).slice(0, 5);
-  const originalOut = String(getOriginalTime(result, 'clockout')).slice(0, 5);
-  const warnIn = timeDiffExceeds(originalIn, normIn, WARN_THRESHOLD);
-  const warnOut = timeDiffExceeds(originalOut, normOut, WARN_THRESHOLD);
-
-  const isDirty = normIn !== result.normalized_in.slice(0, 5) || normOut !== result.normalized_out.slice(0, 5);
-
-  // Recalculate hours locally when times change
-  const localHours = useMemo(() => {
-    if (isDirty) return computeLocalHours(normIn, normOut);
-    return { daytime: result.daytime_hours, nighttime: result.nighttime_hours };
-  }, [normIn, normOut, isDirty, result.daytime_hours, result.nighttime_hours]);
-
-  // Editable if persisted via Run, or if this entry was previously normalized (has an ID)
-  const canEdit = isPersisted || Boolean(result.previously_normalized && result.id);
-
-  const handleSave = useCallback(() => {
-    if (!result.id || !canEdit || !isDirty) return;
-    const payload: { normalized_in?: string; normalized_out?: string } = {};
-    if (normIn !== result.normalized_in.slice(0, 5)) payload.normalized_in = normIn;
-    if (normOut !== result.normalized_out.slice(0, 5)) payload.normalized_out = normOut;
-    onSave(result.id, payload);
-  }, [result.id, canEdit, isDirty, normIn, normOut, result.normalized_in, result.normalized_out, onSave]);
-
-  return (
-    <tr key={`${result.date}-${result.clock_entry_id ?? index}`}>
-      <td className="px-4 py-3 text-sm text-gray-700">{formatDate(result.date)}</td>
-      <td className="px-4 py-3 text-sm text-gray-700">{originalIn}</td>
-      <td className="px-4 py-3 text-sm text-gray-700">{originalOut}</td>
-      <td className="px-4 py-3 text-sm">
-        <div className="flex items-center gap-1.5">
-          <input
-            type="time"
-            className={`${inputClass} w-28 ${warnIn ? 'border-amber-400 bg-amber-50' : ''}`}
-            value={normIn}
-            onChange={(e) => setNormIn(e.target.value)}
-            disabled={!canEdit}
-          />
-          {warnIn && (
-            <span className="text-amber-500" title={`Diferencia > ${WARN_THRESHOLD} min vs marcado (${originalIn})`}>
-              <AlertTriangle className="h-4 w-4" />
-            </span>
-          )}
-        </div>
-      </td>
-      <td className="px-4 py-3 text-sm">
-        <div className="flex items-center gap-1.5">
-          <input
-            type="time"
-            className={`${inputClass} w-28 ${warnOut ? 'border-amber-400 bg-amber-50' : ''}`}
-            value={normOut}
-            onChange={(e) => setNormOut(e.target.value)}
-            disabled={!canEdit}
-          />
-          {warnOut && (
-            <span className="text-amber-500" title={`Diferencia > ${WARN_THRESHOLD} min vs marcado (${originalOut})`}>
-              <AlertTriangle className="h-4 w-4" />
-            </span>
-          )}
-        </div>
-      </td>
-      <td className={`px-4 py-3 text-sm ${isDirty ? 'text-blue-700 font-medium' : 'text-gray-700'}`}>
-        D {localHours.daytime.toFixed(2)} / N {localHours.nighttime.toFixed(2)}
-      </td>
-      <td className="px-4 py-3 text-sm text-gray-700">
-        <div className="flex flex-wrap gap-2">
-          {result.previously_normalized && (
-            <span className={getBadgeClass('purple')}>Norm. previo</span>
-          )}
-          {(result.adjustments ?? []).length > 0 ? (result.adjustments ?? []).map((adjustment, adjustmentIndex) => (
-            <span key={`${adjustment.type ?? 'adj'}-${adjustmentIndex}`} className={getBadgeClass(
-              adjustment.type?.startsWith('manual_edit') ? 'yellow' : 'blue'
-            )}>
-              {adjustment.type ?? 'ajuste'}
-            </span>
-          )) : !result.previously_normalized ? <span className={getBadgeClass('gray')}>Sin ajustes</span> : null}
-        </div>
-      </td>
-      <td className="px-4 py-3 text-sm">
-        {canEdit && isDirty && (
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-            onClick={handleSave}
-            disabled={isSaving}
-            title="Guardar corrección"
-          >
-            <Save className="h-3.5 w-3.5" />
-            Guardar
-          </button>
-        )}
-      </td>
-    </tr>
-  );
+interface Correction {
+  id: string;
+  date: string;
+  resolution: string;
+  blocks: TimeBlock[] | null;
+  note: string | null;
+  effects: Record<string, string[]> | null;
+  /** Es de una preliquidación confirmada: no se puede deshacer */
+  locked: boolean;
+  profiles: { first_name: string; last_name: string } | null;
+  creator: { first_name: string; last_name: string } | null;
 }
 
 export default function NormalizationPage() {
-  const queryClient = useQueryClient();
-  const profilesQuery = useProfilesQuery();
-  const [profileId, setProfileId] = useState('');
-  const [from, setFrom] = useState(getMonthStart());
-  const [to, setTo] = useState(getToday());
-  const [previewResults, setPreviewResults] = useState<NormalizationResult[]>([]);
-  const [isPersisted, setIsPersisted] = useState(false);
-  const [ruleForm, setRuleForm] = useState({ id: '', name: '', description: '', rule_text: '', is_active: true });
+  const [month, setMonth] = useWorkingMonth();
+  const [year, monthNumber] = (month ?? '').split('-').map(Number);
+  const [agente, setAgente] = useState<string | null>(null);
+  const [seleccion, setSeleccion] = useState<Set<string>>(new Set());
+  const [confirmando, setConfirmando] = useState(false);
+  const [verCorrecciones, setVerCorrecciones] = useState(false);
+  const invalidate = useInvalidateSettlement();
 
-  useEffect(() => {
-    if (!profileId && profilesQuery.data?.[0]) {
-      setProfileId(profilesQuery.data[0].id);
-    }
-  }, [profileId, profilesQuery.data]);
+  const periodQuery = useQuery({
+    queryKey: ['period', year, monthNumber],
+    queryFn: () => api.get<{ from: string; to: string }>(`/pre-settlements/period?year=${year}&month=${monthNumber}`),
+    enabled: !!month,
+  });
+  const period = periodQuery.data;
 
-  const rulesQuery = useQuery({
-    queryKey: ['normalization-rules'],
-    queryFn: () => api.get<Array<{ id: string; name: string; description: string; rule_text: string; is_active: boolean }>>('/rules/normalization'),
+  const queueQuery = useQuery({
+    queryKey: ['normalization-queue', period?.from, period?.to],
+    queryFn: () => api.get<Queue>(`/normalization/queue?from=${period!.from}&to=${period!.to}`),
+    enabled: !!period,
+  });
+  const queue = queueQuery.data;
+
+  const correctionsQuery = useQuery({
+    queryKey: ['corrections', period?.from, period?.to],
+    queryFn: () => api.get<Correction[]>(`/normalization/corrections?from=${period!.from}&to=${period!.to}`),
+    enabled: !!period && verCorrecciones,
   });
 
-  const previewMutation = useMutation({
-    mutationFn: () => api.get<NormalizationResult[]>(`/normalization/preview/${profileId}?from=${from}&to=${to}`),
-    onSuccess: (results) => {
-      setPreviewResults(results);
-      setIsPersisted(false);
-    },
+  const refresh = useMutation({
+    mutationFn: () => api.post('/pre-settlements/refresh', { from: period!.from }),
+    onSuccess: invalidate,
   });
-
-  const runMutation = useMutation({
-    mutationFn: () => api.post<{ normalized: number; results: NormalizationResult[] }>(`/normalization/run/${profileId}`, { from, to }),
-    onSuccess: async (payload) => {
-      setPreviewResults(payload.results);
-      setIsPersisted(true);
-      await queryClient.invalidateQueries({ queryKey: ['normalized', profileId, from, to] });
-    },
+  const generarFaltantes = useMutation({
+    mutationFn: () =>
+      api.post('/pre-settlements/generate-bulk', {
+        profile_ids: queue!.without_draft.map((a) => a.profile_id),
+        period_from: period!.from,
+        period_to: period!.to,
+      }),
+    onSuccess: invalidate,
   });
-
-  const editEntryMutation = useMutation({
-    mutationFn: ({ entryId, payload }: { entryId: string; payload: { normalized_in?: string; normalized_out?: string } }) =>
-      api.patch<NormalizationResult>(`/normalization/entry/${entryId}`, payload),
-    onSuccess: (updated) => {
-      setPreviewResults((prev) =>
-        prev.map((r) => (r.id === updated.id ? { ...r, ...updated } : r))
-      );
-    },
+  const deshacer = useMutation({
+    mutationFn: (id: string) => api.delete(`/normalization/corrections/${id}`),
+    onSuccess: invalidate,
   });
+  const resolverVarios = useResolveMany();
 
-  const saveRuleMutation = useMutation({
-    mutationFn: () => ruleForm.id
-      ? api.patch(`/rules/normalization/${ruleForm.id}`, ruleForm)
-      : api.post('/rules/normalization', ruleForm),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['normalization-rules'] });
-      setRuleForm({ id: '', name: '', description: '', rule_text: '', is_active: true });
-    },
-  });
-
-  const deleteRuleMutation = useMutation({
-    mutationFn: (ruleId: string) => api.delete<void>(`/rules/normalization/${ruleId}`),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['normalization-rules'] });
-    },
-  });
-
-  const totalPreviewHours = useMemo(
-    () => previewResults.reduce((sum, item) => sum + item.daytime_hours + item.nighttime_hours, 0),
-    [previewResults],
+  const items = useMemo(
+    () => (queue?.items ?? []).filter((i) => !agente || i.profile_id === agente),
+    [queue, agente]
   );
+  const key = (i: { profile_id: string; date: string }) => `${i.profile_id}|${i.date}`;
+  const sugeribles = items.filter((i) => i.suggestion);
+
+  // Cuando al agente elegido no le quedan días, se vuelve a ver todos
+  useEffect(() => {
+    if (agente && queue && !queue.by_agent.some((a) => a.profile_id === agente)) setAgente(null);
+  }, [queue, agente]);
+
+  // Al cambiar de bandeja se preseleccionan todas las sugeridas: lo habitual es
+  // aceptarlas y corregir las pocas que no van
+  useEffect(() => {
+    setSeleccion(new Set(sugeribles.map(key)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queue, agente]);
+
+  const lote: ResolvePayload[] = items
+    .filter((i) => i.suggestion && seleccion.has(key(i)))
+    .map((i) => ({
+      profile_id: i.profile_id,
+      date: i.date,
+      action: i.suggestion!.action,
+      ...(i.suggestion!.hours ? { hours: i.suggestion!.hours, tier: i.suggestion!.tier } : {}),
+    }));
+
+  const resumenLote = lote.reduce<Record<string, number>>((acc, l) => {
+    acc[l.action] = (acc[l.action] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  const porAgente = useMemo(() => {
+    const m = new Map<string, typeof items>();
+    for (const i of items) m.set(i.agent ?? i.profile_id, [...(m.get(i.agent ?? i.profile_id) ?? []), i]);
+    return [...m.entries()];
+  }, [items]);
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <h1 className={pageTitleClass}>Normalización</h1>
+    <div className="mx-auto max-w-6xl space-y-6">
+      <h1 className={pageTitleClass}>Normalización</h1>
 
-        <section className={cardClass}>
-          <div className="grid gap-4 md:grid-cols-4 lg:grid-cols-5">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Agente</label>
-              <select className={inputClass} value={profileId} onChange={(event) => setProfileId(event.target.value)}>
-                <option value="">Seleccionar agente</option>
-                {(profilesQuery.data ?? []).map((profile) => <option key={profile.id} value={profile.id}>{profile.first_name} {profile.last_name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Desde</label>
-              <input className={inputClass} type="date" value={from} onChange={(event) => setFrom(event.target.value)} />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Hasta</label>
-              <input className={inputClass} type="date" value={to} onChange={(event) => setTo(event.target.value)} />
-            </div>
-            <div className="flex items-end gap-3 md:col-span-2">
-              <button type="button" className={primaryButtonClass} onClick={() => previewMutation.mutate()} disabled={previewMutation.isPending || !profileId}>
-                {previewMutation.isPending ? 'Cargando...' : 'Preview'}
+      <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+        <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
+        <div className="text-sm text-blue-800">
+          Los días que la marcación acompaña al plan se pagan solos. Acá quedan los que no cierran: llegó tarde, se fue
+          antes, trabajó de más o en otro horario. Cada uno se resuelve con una decisión, y la preliquidación se
+          actualiza sola. La opción <strong>sugerida</strong> es la que el liquidador suele tomar en casos así.
+        </div>
+      </div>
+
+      <section className={cardClass}>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Mes</label>
+            <input className={`${fieldClass} w-52`} type="month" value={month ?? ''} onChange={(e) => { setMonth(e.target.value); setAgente(null); }} />
+          </div>
+
+          {queue ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-sm text-gray-500">Actualizada {timeAgo(queue.oldest_recalculation)}</span>
+              <button type="button" className={`${secondaryButtonClass} inline-flex items-center gap-2`}
+                disabled={refresh.isPending} onClick={() => refresh.mutate()}>
+                <RefreshCw className={`h-4 w-4 ${refresh.isPending ? 'animate-spin' : ''}`} />
+                {refresh.isPending ? 'Actualizando...' : 'Traer marcaciones nuevas'}
               </button>
-              <button type="button" className={secondaryButtonClass} onClick={() => runMutation.mutate()} disabled={runMutation.isPending || !profileId}>
-                {runMutation.isPending ? 'Ejecutando...' : 'Run'}
-              </button>
+            </div>
+          ) : null}
+        </div>
+
+        {queue ? (
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-lg bg-gray-50 px-4 py-3">
+              <div className="text-2xl font-bold text-gray-900">{queue.totals.days}</div>
+              <div className="text-sm text-gray-500">días a normalizar</div>
+            </div>
+            <div className="rounded-lg bg-blue-50 px-4 py-3">
+              <div className="text-2xl font-bold text-blue-700">{queue.totals.with_suggestion}</div>
+              <div className="text-sm text-blue-700">con respuesta sugerida</div>
+            </div>
+            <div className="rounded-lg bg-purple-50 px-4 py-3">
+              <div className="text-2xl font-bold text-purple-700">{queue.totals.new_hires}</div>
+              <div className="text-sm text-purple-700">de agentes en sus primeras semanas</div>
             </div>
           </div>
-          {previewMutation.error ? <p className="mt-3 text-sm text-red-600">{(previewMutation.error as Error).message}</p> : null}
-          {runMutation.error ? <p className="mt-3 text-sm text-red-600">{(runMutation.error as Error).message}</p> : null}
-        </section>
+        ) : null}
 
-        <section className={cardClass}>
-          <div className="mb-4 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <h2 className="text-lg font-semibold text-gray-900">Resultados</h2>
-              {isPersisted ? (
-                <span className={getBadgeClass('green')}>Persistido</span>
-              ) : previewResults.length > 0 ? (
-                <span className={getBadgeClass('yellow')}>Preview (sin guardar)</span>
+        {queue?.without_draft.length ? (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <span>
+              {queue.without_draft.length === 1 ? '1 agente todavía no tiene' : `${queue.without_draft.length} agentes todavía no tienen`}{' '}
+              preliquidación en este mes: {queue.without_draft.map((a) => a.agent).join(', ')}.
+            </span>
+            <button type="button" className={primaryButtonClass} disabled={generarFaltantes.isPending} onClick={() => generarFaltantes.mutate()}>
+              {generarFaltantes.isPending ? 'Generando...' : 'Preliquidarlos'}
+            </button>
+          </div>
+        ) : null}
+
+        {queue?.params_missing.length ? (
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <span>
+              Falta la evaluación mensual de {queue.params_missing.map((a) => a.agent).join(', ')}. Sin eso no se puede confirmar.
+            </span>
+            <Link to="/period-params" className="font-medium underline">Cargarla</Link>
+          </div>
+        ) : null}
+      </section>
+
+      {!month || queueQuery.isLoading || periodQuery.isLoading ? <LoadingState /> : null}
+      {queueQuery.error ? <ErrorState message={(queueQuery.error as Error).message} /> : null}
+
+      {queue && queue.items.length === 0 ? (
+        <div className={cardClass}>
+          <EmptyState message="No hay días para normalizar en este mes." />
+        </div>
+      ) : null}
+
+      {queue && queue.items.length > 0 ? (
+        <>
+          <div className="flex flex-wrap items-center gap-2">
+            <button type="button" onClick={() => setAgente(null)}
+              className={`rounded-full px-3 py-1 text-sm ${!agente ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 shadow-sm hover:bg-gray-100'}`}>
+              Todos · {queue.totals.days}
+            </button>
+            {queue.by_agent.map((a) => (
+              <button key={a.profile_id} type="button" onClick={() => setAgente(agente === a.profile_id ? null : a.profile_id)}
+                className={`rounded-full px-3 py-1 text-sm ${agente === a.profile_id ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 shadow-sm hover:bg-gray-100'}`}>
+                {a.agent} · {a.days}
+              </button>
+            ))}
+          </div>
+
+          {sugeribles.length > 0 ? (
+            <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-blue-200 bg-white px-4 py-3 shadow-sm">
+              <div className="flex items-center gap-2 text-sm text-gray-700">
+                <Sparkles className="h-4 w-4 text-blue-600" />
+                <span>
+                  <strong>{lote.length}</strong> de {sugeribles.length}{' '}
+                  {sugeribles.length === 1 ? 'día con sugerencia seleccionado' : 'días con sugerencia seleccionados'}
+                </span>
+                <button type="button" className="ml-2 text-blue-700 hover:underline" onClick={() => setSeleccion(new Set(sugeribles.map(key)))}>todas</button>
+                <button type="button" className="text-blue-700 hover:underline" onClick={() => setSeleccion(new Set())}>ninguna</button>
+              </div>
+              <button type="button" className={`${primaryButtonClass} inline-flex items-center gap-2`}
+                disabled={lote.length === 0 || resolverVarios.isPending} onClick={() => setConfirmando(true)}>
+                <CheckCheck className="h-4 w-4" /> {lote.length === 1 ? 'Aceptar la sugerida' : `Aceptar las ${lote.length} sugeridas`}
+              </button>
+            </div>
+          ) : null}
+
+          {confirmando ? (
+            <div className={`${cardClass} border border-blue-200`}>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {lote.length === 1 ? '¿Aceptar la sugerencia?' : `¿Aceptar ${lote.length} sugerencias?`}
+              </h2>
+              <ul className="mt-2 space-y-1 text-sm text-gray-700">
+                {Object.entries(resumenLote).map(([a, n]) => (
+                  <li key={a}>{n} {n === 1 ? 'día' : 'días'}: <strong>{ACTION_LABELS[a]}</strong></li>
+                ))}
+              </ul>
+              <p className="mt-2 text-sm text-gray-500">Se puede deshacer cualquiera desde "Correcciones aplicadas".</p>
+              <div className="mt-4 flex gap-3">
+                <button type="button" className={primaryButtonClass} disabled={resolverVarios.isPending}
+                  onClick={() => resolverVarios.mutate(lote, { onSuccess: (r) => { if (!r.failed.length) setConfirmando(false); } })}>
+                  {resolverVarios.isPending ? 'Aplicando...' : lote.length === 1 ? 'Sí, aceptarla' : 'Sí, aceptarlas'}
+                </button>
+                <button type="button" className={secondaryButtonClass} onClick={() => setConfirmando(false)}>Revisar de nuevo</button>
+              </div>
+              {resolverVarios.data?.failed.length ? (
+                <p className="mt-2 text-sm text-red-600">
+                  {resolverVarios.data.failed.length} no se pudieron aplicar:{' '}
+                  {resolverVarios.data.failed
+                    .map((f) => {
+                      const quien = queue?.items.find((i) => i.profile_id === f.profile_id)?.agent;
+                      return `${quien ? `${quien}, ` : ''}${formatDayShort(f.date)}: ${f.error}`;
+                    })
+                    .join(' · ')}
+                </p>
               ) : null}
             </div>
-            <div className="text-sm text-gray-500">Horas totales: {totalPreviewHours.toFixed(2)}</div>
+          ) : null}
+
+          <div className="space-y-6">
+            {porAgente.map(([nombre, dias]) => (
+              <section key={nombre}>
+                <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
+                  {nombre} · {dias.length} {dias.length === 1 ? 'día' : 'días'}
+                </h2>
+                <div className="space-y-2">
+                  {dias.map((d) => (
+                    <DayResolver
+                      key={key(d)}
+                      day={d}
+                      selectable
+                      selected={seleccion.has(key(d))}
+                      onToggle={() => {
+                        const s = new Set(seleccion);
+                        if (s.has(key(d))) s.delete(key(d)); else s.add(key(d));
+                        setSeleccion(s);
+                      }}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
           </div>
-          {!isPersisted && previewResults.length > 0 && (
-            <p className="mb-3 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-              Los resultados son de solo lectura. Ejecutá <strong>Run</strong> para persistirlos y poder editarlos.
-            </p>
-          )}
-          {editEntryMutation.error && (
-            <p className="mb-3 text-sm text-red-600">{(editEntryMutation.error as Error).message}</p>
-          )}
-          {previewResults.length === 0 ? (
-            <EmptyState message="No hay resultados para mostrar. Ejecutá una preview." />
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Fecha</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Marcado ingreso</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Marcado egreso</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Norm. ingreso</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Norm. egreso</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Horas</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Ajustes</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Acción</th>
+        </>
+      ) : null}
+
+      <section className={cardClass}>
+        <button type="button" className="flex w-full items-center gap-2 text-left text-lg font-semibold text-gray-900"
+          onClick={() => setVerCorrecciones(!verCorrecciones)}>
+          {verCorrecciones ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+          Correcciones aplicadas
+        </button>
+        {verCorrecciones ? (
+          <div className="mt-4">
+            {correctionsQuery.isLoading ? <LoadingState /> : null}
+            {correctionsQuery.data?.length === 0 ? <EmptyState message="Todavía no se normalizó ningún día en este mes." /> : null}
+            {correctionsQuery.data?.length ? (
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead>
+                  <tr className="text-left text-xs uppercase tracking-wide text-gray-500">
+                    <th className="py-2 pr-4">Agente</th><th className="py-2 pr-4">Día</th><th className="py-2 pr-4">Cómo</th>
+                    <th className="py-2 pr-4">Nota</th><th className="py-2 pr-4">Quién</th><th />
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
-                  {previewResults.map((result, index) => (
-                    <NormResultRow
-                      key={`${result.date}-${result.clock_entry_id ?? index}`}
-                      result={result}
-                      index={index}
-                      isPersisted={isPersisted}
-                      onSave={(entryId, payload) => editEntryMutation.mutate({ entryId, payload })}
-                      isSaving={editEntryMutation.isPending}
-                    />
+                <tbody className="divide-y divide-gray-100">
+                  {correctionsQuery.data.map((c) => (
+                    <tr key={c.id}>
+                      <td className="py-2 pr-4 text-gray-900">{c.profiles ? `${c.profiles.last_name}, ${c.profiles.first_name}` : '—'}</td>
+                      <td className="py-2 pr-4">{formatDayShort(c.date)}</td>
+                      <td className="py-2 pr-4">
+                        <span className={getBadgeClass('green')}>{RESOLUTION_LABELS[c.resolution] ?? c.resolution}</span>
+                        {c.blocks?.length ? <span className="ml-2 text-gray-500">{formatBlocks(c.blocks)}</span> : null}
+                        {c.effects?.overtime_created ? <span className="ml-2 text-gray-500">+ horas autorizadas</span> : null}
+                        {c.effects?.overtime_uncapped ? <span className="ml-2 text-gray-500">+ autorizadas pagadas igual</span> : null}
+                      </td>
+                      <td className="py-2 pr-4 text-gray-500">{c.note ?? ''}</td>
+                      <td className="py-2 pr-4 text-gray-500">{c.creator ? `${c.creator.first_name} ${c.creator.last_name}` : ''}</td>
+                      <td className="py-2 text-right">
+                        {c.locked ? (
+                          <span className="text-xs text-gray-400" title="Para cambiarla, volvé la preliquidación a borrador">Confirmada</span>
+                        ) : (
+                          <button type="button" className="inline-flex items-center gap-1 text-gray-500 hover:text-red-600"
+                            disabled={deshacer.isPending} onClick={() => deshacer.mutate(c.id)} title="El día vuelve a calcularse solo">
+                            <Undo2 className="h-4 w-4" /> Deshacer
+                          </button>
+                        )}
+                      </td>
+                    </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-          )}
-        </section>
-
-        <section className={cardClass}>
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">Reglas de normalización</h2>
-          <form className="grid gap-4 md:grid-cols-2" onSubmit={(event) => { event.preventDefault(); saveRuleMutation.mutate(); }}>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Nombre</label>
-              <input className={inputClass} value={ruleForm.name} onChange={(event) => setRuleForm((current) => ({ ...current, name: event.target.value }))} required />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Descripción</label>
-              <input className={inputClass} value={ruleForm.description} onChange={(event) => setRuleForm((current) => ({ ...current, description: event.target.value }))} required />
-            </div>
-            <div className="md:col-span-2">
-              <label className="mb-1 block text-sm font-medium text-gray-700">Texto de regla</label>
-              <textarea className={`${inputClass} min-h-28`} value={ruleForm.rule_text} onChange={(event) => setRuleForm((current) => ({ ...current, rule_text: event.target.value }))} required />
-            </div>
-            <label className="flex items-center gap-3 text-sm text-gray-700 md:col-span-2">
-              <input type="checkbox" checked={ruleForm.is_active} onChange={(event) => setRuleForm((current) => ({ ...current, is_active: event.target.checked }))} />
-              Regla activa
-            </label>
-            {saveRuleMutation.error ? <p className="md:col-span-2 text-sm text-red-600">{(saveRuleMutation.error as Error).message}</p> : null}
-            <div className="md:col-span-2 flex gap-3">
-              <button type="submit" className={primaryButtonClass} disabled={saveRuleMutation.isPending}>
-                {saveRuleMutation.isPending ? 'Guardando...' : ruleForm.id ? 'Actualizar regla' : 'Agregar regla'}
-              </button>
-              <button type="button" className={secondaryButtonClass} onClick={() => setRuleForm({ id: '', name: '', description: '', rule_text: '', is_active: true })}>Limpiar</button>
-            </div>
-          </form>
-
-          {rulesQuery.isLoading ? <div className="mt-6"><LoadingState message="Cargando reglas..." /></div> : null}
-          {rulesQuery.error ? <div className="mt-6"><ErrorState message={(rulesQuery.error as Error).message} /></div> : null}
-          {!rulesQuery.isLoading && !rulesQuery.error ? (
-            <div className="mt-6 overflow-x-auto">
-              {(rulesQuery.data ?? []).length === 0 ? (
-                <EmptyState message="No hay reglas configuradas." />
-              ) : (
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Nombre</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Descripción</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Estado</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
-                    {(rulesQuery.data ?? []).map((rule) => (
-                      <tr key={rule.id}>
-                        <td className="px-4 py-3 text-sm text-gray-700">{rule.name}</td>
-                        <td className="px-4 py-3 text-sm text-gray-700">{rule.description}</td>
-                        <td className="px-4 py-3 text-sm text-gray-700">
-                          <span className={getBadgeClass(rule.is_active ? 'green' : 'gray')}>
-                            {rule.is_active ? 'Activa' : 'Inactiva'}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-700">
-                          <div className="flex gap-2">
-                            <button type="button" className={secondaryButtonClass} onClick={() => setRuleForm(rule)}>Editar</button>
-                            <button
-                              type="button"
-                              className="rounded-lg bg-red-100 px-4 py-2 text-red-700 hover:bg-red-200"
-                              onClick={() => {
-                                if (window.confirm('¿Eliminar regla?')) {
-                                  deleteRuleMutation.mutate(rule.id);
-                                }
-                              }}
-                            >
-                              Eliminar
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          ) : null}
-        </section>
-      </div>
+            ) : null}
+            {deshacer.error ? <p className="mt-2 text-sm text-red-600">{(deshacer.error as Error).message}</p> : null}
+          </div>
+        ) : null}
+      </section>
     </div>
   );
 }

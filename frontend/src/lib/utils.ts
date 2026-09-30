@@ -50,9 +50,11 @@ export const OVERTIME_TIER_OPTIONS = [
 export const LINE_SOURCE_LABELS: Record<string, string> = {
   schedule: 'Esquema',
   exception: 'Excepción',
-  overtime: 'Extra',
+  overtime: 'Autorizada',
   manual: 'Editado a mano',
   adjustment: 'Ajuste mes anterior',
+  correction: 'Normalizado',
+  compensation: 'Compensación',
 };
 
 /** Etiqueta de una línea diaria: "Diurna LD" o "Diurna LD · Extra 50%". */
@@ -72,17 +74,79 @@ export const CONCEPT_LABELS: Record<string, string> = {
 };
 
 export const WARNING_LABELS: Record<string, string> = {
-  no_clock_in: 'Sin marcación de ingreso',
-  no_clock_out: 'Sin marcación de egreso',
-  left_early: 'Se retiró antes',
-  arrived_late: 'Ingresó tarde',
-  worked_without_schedule: 'Trabajó sin esquema asignado',
-  worked_more_than_schedule: 'Trabajó de más sin horas autorizadas',
-  additional_without_excess: 'Hay horas cargadas pero no hubo excedente',
-  additional_over_worked: 'Se cargaron más horas de las que trabajó',
+  no_clock_in: 'No marcó',
+  no_clock_out: 'Marcación incompleta',
+  left_early: 'Se fue antes',
+  arrived_late: 'Llegó tarde',
+  worked_without_schedule: 'Trabajó sin esquema',
+  worked_more_than_schedule: 'Trabajó de más',
+  worked_other_hours: 'Marcó en otro horario',
+  worked_on_holiday: 'Trabajó un feriado',
+  clocked_on_leave: 'Marcó un día de licencia',
+  additional_without_excess: 'Autorizado y no trabajado',
+  additional_over_worked: 'Autorizado de más',
+  additional_unverified: 'Autorizado sin marcación',
   absence: 'Ausencia',
-  missing_period_params: 'Sin evaluación mensual cargada',
+  missing_period_params: 'Falta la evaluación mensual',
 };
+
+/** Cómo quedó resuelto un día que se normalizó. */
+export const RESOLUTION_LABELS: Record<string, string> = {
+  plan: 'Está bien así',
+  marks: 'Se pagó lo marcado',
+  custom: 'Se pagó otro horario',
+  none: 'No se pagó',
+  manual: 'Horas cargadas a mano',
+};
+
+/** Las acciones para normalizar un día, como se ofrecen en pantalla. */
+export const ACTION_LABELS: Record<string, string> = {
+  plan: 'Está bien así',
+  marks: 'Pagar lo marcado',
+  custom: 'Pagar otro horario',
+  none: 'No pagar el día',
+  authorize: 'Autorizar',
+  pay_authorized: 'Pagar lo autorizado igual',
+};
+
+export const DAY_STATUS_LABELS: Record<string, string> = {
+  auto: 'Se pagó solo',
+  unverified: 'Sin marcación completa',
+  needs_review: 'A normalizar',
+  corrected: 'Normalizado',
+  projected: 'Proyectado',
+  leave: 'Licencia',
+  holiday: 'Feriado',
+  absence: 'Ausencia',
+  off: 'Sin plan',
+};
+
+export interface TimeBlock {
+  start_time: string;
+  end_time: string;
+}
+
+/** "08:00–12:00 + 15:00–19:00", o "—" si no hay tramos */
+export function formatBlocks(blocks: TimeBlock[] | null | undefined): string {
+  if (!blocks || blocks.length === 0) return '—';
+  return blocks.map((b) => `${b.start_time.slice(0, 5)}–${b.end_time.slice(0, 5)}`).join(' + ');
+}
+
+/** "lunes 3/8" */
+export function formatDayShort(date: string): string {
+  const d = new Date(`${date}T12:00:00`);
+  return `${DAY_NAMES[d.getDay()].toLowerCase()} ${d.getDate()}/${d.getMonth() + 1}`;
+}
+
+/** "hace 3 min", "hace 2 h" */
+export function timeAgo(iso: string | null | undefined): string {
+  if (!iso) return 'nunca';
+  const min = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (min < 1) return 'recién';
+  if (min < 60) return `hace ${min} min`;
+  const h = Math.round(min / 60);
+  return h < 24 ? `hace ${h} h` : `hace ${Math.round(h / 24)} d`;
+}
 
 export const WARNING_STATUS_LABELS: Record<string, string> = {
   pending: 'Sin revisar',

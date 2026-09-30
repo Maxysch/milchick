@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { Plus, Trash2 } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import {
   EXCEPTION_TYPE_LABELS,
+  formatBlocks,
   formatDate,
   OVERTIME_TIER_OPTIONS,
   TIER_LABELS,
@@ -12,6 +14,7 @@ import {
   EmptyState,
   ErrorState,
   ExceptionRecord,
+  fieldClass,
   getMonthStart,
   getRelationName,
   getToday,
@@ -25,6 +28,8 @@ import {
   useProfilesQuery,
 } from '../shared';
 
+type Tramo = { start_time: string; end_time: string };
+
 type ExceptionFormState = {
   id: string;
   exception_type: ExceptionRecord['exception_type'];
@@ -32,6 +37,18 @@ type ExceptionFormState = {
   date_to: string;
   client_id: string;
   notes: string;
+  blocks: Tramo[];
+};
+
+/** Los tipos que describen un horario: el que traigan reemplaza al esquema ese día. */
+const CON_HORARIO = ['schedule_change', 'extraordinary_coverage'];
+
+const QUE_HACE: Record<string, string> = {
+  vacation: 'Se paga el esquema y suma al plus vacacional. No se espera marcación.',
+  paid_leave: 'Se paga el esquema, sin plus vacacional. No se espera marcación.',
+  absence: 'No se paga el día.',
+  schedule_change: 'Ese día se paga este horario en lugar del esquema, cada hora en su banda.',
+  extraordinary_coverage: 'Ese día se trabaja este horario aunque no tenga esquema o sea feriado.',
 };
 
 const emptyExceptionForm: ExceptionFormState = {
@@ -41,6 +58,7 @@ const emptyExceptionForm: ExceptionFormState = {
   date_to: getToday(),
   client_id: '',
   notes: '',
+  blocks: [{ start_time: '09:00', end_time: '15:00' }],
 };
 
 const emptyOvertimeForm = {
@@ -54,6 +72,7 @@ const emptyOvertimeForm = {
   end_time: '',
   client_id: '',
   notes: '',
+  uncapped: false,
 };
 
 export default function ExceptionsPage() {
@@ -93,6 +112,7 @@ export default function ExceptionsPage() {
         date_to: exceptionForm.date_to,
         client_id: exceptionForm.exception_type === 'extraordinary_coverage' ? exceptionForm.client_id || null : null,
         notes: exceptionForm.notes || null,
+        blocks: CON_HORARIO.includes(exceptionForm.exception_type) ? exceptionForm.blocks : null,
       };
       return exceptionForm.id ? api.patch(`/exceptions/${exceptionForm.id}`, payload) : api.post('/exceptions', payload);
     },
@@ -120,6 +140,7 @@ export default function ExceptionsPage() {
         end_time: overtimeForm.end_time || null,
         client_id: overtimeForm.client_id || null,
         notes: overtimeForm.notes || null,
+        uncapped: overtimeForm.uncapped,
       };
       return overtimeForm.id ? api.patch(`/overtime/${overtimeForm.id}`, payload) : api.post('/overtime', payload);
     },
@@ -191,6 +212,36 @@ export default function ExceptionsPage() {
                 </select>
               </div>
             ) : null}
+            <p className="md:col-span-3 -mt-1 text-sm text-gray-500">{QUE_HACE[exceptionForm.exception_type]}</p>
+            {CON_HORARIO.includes(exceptionForm.exception_type) ? (
+              <div className="md:col-span-3 rounded-lg bg-gray-50 px-4 py-3">
+                <label className="mb-2 block text-sm font-medium text-gray-700">Horario de esos días</label>
+                <div className="space-y-2">
+                  {exceptionForm.blocks.map((b, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <input className={`${fieldClass} w-36`} type="time" value={b.start_time} required
+                        onChange={(e) => setExceptionForm((c) => ({ ...c, blocks: c.blocks.map((x, j) => (j === i ? { ...x, start_time: e.target.value } : x)) }))} />
+                      <span className="text-gray-400">a</span>
+                      <input className={`${fieldClass} w-36`} type="time" value={b.end_time} required
+                        onChange={(e) => setExceptionForm((c) => ({ ...c, blocks: c.blocks.map((x, j) => (j === i ? { ...x, end_time: e.target.value } : x)) }))} />
+                      {exceptionForm.blocks.length > 1 ? (
+                        <button type="button" className="text-gray-400 hover:text-red-600" title="Sacar este tramo"
+                          onClick={() => setExceptionForm((c) => ({ ...c, blocks: c.blocks.filter((_, j) => j !== i) }))}>
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+                <button type="button" className="mt-2 inline-flex items-center gap-1 text-sm text-blue-700 hover:underline"
+                  onClick={() => setExceptionForm((c) => ({ ...c, blocks: [...c.blocks, { start_time: '15:00', end_time: '19:00' }] }))}>
+                  <Plus className="h-3.5 w-3.5" /> Agregar tramo (jornada partida)
+                </button>
+                <p className="mt-2 text-xs text-gray-500">
+                  Cargado de antemano, ese día se paga solo: si la marcación acompaña, no hay nada que normalizar.
+                </p>
+              </div>
+            ) : null}
             <div className="md:col-span-3">
               <label className="mb-1 block text-sm font-medium text-gray-700">Notas</label>
               <textarea className={`${inputClass} min-h-24`} value={exceptionForm.notes} onChange={(event) => setExceptionForm((current) => ({ ...current, notes: event.target.value }))} />
@@ -220,6 +271,7 @@ export default function ExceptionsPage() {
                       <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Tipo</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Desde</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Hasta</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Horario</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Cliente</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Notas</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Acciones</th>
@@ -231,6 +283,7 @@ export default function ExceptionsPage() {
                         <td className="px-4 py-3 text-sm text-gray-700">{EXCEPTION_TYPE_LABELS[exception.exception_type]}</td>
                         <td className="px-4 py-3 text-sm text-gray-700">{formatDate(exception.date_from)}</td>
                         <td className="px-4 py-3 text-sm text-gray-700">{formatDate(exception.date_to)}</td>
+                        <td className="px-4 py-3 text-sm text-gray-700">{exception.blocks?.length ? formatBlocks(exception.blocks) : '—'}</td>
                         <td className="px-4 py-3 text-sm text-gray-700">{getRelationName(exception.clients)}</td>
                         <td className="px-4 py-3 text-sm text-gray-700">{exception.notes || '—'}</td>
                         <td className="px-4 py-3 text-sm text-gray-700">
@@ -242,6 +295,9 @@ export default function ExceptionsPage() {
                               date_to: exception.date_to,
                               client_id: exception.client_id ?? '',
                               notes: exception.notes ?? '',
+                              blocks: exception.blocks?.length
+                                ? exception.blocks.map((b) => ({ start_time: b.start_time.slice(0, 5), end_time: b.end_time.slice(0, 5) }))
+                                : emptyExceptionForm.blocks,
                             })}>Editar</button>
                             <button
                               type="button"
@@ -313,6 +369,17 @@ export default function ExceptionsPage() {
               <label className="mb-1 block text-sm font-medium text-gray-700">Notas</label>
               <textarea className={`${inputClass} min-h-24`} value={overtimeForm.notes} onChange={(event) => setOvertimeForm((current) => ({ ...current, notes: event.target.value }))} />
             </div>
+            <label className="md:col-span-3 lg:col-span-5 flex items-start gap-2 text-sm text-gray-700">
+              <input type="checkbox" className="mt-0.5 h-4 w-4" checked={overtimeForm.uncapped}
+                onChange={(e) => setOvertimeForm((c) => ({ ...c, uncapped: e.target.checked }))} />
+              <span>
+                Pagar aunque la marcación no lo respalde
+                <span className="block text-xs text-gray-500">
+                  Sin esto, se paga hasta lo que el agente efectivamente trabajó de más. Usalo si la marcación está mal,
+                  o para un arrastre del mes anterior.
+                </span>
+              </span>
+            </label>
             {saveOvertimeMutation.error ? <p className="md:col-span-3 lg:col-span-5 text-sm text-red-600">{(saveOvertimeMutation.error as Error).message}</p> : null}
             <div className="md:col-span-3 lg:col-span-5 flex gap-3">
               <button type="submit" className={primaryButtonClass} disabled={saveOvertimeMutation.isPending || !profileId || !overtimeForm.tier}>
@@ -365,6 +432,7 @@ export default function ExceptionsPage() {
                               end_time: overtime.end_time?.slice(0, 5) ?? '',
                               client_id: overtime.client_id ?? '',
                               notes: overtime.notes ?? '',
+                              uncapped: overtime.uncapped ?? false,
                             })}>Editar</button>
                             <button
                               type="button"

@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
+import { afterChange } from './_util.js';
 import { updateRateFactorsSchema, updateSettlementSettingsSchema } from '@milchick/shared';
 
 const router = Router();
@@ -46,6 +47,8 @@ router.put('/rate-factors', requireRole('admin', 'supervisor'), async (req, res:
     }
   }
 
+  // Los multiplicadores cambian el valor de todas las horas
+  await afterChange({});
   const { data } = await supabaseAdmin.from('rate_factors').select('*').order('factor_key');
   res.json(data);
 });
@@ -63,12 +66,18 @@ router.put('/period', requireRole('admin', 'supervisor'), async (req, res: Respo
     .limit(1)
     .maybeSingle();
 
-  const payload = {
-    period_start_day: parsed.data.period_start_day,
-    ...(parsed.data.additional_threshold_minutes !== undefined
-      ? { additional_threshold_minutes: parsed.data.additional_threshold_minutes }
-      : {}),
-  };
+  // Lo que no viene, no se toca
+  const payload = Object.fromEntries(
+    Object.entries({
+      period_start_day: parsed.data.period_start_day,
+      additional_threshold_minutes: parsed.data.additional_threshold_minutes,
+      late_arrival_margin_minutes: parsed.data.late_arrival_margin_minutes,
+      early_departure_margin_minutes: parsed.data.early_departure_margin_minutes,
+      missing_clock_blocks: parsed.data.missing_clock_blocks,
+      incomplete_clock_blocks: parsed.data.incomplete_clock_blocks,
+      new_hire_review_days: parsed.data.new_hire_review_days,
+    }).filter(([, v]) => v !== undefined)
+  );
 
   const { data, error } = existing
     ? await supabaseAdmin
@@ -83,6 +92,9 @@ router.put('/period', requireRole('admin', 'supervisor'), async (req, res: Respo
     res.status(500).json({ error: error.message });
     return;
   }
+  // El corte del período, los márgenes y el umbral cambian qué se paga y qué
+  // hay que normalizar: todos los borradores se recalculan
+  await afterChange({});
   res.json(data);
 });
 

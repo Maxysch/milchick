@@ -1,7 +1,8 @@
 import { Router, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth.js';
-import { createOvertimeSchema } from '@milchick/shared';
+import { afterChange, minDate } from './_util.js';
+import { createOvertimeSchema, updateOvertimeSchema } from '@milchick/shared';
 
 const router = Router();
 router.use(authMiddleware);
@@ -34,30 +35,41 @@ router.post('/', requireRole('admin', 'supervisor'), async (req: AuthRequest, re
     .single();
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  await afterChange({ profileId: data.profile_id, from: data.date });
   res.status(201).json(data);
 });
 
 // Update overtime entry
 router.patch('/:id', requireRole('admin', 'supervisor'), async (req, res: Response) => {
+  const parsed = updateOvertimeSchema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
+
+  const { data: antes } = await supabaseAdmin.from('overtime').select('profile_id, date').eq('id', req.params.id).single();
+  if (!antes) { res.status(404).json({ error: 'Registro no encontrado' }); return; }
+
   const { data, error } = await supabaseAdmin
     .from('overtime')
-    .update(req.body)
+    .update(parsed.data)
     .eq('id', req.params.id)
     .select('*, clients(name)')
     .single();
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  await afterChange({ profileId: antes.profile_id, from: minDate(antes.date, data.date) });
   res.json(data);
 });
 
 // Delete overtime entry
 router.delete('/:id', requireRole('admin', 'supervisor'), async (req, res: Response) => {
+  const { data: antes } = await supabaseAdmin.from('overtime').select('profile_id, date').eq('id', req.params.id).single();
+
   const { error } = await supabaseAdmin
     .from('overtime')
     .delete()
     .eq('id', req.params.id);
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  if (antes) await afterChange({ profileId: antes.profile_id, from: antes.date });
   res.status(204).send();
 });
 

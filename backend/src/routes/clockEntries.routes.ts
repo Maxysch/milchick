@@ -1,7 +1,9 @@
 import { Router, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth.js';
+import { afterChange, minDate } from './_util.js';
 import { createClockEntrySchema, updateClockEntrySchema } from '@milchick/shared';
+import { localNow, localToday } from '../config/time.js';
 
 const router = Router();
 router.use(authMiddleware);
@@ -47,6 +49,7 @@ router.post('/', requireRole('admin', 'supervisor'), async (req, res: Response) 
     .single();
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  await afterChange({ profileId: data.profile_id, from: data.date });
   res.status(201).json(data);
 });
 
@@ -72,6 +75,12 @@ router.post('/bulk', requireRole('admin', 'supervisor'), async (req, res: Respon
     .select('*, clients(name)');
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  const desdePorAgente = new Map<string, string>();
+  for (const e of (data ?? []) as { profile_id: string; date: string }[]) {
+    const prev = desdePorAgente.get(e.profile_id);
+    if (!prev || e.date < prev) desdePorAgente.set(e.profile_id, e.date);
+  }
+  for (const [profileId, from] of desdePorAgente) await afterChange({ profileId, from });
   res.status(201).json(data);
 });
 
@@ -79,6 +88,7 @@ router.post('/bulk', requireRole('admin', 'supervisor'), async (req, res: Respon
 router.patch('/:id', requireRole('admin', 'supervisor'), async (req, res: Response) => {
   const parsed = updateClockEntrySchema.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
+  const { data: antes } = await supabaseAdmin.from('clock_entries').select('profile_id, date').eq('id', req.params.id).single();
 
   const { data, error } = await supabaseAdmin
     .from('clock_entries')
@@ -88,17 +98,21 @@ router.patch('/:id', requireRole('admin', 'supervisor'), async (req, res: Respon
     .single();
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  if (antes) await afterChange({ profileId: antes.profile_id, from: minDate(antes.date, data.date) });
   res.json(data);
 });
 
 // Delete clock entry
 router.delete('/:id', requireRole('admin', 'supervisor'), async (req, res: Response) => {
+  const { data: antes } = await supabaseAdmin.from('clock_entries').select('profile_id, date').eq('id', req.params.id).single();
+
   const { error } = await supabaseAdmin
     .from('clock_entries')
     .delete()
     .eq('id', req.params.id);
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  if (antes) await afterChange({ profileId: antes.profile_id, from: antes.date });
   res.status(204).send();
 });
 
@@ -106,9 +120,8 @@ router.delete('/:id', requireRole('admin', 'supervisor'), async (req, res: Respo
 
 // Clock in (any authenticated user, own entry only)
 router.post('/my/clock-in', async (req: AuthRequest, res: Response) => {
-  const today = new Date().toISOString().split('T')[0];
-  const now = new Date();
-  const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+  // Fecha y hora de Buenos Aires: el servidor puede estar en UTC
+  const { date: today, time } = localNow();
 
   const { data, error } = await supabaseAdmin
     .from('clock_entries')
@@ -127,9 +140,7 @@ router.post('/my/clock-in', async (req: AuthRequest, res: Response) => {
 
 // Clock out (any authenticated user, closes own open entry)
 router.post('/my/clock-out', async (req: AuthRequest, res: Response) => {
-  const today = new Date().toISOString().split('T')[0];
-  const now = new Date();
-  const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+  const { date: today, time } = localNow();
 
   // Find open entry for today
   const { data: openEntry } = await supabaseAdmin
@@ -160,8 +171,7 @@ router.post('/my/clock-out', async (req: AuthRequest, res: Response) => {
 
 // Undo last clock-out (within 5 min grace period)
 router.post('/my/undo-clock-out', async (req: AuthRequest, res: Response) => {
-  const today = new Date().toISOString().split('T')[0];
-  const now = new Date();
+  const { date: today, minutes: ahora } = localNow();
 
   // Find the most recent closed entry for today
   const { data: lastEntry } = await supabaseAdmin
@@ -179,12 +189,9 @@ router.post('/my/undo-clock-out', async (req: AuthRequest, res: Response) => {
     return;
   }
 
-  // Check grace period (5 minutes)
+  // Check grace period (5 minutes), en minutos del día de Buenos Aires
   const [hours, minutes] = (lastEntry.clock_out as string).split(':').map(Number);
-  const clockOutTime = new Date(now);
-  clockOutTime.setHours(hours, minutes, 0, 0);
-  const diffMs = now.getTime() - clockOutTime.getTime();
-  const diffMinutes = diffMs / 60000;
+  const diffMinutes = ahora - (hours * 60 + minutes);
 
   if (diffMinutes > 5) {
     res.status(400).json({ error: 'Pasaron más de 5 minutos desde el egreso. No se puede anular.' });
@@ -204,7 +211,7 @@ router.post('/my/undo-clock-out', async (req: AuthRequest, res: Response) => {
 
 // Get my entries for today
 router.get('/my/today', async (req: AuthRequest, res: Response) => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = localToday();
 
   const { data, error } = await supabaseAdmin
     .from('clock_entries')

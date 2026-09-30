@@ -1,7 +1,8 @@
 import { Router, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth.js';
-import { createExceptionSchema } from '@milchick/shared';
+import { afterChange, minDate } from './_util.js';
+import { createExceptionSchema, updateExceptionSchema } from '@milchick/shared';
 
 const router = Router();
 router.use(authMiddleware);
@@ -54,30 +55,41 @@ router.post('/', requireRole('admin', 'supervisor'), async (req: AuthRequest, re
     .single();
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  await afterChange({ profileId: data.profile_id, from: data.date_from });
   res.status(201).json(data);
 });
 
 // Update exception
 router.patch('/:id', requireRole('admin', 'supervisor'), async (req, res: Response) => {
+  const parsed = updateExceptionSchema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
+
+  const { data: antes } = await supabaseAdmin.from('exceptions').select('profile_id, date_from').eq('id', req.params.id).single();
+  if (!antes) { res.status(404).json({ error: 'Excepción no encontrada' }); return; }
+
   const { data, error } = await supabaseAdmin
     .from('exceptions')
-    .update(req.body)
+    .update(parsed.data)
     .eq('id', req.params.id)
     .select('*, clients(name)')
     .single();
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  await afterChange({ profileId: antes.profile_id, from: minDate(antes.date_from, data.date_from) });
   res.json(data);
 });
 
 // Delete exception
 router.delete('/:id', requireRole('admin', 'supervisor'), async (req, res: Response) => {
+  const { data: antes } = await supabaseAdmin.from('exceptions').select('profile_id, date_from').eq('id', req.params.id).single();
+
   const { error } = await supabaseAdmin
     .from('exceptions')
     .delete()
     .eq('id', req.params.id);
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  if (antes) await afterChange({ profileId: antes.profile_id, from: antes.date_from });
   res.status(204).send();
 });
 

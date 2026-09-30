@@ -10,6 +10,11 @@ import {
 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { formatDate } from '../../lib/utils';
+import { withMonth } from '../../lib/month';
+
+/** "2026-08" → "agosto" */
+const formatMonth = (m: string) =>
+  new Date(`${m}-15T12:00:00`).toLocaleDateString('es-AR', { month: 'long' });
 import {
   cardClass,
   DashboardSummary,
@@ -24,12 +29,14 @@ function StatCard({
   to,
   icon: Icon,
   tone = 'neutral',
+  hint,
 }: {
   label: string;
   value: number | string;
   to: string;
   icon: typeof Users;
   tone?: 'neutral' | 'warn';
+  hint?: string;
 }) {
   return (
     <Link to={to} className={`${cardClass} transition hover:-translate-y-0.5 hover:shadow-md`}>
@@ -43,6 +50,7 @@ function StatCard({
           >
             {value}
           </div>
+          {hint ? <div className="mt-1 text-xs text-gray-500">{hint}</div> : null}
         </div>
         <div
           className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${
@@ -127,7 +135,7 @@ export default function DashboardPage() {
 
   const s = summaryQuery.data!;
   const nothingPending =
-    s.pending_warnings === 0 &&
+    s.days_to_normalize === 0 &&
     s.missing_clock_in_today.length === 0 &&
     s.open_clock_entries.length === 0 &&
     s.agents_without_schedule.length === 0 &&
@@ -147,11 +155,17 @@ export default function DashboardPage() {
             icon={DollarSign}
           />
           <StatCard
-            label="Desvíos sin revisar"
-            value={s.pending_warnings}
-            to="/pre-settlements"
+            label="Días a normalizar"
+            value={s.days_to_normalize}
+            // Al mes más viejo con pendientes: es el que frena el cierre
+            to={withMonth('/normalization', s.to_normalize_by_month[0]?.month)}
             icon={AlertTriangle}
             tone="warn"
+            hint={
+              s.to_normalize_by_month.length > 1
+                ? s.to_normalize_by_month.map((m) => `${m.days} de ${formatMonth(m.month)}`).join(' · ')
+                : undefined
+            }
           />
         </div>
 

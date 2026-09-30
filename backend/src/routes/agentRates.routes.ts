@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
+import { afterChange, minDate } from './_util.js';
 import { createAgentRateSchema } from '@milchick/shared';
 
 const router = Router();
@@ -30,6 +31,7 @@ router.post('/', requireRole('admin', 'supervisor'), async (req, res: Response) 
     .single();
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  await afterChange({ profileId: data.profile_id, from: data.effective_from });
   res.status(201).json(data);
 });
 
@@ -72,30 +74,40 @@ router.put('/profile/:profileId', requireRole('admin', 'supervisor'), async (req
     .select();
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  await afterChange({ profileId: String(req.params.profileId), from: minDate(...(effectiveDates as string[])) });
   res.json(data);
 });
 
 // Update rate
 router.patch('/:id', requireRole('admin', 'supervisor'), async (req, res: Response) => {
+  const parsed = createAgentRateSchema.partial().omit({ profile_id: true }).safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
+  const { data: antes } = await supabaseAdmin.from('agent_rates').select('profile_id, effective_from').eq('id', req.params.id).single();
+  if (!antes) { res.status(404).json({ error: 'Tarifa no encontrada' }); return; }
+
   const { data, error } = await supabaseAdmin
     .from('agent_rates')
-    .update(req.body)
+    .update(parsed.data)
     .eq('id', req.params.id)
     .select()
     .single();
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  await afterChange({ profileId: antes.profile_id, from: minDate(antes.effective_from, data.effective_from) });
   res.json(data);
 });
 
 // Delete rate
 router.delete('/:id', requireRole('admin', 'supervisor'), async (req, res: Response) => {
+  const { data: antes } = await supabaseAdmin.from('agent_rates').select('profile_id, effective_from').eq('id', req.params.id).single();
+
   const { error } = await supabaseAdmin
     .from('agent_rates')
     .delete()
     .eq('id', req.params.id);
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  if (antes) await afterChange({ profileId: antes.profile_id, from: antes.effective_from });
   res.status(204).send();
 });
 

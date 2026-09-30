@@ -1,0 +1,49 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`agosto 2026 con las marcaciones reales > cuánto se resuelve solo 1`] = `
+{
+  "aRevisar": 106,
+  "dias": 359,
+  "mes": "agosto",
+  "solos": 253,
+}
+`;
+
+exports[`agosto 2026 con las marcaciones reales > las decisiones del liquidador se expresan con las acciones del sistema y el neto cierra 1`] = `
+{
+  "acciones": {
+    "manual": 30,
+    "pay_authorized": 2,
+    "plan": 75,
+  },
+  "mes": "agosto",
+  "sugerencias": {
+    "sugerencia": 67,
+    "total": 76,
+  },
+}
+`;
+
+exports[`julio 2026 con las marcaciones reales > cuánto se resuelve solo 1`] = `
+{
+  "aRevisar": 44,
+  "dias": 277,
+  "mes": "julio",
+  "solos": 233,
+}
+`;
+
+exports[`julio 2026 con las marcaciones reales > las decisiones del liquidador se expresan con las acciones del sistema y el neto cierra 1`] = `
+{
+  "acciones": {
+    "manual": 8,
+    "pay_authorized": 5,
+    "plan": 36,
+  },
+  "mes": "julio",
+  "sugerencias": {
+    "sugerencia": 38,
+    "total": 43,
+  },
+}
+`;

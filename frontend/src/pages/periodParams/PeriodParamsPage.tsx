@@ -3,11 +3,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, Info } from 'lucide-react';
 import { formatCurrency } from '../../lib/utils';
 import { api } from '../../lib/api';
+import { useWorkingMonth } from '../../lib/month';
 import {
   cardClass,
   ErrorState,
+  fieldClass,
   getBadgeClass,
-  inputClass,
   LoadingState,
   pageTitleClass,
   primaryButtonClass,
@@ -32,22 +33,17 @@ type Draft = Record<
   { people: string; quant: string; qual: string; superReg: string; monotributo: string }
 >;
 
-function currentMonth() {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-}
-
 export default function PeriodParamsPage() {
   const queryClient = useQueryClient();
-  const [month, setMonth] = useState(currentMonth());
+  const [month, setMonth] = useWorkingMonth();
   const [draft, setDraft] = useState<Draft>({});
 
-  const [year, monthNumber] = month.split('-').map(Number);
+  const [year, monthNumber] = (month ?? '').split('-').map(Number);
 
   const rowsQuery = useQuery({
     queryKey: ['period-params', year, monthNumber],
     queryFn: () => api.get<PeriodParamRow[]>(`/period-params?year=${year}&month=${monthNumber}`),
-    enabled: Number.isFinite(year) && Number.isFinite(monthNumber),
+    enabled: !!month,
   });
 
   useEffect(() => {
@@ -103,7 +99,7 @@ export default function PeriodParamsPage() {
   };
 
   const cell = 'px-3 py-2';
-  const numberInput = `${inputClass} w-20 text-right`;
+  const numberInput = `${fieldClass} w-20 text-right`;
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
@@ -126,9 +122,9 @@ export default function PeriodParamsPage() {
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Mes</label>
               <input
-                className={`${inputClass} w-44`}
+                className={`${fieldClass} w-52`}
                 type="month"
-                value={month}
+                value={month ?? ''}
                 onChange={(event) => setMonth(event.target.value)}
               />
             </div>
@@ -214,7 +210,7 @@ export default function PeriodParamsPage() {
                       </td>
                       <td className={`${cell} text-right`}>
                         <input
-                          className={`${inputClass} w-32 text-right`}
+                          className={`${fieldClass} w-32 text-right`}
                           type="number"
                           min="0"
                           step="0.01"

@@ -19,6 +19,8 @@ const PreSettlementDetailPage = lazy(() => import('./pages/preSettlements/PreSet
 const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'));
 const PeriodParamsPage = lazy(() => import('./pages/periodParams/PeriodParamsPage'));
 const HolidaysPage = lazy(() => import('./pages/holidays/HolidaysPage'));
+const MonthClosePage = lazy(() => import('./pages/close/MonthClosePage'));
+const NormalizationPage = lazy(() => import('./pages/normalization/NormalizationPage'));
 
 function Loading() {
   return (
@@ -60,6 +62,8 @@ function App() {
               <Route path="/pre-settlements/:id" element={<PreSettlementDetailPage />} />
               <Route path="/period-params" element={<PeriodParamsPage />} />
               <Route path="/holidays" element={<HolidaysPage />} />
+              <Route path="/close" element={<MonthClosePage />} />
+              <Route path="/normalization" element={<NormalizationPage />} />
               <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Route>

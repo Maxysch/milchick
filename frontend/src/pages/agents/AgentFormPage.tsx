@@ -13,6 +13,7 @@ import {
   cardClass,
   EmptyState,
   ErrorState,
+  fieldClass,
   formatProfileName,
   inputClass,
   LoadingState,
@@ -45,6 +46,8 @@ const baseSchema = z.object({
   seniority_months: z.coerce.number().int().min(0),
   holiday_compensation_factor: z.coerce.number().min(0).max(2),
   vacation_plus_factor: z.coerce.number().min(0).max(2),
+  daily_compensation_minutes: z.coerce.number().int().min(0).max(240),
+  daily_compensation_band: z.enum(['day_ld', 'night_ld', 'day_hd', 'night_hd']),
 });
 
 type ProfileFormValues = z.infer<typeof baseSchema>;
@@ -93,6 +96,8 @@ export default function AgentFormPage() {
       seniority_months: 0,
       holiday_compensation_factor: 0.5,
       vacation_plus_factor: 0,
+      daily_compensation_minutes: 0,
+      daily_compensation_band: 'day_ld',
     },
   });
 
@@ -105,6 +110,7 @@ export default function AgentFormPage() {
       reg_people_pct: number; reg_quantitative_pct: number; reg_qualitative_pct: number;
       super_reg_pct: number; equipment_pct: number; seniority_months: number;
       holiday_compensation_factor: number; vacation_plus_factor: number;
+      daily_compensation_minutes: number | null; daily_compensation_band: 'day_ld' | 'night_ld' | 'day_hd' | 'night_hd' | null;
     }>(`/profiles/${id}`),
     enabled: isEditing,
   });
@@ -133,6 +139,8 @@ export default function AgentFormPage() {
       seniority_months: Number(profileQuery.data.seniority_months ?? 0),
       holiday_compensation_factor: Number(profileQuery.data.holiday_compensation_factor ?? 0),
       vacation_plus_factor: Number(profileQuery.data.vacation_plus_factor ?? 0),
+      daily_compensation_minutes: Number(profileQuery.data.daily_compensation_minutes ?? 0),
+      daily_compensation_band: profileQuery.data.daily_compensation_band ?? 'day_ld',
     });
   }, [form, profileQuery.data]);
 
@@ -148,6 +156,8 @@ export default function AgentFormPage() {
         seniority_months: values.seniority_months,
         holiday_compensation_factor: values.holiday_compensation_factor,
         vacation_plus_factor: values.vacation_plus_factor,
+        daily_compensation_minutes: values.daily_compensation_minutes,
+        daily_compensation_band: values.daily_compensation_band,
       };
 
       if (isEditing && id) {
@@ -287,6 +297,10 @@ export default function AgentFormPage() {
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Fecha de ingreso</label>
               <input className={inputClass} type="date" {...form.register('hire_date')} />
+              <p className="mt-1 text-xs text-gray-500">
+                Antes de esta fecha el esquema no rige. Las dos primeras semanas, un día sin marcación completa se
+                revisa: inducción y capacitación no siguen el esquema.
+              </p>
             </div>
             {!isEditing ? (
               <div>
@@ -379,6 +393,30 @@ export default function AgentFormPage() {
                 <label className="mb-1 block text-sm font-medium text-gray-700">Factor de plus vacacional</label>
                 <input className={inputClass} type="number" min="0" max="2" step="0.05" {...form.register('vacation_plus_factor')} />
                 <p className="mt-1 text-xs text-gray-500">0 = sin plus</p>
+              </div>
+            </div>
+
+            <div className="mt-6 border-t border-gray-200 pt-4">
+              <h3 className="text-sm font-medium text-gray-900">Compensación diaria fija</h3>
+              <p className="mt-1 mb-3 text-sm text-gray-500">
+                Minutos que se pagan por cada día trabajado, además del plan, sin esperar que se marquen. Entran en el
+                subtotal: el REG, el SUPER REG, la antigüedad y el reintegro de equipos se calculan encima. No se pagan
+                en feriados, licencias ni ausencias.
+              </p>
+              <div className="flex flex-wrap items-end gap-4">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Minutos por día</label>
+                  <input className={`${fieldClass} w-28`} type="number" min="0" max="240" step="5" {...form.register('daily_compensation_minutes')} />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Valor hora</label>
+                  <select className={`${fieldClass} w-44`} {...form.register('daily_compensation_band')}>
+                    <option value="day_ld">Diurna LD</option>
+                    <option value="night_ld">Nocturna LD</option>
+                    <option value="day_hd">Diurna HD</option>
+                    <option value="night_hd">Nocturna HD</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>

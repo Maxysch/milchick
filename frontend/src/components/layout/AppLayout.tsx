@@ -4,6 +4,8 @@ import {
   Building2,
   Calendar,
   CalendarDays,
+  ListChecks,
+  Scale,
   Clock,
   AlertCircle,
   BarChart3,
@@ -23,21 +25,33 @@ interface NavItem {
   icon: typeof Home;
   label: string;
   roles: Role[]; // roles that can see this item
+  /** Grupo del menú: primero lo que se hace para liquidar, después lo que se carga */
+  group: 'mes' | 'datos' | 'config';
 }
 
+const SUP: Role[] = ['admin', 'supervisor'];
+
 const navItems: NavItem[] = [
-  { to: '/', icon: Home, label: 'Inicio', roles: ['admin', 'supervisor'] },
-  { to: '/my-portal', icon: UserCircle, label: 'Mi Portal', roles: ['agent'] },
-  { to: '/agents', icon: Users, label: 'Agentes', roles: ['admin', 'supervisor'] },
-  { to: '/clients', icon: Building2, label: 'Clientes', roles: ['admin', 'supervisor'] },
-  { to: '/schedules', icon: Calendar, label: 'Esquemas', roles: ['admin', 'supervisor'] },
-  { to: '/clock-entries', icon: Clock, label: 'Marcaciones', roles: ['admin', 'supervisor'] },
-  { to: '/exceptions', icon: AlertCircle, label: 'Excepciones', roles: ['admin', 'supervisor'] },
-  { to: '/holidays', icon: CalendarDays, label: 'Feriados', roles: ['admin', 'supervisor'] },
-  { to: '/period-params', icon: Award, label: 'Evaluación mensual', roles: ['admin', 'supervisor'] },
-  { to: '/pre-settlements', icon: BarChart3, label: 'Preliquidación', roles: ['admin', 'supervisor'] },
-  { to: '/settings', icon: SlidersHorizontal, label: 'Configuración', roles: ['admin', 'supervisor'] },
+  { to: '/my-portal', icon: UserCircle, label: 'Mi Portal', roles: ['agent'], group: 'mes' },
+  { to: '/', icon: Home, label: 'Inicio', roles: SUP, group: 'mes' },
+  { to: '/close', icon: ListChecks, label: 'Cierre del mes', roles: SUP, group: 'mes' },
+  { to: '/normalization', icon: Scale, label: 'Normalización', roles: SUP, group: 'mes' },
+  { to: '/pre-settlements', icon: BarChart3, label: 'Preliquidación', roles: SUP, group: 'mes' },
+  { to: '/period-params', icon: Award, label: 'Evaluación mensual', roles: SUP, group: 'mes' },
+  { to: '/clock-entries', icon: Clock, label: 'Marcaciones', roles: SUP, group: 'datos' },
+  { to: '/exceptions', icon: AlertCircle, label: 'Excepciones', roles: SUP, group: 'datos' },
+  { to: '/holidays', icon: CalendarDays, label: 'Feriados', roles: SUP, group: 'datos' },
+  { to: '/schedules', icon: Calendar, label: 'Esquemas', roles: SUP, group: 'datos' },
+  { to: '/agents', icon: Users, label: 'Agentes', roles: SUP, group: 'datos' },
+  { to: '/clients', icon: Building2, label: 'Clientes', roles: SUP, group: 'datos' },
+  { to: '/settings', icon: SlidersHorizontal, label: 'Configuración', roles: SUP, group: 'config' },
 ];
+
+const GROUP_LABELS: Record<NavItem['group'], string | null> = {
+  mes: null,
+  datos: 'Datos',
+  config: null,
+};
 
 export default function AppLayout() {
   const { profile } = useProfile();
@@ -61,9 +75,14 @@ export default function AppLayout() {
         </div>
 
         <nav className="flex-1 p-4 space-y-1">
-          {visibleItems.map(({ to, icon: Icon, label }) => (
+          {visibleItems.map(({ to, icon: Icon, label, group }, i) => (
+            <div key={to}>
+              {group !== visibleItems[i - 1]?.group && i > 0 ? (
+                <div className="mt-4 mb-1 border-t border-gray-100 pt-3 px-3 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                  {GROUP_LABELS[group] ?? ''}
+                </div>
+              ) : null}
             <NavLink
-              key={to}
               to={to}
               end={to === '/'}
               className={({ isActive }) =>
@@ -78,6 +97,7 @@ export default function AppLayout() {
               <Icon className="w-5 h-5" />
               {label}
             </NavLink>
+            </div>
           ))}
         </nav>
 

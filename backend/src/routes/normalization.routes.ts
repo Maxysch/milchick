@@ -1,83 +1,71 @@
 import { Router, Response } from 'express';
-import { authMiddleware, requireRole } from '../middleware/auth.js';
-import {
-  normalizeEntries,
-  normalizeAndPersist,
-  getNormalizedEntries,
-  updateNormalizedEntry,
-} from '../services/normalizer.service.js';
+import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth.js';
+import { resolveDaySchema, resolveManySchema } from '@milchick/shared';
+import { getQueue, listCorrections, resolveDay, resolveMany, undoCorrection } from '../services/normalization.service.js';
+import { sendError } from './_util.js';
 
 const router = Router();
 router.use(authMiddleware);
+router.use(requireRole('admin', 'supervisor'));
 
-// Preview normalization (without persisting)
-router.get('/preview/:profileId', requireRole('admin', 'supervisor'), async (req, res: Response) => {
-  const from = String(req.query.from || '');
-  const to = String(req.query.to || '');
-  const profileId = String(req.params.profileId);
-  if (!from || !to) {
-    res.status(400).json({ error: 'from and to query params are required' });
-    return;
-  }
+const periodo = (q: Record<string, unknown>) => {
+  const from = String(q.from ?? '');
+  const to = String(q.to ?? '');
+  return /^\d{4}-\d{2}-\d{2}$/.test(from) && /^\d{4}-\d{2}-\d{2}$/.test(to) ? { from, to } : null;
+};
 
+// Los días a normalizar del período
+router.get('/queue', async (req, res: Response) => {
+  const p = periodo(req.query as Record<string, unknown>);
+  if (!p) { res.status(400).json({ error: 'Se requieren from y to (YYYY-MM-DD)' }); return; }
   try {
-    const results = await normalizeEntries(profileId, from, to);
-    res.json(results);
+    res.json(await getQueue(p.from, p.to));
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    sendError(res, err);
   }
 });
 
-// Run normalization and persist results
-router.post('/run/:profileId', requireRole('admin', 'supervisor'), async (req, res: Response) => {
-  const { from, to } = req.body;
-  const profileId = String(req.params.profileId);
-  if (!from || !to) {
-    res.status(400).json({ error: 'from and to are required in body' });
-    return;
-  }
-
+// Resolver un día
+router.post('/resolve', async (req: AuthRequest, res: Response) => {
+  const parsed = resolveDaySchema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
   try {
-    const results = await normalizeAndPersist(profileId, String(from), String(to));
-    res.json({ normalized: results.length, results });
+    await resolveDay(parsed.data, req.userId!);
+    res.status(204).send();
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    sendError(res, err);
   }
 });
 
-// Get persisted normalized entries
-router.get('/:profileId', async (req, res: Response) => {
-  const from = String(req.query.from || '');
-  const to = String(req.query.to || '');
-  const profileId = String(req.params.profileId);
-  if (!from || !to) {
-    res.status(400).json({ error: 'from and to query params are required' });
-    return;
-  }
-
+// Resolver varios: "aceptar las sugeridas". Viene la lista exacta que se confirmó.
+router.post('/resolve-bulk', async (req: AuthRequest, res: Response) => {
+  const parsed = resolveManySchema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
   try {
-    const data = await getNormalizedEntries(profileId, from, to);
-    res.json(data);
+    res.json(await resolveMany(parsed.data.items, req.userId!));
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    sendError(res, err);
   }
 });
 
-// Update a persisted normalized entry
-router.patch('/entry/:entryId', requireRole('admin', 'supervisor'), async (req, res: Response) => {
-  const entryId = String(req.params.entryId);
-  const { normalized_in, normalized_out } = req.body;
-
-  if (!normalized_in && !normalized_out) {
-    res.status(400).json({ error: 'At least normalized_in or normalized_out is required' });
-    return;
-  }
-
+// Correcciones aplicadas en el período
+router.get('/corrections', async (req, res: Response) => {
+  const p = periodo(req.query as Record<string, unknown>);
+  if (!p) { res.status(400).json({ error: 'Se requieren from y to (YYYY-MM-DD)' }); return; }
   try {
-    const data = await updateNormalizedEntry(entryId, { normalized_in, normalized_out });
-    res.json(data);
+    res.json(await listCorrections(p.from, p.to, req.query.profile_id ? String(req.query.profile_id) : undefined));
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    sendError(res, err);
+  }
+});
+
+// Deshacer una corrección: el día vuelve a calcularse solo
+router.delete('/corrections/:id', async (req, res: Response) => {
+  try {
+    await undoCorrection(String(req.params.id));
+    res.status(204).send();
+  } catch (err) {
+    sendError(res, err);
   }
 });
 

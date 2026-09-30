@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AlertTriangle, Check, Download, Play, X } from 'lucide-react';
 import { api } from '../../lib/api';
+import { useWorkingMonth, withMonth } from '../../lib/month';
 import { formatCurrency, formatDate, SETTLEMENT_STATUS_LABELS } from '../../lib/utils';
 import {
   BulkResult,
   cardClass,
   EmptyState,
   ErrorState,
+  fieldClass,
   getBadgeClass,
   getProfileRelationName,
-  inputClass,
   LoadingState,
   pageTitleClass,
   PeriodSummaryRow,
@@ -21,29 +22,23 @@ import {
   useProfilesQuery,
 } from '../shared';
 
-/** Mes actual en formato YYYY-MM, que es lo que espera <input type="month">. */
-function currentMonth() {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-}
-
 export default function PreSettlementsListPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const profilesQuery = useProfilesQuery();
 
-  const [month, setMonth] = useState(currentMonth());
+  const [month, setMonth] = useWorkingMonth();
   const [bulkResults, setBulkResults] = useState<BulkResult[] | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
   // El período no es el mes calendario: el backend sabe dónde corta.
-  const [year, monthNumber] = month.split('-').map(Number);
+  const [year, monthNumber] = (month ?? '').split('-').map(Number);
   const periodQuery = useQuery({
     queryKey: ['period', year, monthNumber],
     queryFn: () => api.get<{ from: string; to: string; period_start_day: number }>(
       `/pre-settlements/period?year=${year}&month=${monthNumber}`
     ),
-    enabled: Number.isFinite(year) && Number.isFinite(monthNumber),
+    enabled: !!month,
   });
 
   const from = periodQuery.data?.from;
@@ -92,7 +87,7 @@ export default function PreSettlementsListPage() {
 
   const summary = summaryQuery.data ?? [];
   const totalNet = summary.reduce((s, r) => s + r.net, 0);
-  const totalPending = summary.reduce((s, r) => s + r.pending_warnings, 0);
+  const totalPending = summary.reduce((s, r) => s + r.blocking_pending, 0);
 
   const activeAgents = (profilesQuery.data ?? []).filter(
     (p) => p.role === 'agent' && p.is_active
@@ -124,9 +119,9 @@ export default function PreSettlementsListPage() {
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">Mes a liquidar</label>
                 <input
-                  className={`${inputClass} w-44`}
+                  className={`${fieldClass} w-52`}
                   type="month"
-                  value={month}
+                  value={month ?? ''}
                   onChange={(event) => setMonth(event.target.value)}
                 />
               </div>
@@ -141,15 +136,16 @@ export default function PreSettlementsListPage() {
               <button
                 type="button"
                 className={primaryButtonClass}
-                disabled={bulkMutation.isPending || !from || pendingAgents.length === 0}
+                disabled={bulkMutation.isPending || !from}
                 onClick={() => bulkMutation.mutate()}
+                title="Genera las que faltan y recalcula las que están en borrador. Las confirmadas no se tocan."
               >
                 <Play className="mr-1 inline h-4 w-4" />
                 {bulkMutation.isPending
-                  ? 'Generando...'
+                  ? 'Calculando...'
                   : pendingAgents.length === 0
-                    ? 'Todos generados'
-                    : `Generar los ${pendingAgents.length} que faltan`}
+                    ? 'Actualizar todas'
+                    : `Generar las ${pendingAgents.length} que faltan y actualizar el resto`}
               </button>
               <button
                 type="button"
@@ -176,17 +172,18 @@ export default function PreSettlementsListPage() {
             <div className="space-y-1">
               {bulkResults.map((r) => (
                 <div key={r.profile_id} className="flex flex-wrap items-center gap-2 text-sm">
-                  {r.status === 'generated' ? <Check className="h-4 w-4 text-green-600" /> : null}
+                  {r.status === 'generated' || r.status === 'updated' ? <Check className="h-4 w-4 text-green-600" /> : null}
                   {r.status === 'skipped' ? <AlertTriangle className="h-4 w-4 text-amber-600" /> : null}
                   {r.status === 'failed' ? <X className="h-4 w-4 text-red-600" /> : null}
                   <span className="font-medium text-gray-900">{r.name}</span>
-                  {r.status === 'generated' ? (
+                  {r.status === 'generated' || r.status === 'updated' ? (
                     <>
                       <span className="text-gray-600">{formatCurrency(r.total_amount ?? 0)}</span>
-                      {r.warnings ? (
-                        <span className={getBadgeClass('yellow')}>{r.warnings} desvíos</span>
+                      <span className="text-xs text-gray-400">{r.status === 'generated' ? 'nueva' : 'actualizada'}</span>
+                      {r.blocking ? (
+                        <span className={getBadgeClass('yellow')}>{r.blocking} {r.blocking === 1 ? 'día' : 'días'} a normalizar</span>
                       ) : (
-                        <span className={getBadgeClass('green')}>sin desvíos</span>
+                        <span className={getBadgeClass('green')}>lista para confirmar</span>
                       )}
                     </>
                   ) : (
@@ -205,7 +202,7 @@ export default function PreSettlementsListPage() {
             {summary.length > 0 ? (
               <div className="flex flex-wrap items-center gap-4 text-sm">
                 {totalPending > 0 ? (
-                  <span className={getBadgeClass('yellow')}>{totalPending} desvíos sin revisar</span>
+                  <Link to={withMonth('/normalization', month)} className={getBadgeClass('yellow')}>{totalPending} días a normalizar</Link>
                 ) : (
                   <span className={getBadgeClass('green')}>Todo revisado</span>
                 )}
@@ -256,9 +253,9 @@ export default function PreSettlementsListPage() {
                             <span className={getBadgeClass(row.status === 'confirmed' ? 'green' : row.status === 'cancelled' ? 'red' : 'yellow')}>
                               {SETTLEMENT_STATUS_LABELS[row.status] ?? row.status}
                             </span>
-                            {row.pending_warnings > 0 ? (
+                            {row.blocking_pending > 0 ? (
                               <span className="text-xs text-amber-700">
-                                {row.pending_warnings} sin revisar
+                                {row.blocking_pending} {row.blocking_pending === 1 ? 'día' : 'días'} a normalizar
                               </span>
                             ) : null}
                           </div>

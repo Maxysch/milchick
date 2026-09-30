@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
+import { afterChange, minDate } from './_util.js';
 import { createHolidaySchema } from '@milchick/shared';
 
 const router = Router();
@@ -32,30 +33,38 @@ router.post('/', requireRole('admin', 'supervisor'), async (req, res: Response) 
     .single();
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  await afterChange({ from: data.date });
   res.status(201).json(data);
 });
 
 // Update holiday
 router.patch('/:id', requireRole('admin', 'supervisor'), async (req, res: Response) => {
+  const parsed = createHolidaySchema.partial().safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
+  const { data: antes } = await supabaseAdmin.from('holidays').select('date').eq('id', req.params.id).single();
+
   const { data, error } = await supabaseAdmin
     .from('holidays')
-    .update(req.body)
+    .update(parsed.data)
     .eq('id', req.params.id)
     .select()
     .single();
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  await afterChange({ from: minDate(antes?.date, data.date) });
   res.json(data);
 });
 
 // Delete holiday
 router.delete('/:id', requireRole('admin', 'supervisor'), async (req, res: Response) => {
+  const { data: antes } = await supabaseAdmin.from('holidays').select('date').eq('id', req.params.id).single();
   const { error } = await supabaseAdmin
     .from('holidays')
     .delete()
     .eq('id', req.params.id);
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  if (antes) await afterChange({ from: antes.date });
   res.status(204).send();
 });
 

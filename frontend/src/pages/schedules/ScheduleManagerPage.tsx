@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { formatDate } from '../../lib/utils';
+import ScheduleSuggestions from '../../components/schedules/ScheduleSuggestions';
 import {
   cardClass,
   DAY_OPTIONS,
@@ -87,6 +88,8 @@ export default function ScheduleManagerPage() {
     <div className="min-h-screen bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
         <h1 className={pageTitleClass}>Esquemas</h1>
+
+        <ScheduleSuggestions />
 
         <section className={cardClass}>
           <div className="grid gap-4 md:grid-cols-3">

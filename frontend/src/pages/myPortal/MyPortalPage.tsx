@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useProfile } from '../../hooks/useProfile';
 import { formatDate, DAY_NAMES, EXCEPTION_TYPE_LABELS } from '../../lib/utils';
+import { getToday } from '../shared';
 import { Clock, Calendar, AlertCircle, Timer } from 'lucide-react';
 import { useState } from 'react';
 
@@ -9,7 +10,7 @@ export default function MyPortalPage() {
   const { profile } = useProfile();
   const queryClient = useQueryClient();
   const [clockNote, setClockNote] = useState('');
-  const today = new Date().toISOString().split('T')[0];
+  const today = getToday();
 
   // Today's clock entries
   const { data: todayEntries } = useQuery({

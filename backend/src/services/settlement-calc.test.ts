@@ -2,11 +2,13 @@ import { describe, it, expect } from 'vitest';
 import {
   bandAt,
   buildDailyLines,
+  settleDays,
   compareAgainstClockIns,
   computeConcepts,
   computeRate,
   roundCents,
   settlementPeriod,
+  periodToClose,
   splitIntoBands,
   subtotalFromBuckets,
   computeAdjustments,
@@ -470,6 +472,21 @@ describe('settlementPeriod', () => {
   });
 });
 
+describe('periodToClose', () => {
+  it('con corte el día 1 es el mes anterior, también en enero', () => {
+    expect(periodToClose('2026-09-29', 1)).toEqual({ year: 2026, month: 8 });
+    expect(periodToClose('2026-09-01', 1)).toEqual({ year: 2026, month: 8 });
+    expect(periodToClose('2027-01-05', 1)).toEqual({ year: 2026, month: 12 });
+  });
+
+  it('con corte el 21, desde el 21 toca cerrar el mes en curso', () => {
+    // "octubre" va del 21/09 al 20/10
+    expect(periodToClose('2026-10-20', 21)).toEqual({ year: 2026, month: 9 });
+    expect(periodToClose('2026-10-21', 21)).toEqual({ year: 2026, month: 10 });
+    expect(settlementPeriod(2026, 10, 21).to < '2026-10-21').toBe(true);
+  });
+});
+
 // ─────────────────────────────────────────────────────────────────────
 // De punta a punta: esquema → horas → tarifas → conceptos → neto
 //
@@ -827,9 +844,19 @@ describe('tope de las horas cargadas contra lo trabajado', () => {
   });
 
   it('el excedente suma lo de antes de entrar y lo de después de salir', () => {
-    // 20 min antes + 20 min después = 40 min, pasa el umbral
-    const r = liquidar(cargado(1), marcado('08:40', '16:20', 7 + 40 / 60));
+    // 20 min antes + 20 min después = 40 min, pasa el umbral. Con 2 h
+    // autorizadas trabajó claramente menos, así que se paga lo trabajado.
+    const r = liquidar(cargado(2), marcado('08:40', '16:20', 7 + 40 / 60));
     expect(r.lines.find((l) => l.tier === 'additional')!.hours).toBeCloseTo(40 / 60, 6);
+  });
+
+  it('si lo trabajado está dentro del margen de lo autorizado, se paga lo autorizado', () => {
+    // 1 h autorizada, 56 min de más: coinciden. No se paga 0,93 h.
+    const r = liquidar(cargado(1), marcado('09:00', '16:56', 7 + 56 / 60));
+    expect(r.lines.find((l) => l.tier === 'additional')!.hours).toBe(1);
+    // Y al revés, 1 h 20 min de más con 1 h autorizada: se paga la hora
+    const r2 = liquidar(cargado(1), marcado('09:00', '17:20', 8 + 20 / 60));
+    expect(r2.lines.find((l) => l.tier === 'additional')!.hours).toBe(1);
   });
 
   it('sin marcaciones se paga lo cargado, como antes', () => {
@@ -872,7 +899,7 @@ describe('reviewOvertimeOutcomes', () => {
       { date: dia, loadedHours: 1, excessHours: 2, paidHours: 1 },
     ]);
     expect(w.map((x) => x.code)).toContain('worked_more_than_schedule');
-    expect(w[0].detail).toContain('1.00 h sin autorizar');
+    expect(w[0].detail).toContain('1 h sin autorizar');
   });
 
   it('no avisa si lo que falta cubrir está por debajo del umbral', () => {
@@ -940,7 +967,7 @@ describe('el tope sobre julio 2026 real', () => {
     expect(tope.agents).toHaveLength(12);
   });
 
-  it('la planilla pagó 44,50 h de adicionales y la regla paga 31,00', () => {
+  it('la planilla pagó 44,50 h de adicionales y la regla paga 27,00', () => {
     let planilla = 0;
     let regla = 0;
     for (const a of tope.agents) {
@@ -950,10 +977,17 @@ describe('el tope sobre julio 2026 real', () => {
         .reduce((s, l) => s + l.hours, 0);
     }
     expect(planilla).toBeCloseTo(44.5, 2);
-    expect(regla).toBeCloseTo(31, 2);
+    // Eran 31 con el excedente medido "fuera del horario". Con el excedente neto
+    // —lo trabajado menos lo esperado— sale el 22/07 de Liliana: marcó
+    // 07:42–10:05 y nunca su plan de 13 a 19, y las 2 h que le había cargado la
+    // planilla se pagaban como si fueran de más.
+    // Y 27 y no 29 por el 01/07 de Giuliana: una entrada y una salida a las
+    // 12:26 se contaban como 24 h trabajadas, y ese día fantasma "respaldaba"
+    // las 2 h cargadas. Sin él no hay excedente y el día queda para normalizar.
+    expect(regla).toBeCloseTo(27, 2);
   });
 
-  it('los únicos 6 días que cambian son arrastres del mes anterior', () => {
+  it('los días que cambian son los 6 arrastres y dos que no cierran', () => {
     const cambios: string[] = [];
     for (const a of tope.agents) {
       const porFecha = new Map<string, number>();
@@ -966,14 +1000,21 @@ describe('el tope sobre julio 2026 real', () => {
         if (Math.abs(nuestro - pagado) > 0.02) cambios.push(`${a.agent} ${fecha}`);
       }
     }
-    // Los seis tenían adicionales de junio cargadas en un día de julio donde el
+    // Seis tenían adicionales de junio cargadas en un día de julio donde el
     // agente no trabajó de más. La conciliación del período ya reemplaza esa
     // práctica, así que dejan de cargarse así.
+    // El séptimo es el 22/07 de Liliana: no deja de pagarse en silencio, queda
+    // para normalizar como "marcó en otro horario" (ver el test de abajo).
+    // El octavo es el 01/07 de Giuliana: la marcación no muestra excedente (el
+    // que había era una marcación de largo cero contada como 24 h) y queda para
+    // normalizar como "autorizado y no trabajado".
     expect(cambios.sort()).toEqual([
       'Alanis Brenda 2026-07-02',
       'Ascona Gonzalo 2026-07-02',
+      'Giuliana Yaccusi 2026-07-01',
       'Giuliana Yaccusi 2026-07-03',
       'Rodríguez Liliana 2026-07-06',
+      'Rodríguez Liliana 2026-07-22',
       'Walter Palavecino 2026-07-01',
       'Yanina Benitez 2026-07-03',
     ]);
@@ -997,24 +1038,70 @@ describe('el tope sobre julio 2026 real', () => {
     }
   });
 
-  it('marca 38 días con excedente sin cubrir', () => {
+  it('marca 28 días con excedente sin cubrir', () => {
     let dias = 0;
     for (const a of tope.agents) {
       const w = reviewOvertimeOutcomes(correr(a).overtimeOutcomes);
       dias += w.filter((x) => x.code === 'worked_more_than_schedule').length;
     }
-    // 34 días sin nada cargado + 4 donde lo cargado no alcanza y lo que falta
-    // supera el umbral por sí solo
-    expect(dias).toBe(38);
+    // Eran 38 midiendo lo que caía fuera del horario. Ocho no eran horas de
+    // más: el agente llegó tarde y se quedó después, o corrió el horario, y el
+    // total trabajado no superaba el plan. Esos días ahora avisan lo que de
+    // verdad pasó —llegó tarde, se fue antes, marcó en otro horario— en vez de
+    // proponer pagar como adicional un tiempo que ya estaba pagado.
+    // Otros dos eran marcaciones de largo cero (entrada y salida en el mismo
+    // minuto) contadas como 24 h: el 01/07 de Giuliana y el 27/07 de Moreno.
+    expect(dias).toBe(28);
   });
 
-  it('marca los 6 días de adicionales cargadas sin excedente', () => {
+  it('los días que no cierran ya no invitan a pagarlos como horas de más', () => {
+    const casos: Record<string, string> = {};
+    for (const a of tope.agents) {
+      const slots = a.schedule as ScheduleSlot[];
+      const obs = new Map<string, ClockObservation>(
+        (a.observations as ClockObservation[]).map((o) => [o.date, o])
+      );
+      const r = settleDays({
+        days: dias(),
+        schedulesByDate: (d) => slots.filter((s) => s.day_of_week === new Date(d + 'T12:00:00').getDay()),
+        overtime: a.overtime as OvertimeRecord[],
+        observations: obs,
+      });
+      for (const w of r.warnings) casos[`${a.agent} ${w.date} ${w.code}`] = w.detail;
+    }
+    expect(casos['Rodríguez Liliana 2026-07-22 worked_other_hours'])
+      .toBe('Marcó 07:42–10:05 y el plan era 13:00–19:00');
+    expect(casos['Micaela Abraham 2026-07-31 arrived_late']).toContain('Llegó 2 h tarde');
+    expect(casos['Giuliana Yaccusi 2026-07-30 arrived_late'])
+      .toContain('Llegó 58 min tarde al tramo 14:00–19:00');
+    // Ninguno de esos días genera además un "trabajó de más"
+    expect(casos['Micaela Abraham 2026-07-31 worked_more_than_schedule']).toBeUndefined();
+    expect(casos['Rodríguez Liliana 2026-07-22 worked_more_than_schedule']).toBeUndefined();
+  });
+
+  it('marca los 8 días de adicionales cargadas sin excedente', () => {
     let dias = 0;
     for (const a of tope.agents) {
       const w = reviewOvertimeOutcomes(correr(a).overtimeOutcomes);
       dias += w.filter((x) => x.code === 'additional_without_excess').length;
     }
-    expect(dias).toBe(6);
+    // Los 6 arrastres + el 22/07 de Liliana + el 01/07 de Giuliana
+    expect(dias).toBe(8);
+  });
+
+  it('una entrada y una salida en el mismo minuto no son 24 horas', () => {
+    const r = settleDays({
+      days: [{ date: '2026-07-27', isHoliday: false, exception: null }],
+      schedulesByDate: () => [{ day_of_week: 1, start_time: '13:00', end_time: '19:00', client_id: null }],
+      overtime: [],
+      observations: new Map([['2026-07-27', {
+        date: '2026-07-27', clockIn: '17:11', clockOut: '17:11', clockedHours: 0,
+        segments: [{ clockIn: '17:11', clockOut: '17:11' }],
+      }]]),
+    });
+    expect(r.days[0].marked).toEqual([]);
+    expect(r.warnings.some((w) => w.code === 'worked_more_than_schedule')).toBe(false);
+    expect(splitIntoBands('2026-07-27', '17:11', '17:11')).toEqual({ day_ld: 0, night_ld: 0, day_hd: 0, night_hd: 0 });
   });
 });
 

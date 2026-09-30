@@ -1,7 +1,9 @@
 import { Router, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
-import { createScheduleSchema, updateScheduleSchema } from '@milchick/shared';
+import { afterChange, minDate, sendError } from './_util.js';
+import { applyScheduleSuggestion, getScheduleSuggestions } from '../services/schedule-suggestions.service.js';
+import { applyScheduleSuggestionSchema, createScheduleSchema, updateScheduleSchema } from '@milchick/shared';
 
 const router = Router();
 router.use(authMiddleware);
@@ -48,6 +50,30 @@ router.get('/profile/:profileId/day/:dayOfWeek', async (req, res: Response) => {
   res.json(data);
 });
 
+// Esquemas que vienen marcando distinto semana tras semana
+router.get('/suggestions', requireRole('admin', 'supervisor'), async (req, res: Response) => {
+  try {
+    res.json(await getScheduleSuggestions({
+      from: req.query.from ? String(req.query.from) : undefined,
+      to: req.query.to ? String(req.query.to) : undefined,
+    }));
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// Aceptar una sugerencia: cierra el esquema vigente y abre uno nuevo desde una fecha
+router.post('/apply-suggestion', requireRole('admin', 'supervisor'), async (req, res: Response) => {
+  const parsed = applyScheduleSuggestionSchema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
+  try {
+    await applyScheduleSuggestion(parsed.data);
+    res.status(204).send();
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
 // Create schedule entry
 router.post('/', requireRole('admin', 'supervisor'), async (req, res: Response) => {
   const parsed = createScheduleSchema.safeParse(req.body);
@@ -60,6 +86,7 @@ router.post('/', requireRole('admin', 'supervisor'), async (req, res: Response) 
     .single();
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  await afterChange({ profileId: data.profile_id, from: data.effective_from });
   res.status(201).json(data);
 });
 
@@ -67,6 +94,7 @@ router.post('/', requireRole('admin', 'supervisor'), async (req, res: Response) 
 router.patch('/:id', requireRole('admin', 'supervisor'), async (req, res: Response) => {
   const parsed = updateScheduleSchema.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
+  const { data: antes } = await supabaseAdmin.from('schedules').select('profile_id, effective_from').eq('id', req.params.id).single();
 
   const { data, error } = await supabaseAdmin
     .from('schedules')
@@ -76,6 +104,7 @@ router.patch('/:id', requireRole('admin', 'supervisor'), async (req, res: Respon
     .single();
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  if (antes) await afterChange({ profileId: antes.profile_id, from: minDate(antes.effective_from, data.effective_from) });
   res.json(data);
 });
 
@@ -95,17 +124,21 @@ router.patch('/:id/end', requireRole('admin', 'supervisor'), async (req, res: Re
     .single();
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  await afterChange({ profileId: data.profile_id, from: effective_until });
   res.json(data);
 });
 
 // Delete schedule entry
 router.delete('/:id', requireRole('admin', 'supervisor'), async (req, res: Response) => {
+  const { data: antes } = await supabaseAdmin.from('schedules').select('profile_id, effective_from').eq('id', req.params.id).single();
+
   const { error } = await supabaseAdmin
     .from('schedules')
     .delete()
     .eq('id', req.params.id);
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  if (antes) await afterChange({ profileId: antes.profile_id, from: antes.effective_from });
   res.status(204).send();
 });
 

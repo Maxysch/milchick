@@ -6,6 +6,7 @@ import { formatCurrency, formatDate, RATE_FACTOR_LABELS } from '../../lib/utils'
 import {
   cardClass,
   ErrorState,
+  fieldClass,
   GlobalSettings,
   inputClass,
   LoadingState,
@@ -25,6 +26,7 @@ export default function SettingsPage() {
   const [factors, setFactors] = useState<Record<string, string>>({});
   const [startDay, setStartDay] = useState('1');
   const [threshold, setThreshold] = useState('30');
+  const [margins, setMargins] = useState({ late: '20', early: '20', newHire: '14', missing: false, incomplete: false });
 
   const settingsQuery = useQuery({
     queryKey: ['settings'],
@@ -37,8 +39,33 @@ export default function SettingsPage() {
     for (const f of settingsQuery.data.rate_factors) next[f.factor_key] = String(f.factor_value);
     setFactors(next);
     setStartDay(String(settingsQuery.data.settlement_settings?.period_start_day ?? 1));
-    setThreshold(String(settingsQuery.data.settlement_settings?.additional_threshold_minutes ?? 30));
+    const st = settingsQuery.data.settlement_settings;
+    setThreshold(String(st?.additional_threshold_minutes ?? 30));
+    setMargins({
+      late: String(st?.late_arrival_margin_minutes ?? 20),
+      early: String(st?.early_departure_margin_minutes ?? 20),
+      newHire: String(st?.new_hire_review_days ?? 14),
+      missing: st?.missing_clock_blocks ?? false,
+      incomplete: st?.incomplete_clock_blocks ?? false,
+    });
   }, [settingsQuery.data]);
+
+  const saveMarginsMutation = useMutation({
+    mutationFn: () =>
+      api.put('/settings/period', {
+        additional_threshold_minutes: Number(threshold),
+        late_arrival_margin_minutes: Number(margins.late),
+        early_departure_margin_minutes: Number(margins.early),
+        new_hire_review_days: Number(margins.newHire),
+        missing_clock_blocks: margins.missing,
+        incomplete_clock_blocks: margins.incomplete,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings'] });
+      queryClient.invalidateQueries({ queryKey: ['normalization-queue'] });
+      queryClient.invalidateQueries({ queryKey: ['pre-settlement'] });
+    },
+  });
 
   const saveFactorsMutation = useMutation({
     mutationFn: () =>
@@ -64,10 +91,7 @@ export default function SettingsPage() {
 
   const savePeriodMutation = useMutation({
     mutationFn: () =>
-      api.put('/settings/period', {
-        period_start_day: Number(startDay),
-        additional_threshold_minutes: Number(threshold),
-      }),
+      api.put('/settings/period', { period_start_day: Number(startDay) }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['settings'] }),
   });
 
@@ -99,8 +123,8 @@ export default function SettingsPage() {
         <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
           <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
           <div className="text-sm text-blue-800">
-            Esto aplica a <strong>todos los agentes</strong>. Cambiarlo no recalcula las
-            preliquidaciones ya generadas: sólo afecta a las que se generen de ahora en más.
+            Esto aplica a <strong>todos los agentes</strong>. Al guardar, las preliquidaciones en
+            borrador se recalculan solas; las confirmadas no se tocan.
           </div>
         </div>
 
@@ -171,7 +195,7 @@ export default function SettingsPage() {
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Día de corte</label>
               <input
-                className={`${inputClass} w-28`}
+                className={`${fieldClass} w-28`}
                 type="number"
                 min="1"
                 max="28"
@@ -191,38 +215,6 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="mt-6 border-t border-gray-200 pt-4">
-            <h3 className="text-sm font-medium text-gray-900">
-              Excedente mínimo para liquidar horas cargadas
-            </h3>
-            <p className="mt-1 mb-3 text-sm text-gray-500">
-              Las horas que carga el supervisor se pagan sólo hasta lo que el agente
-              efectivamente trabajó fuera de su esquema, y nada si ese excedente no llega
-              a este mínimo. Cuenta lo de antes de entrar más lo de después de salir.
-            </p>
-            <div className="flex flex-wrap items-end gap-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Minutos</label>
-                <input
-                  className={`${inputClass} w-28`}
-                  type="number"
-                  min="0"
-                  max="240"
-                  step="5"
-                  value={threshold}
-                  onChange={(event) => setThreshold(event.target.value)}
-                />
-              </div>
-              <div className="pb-2 text-sm text-gray-600">
-                Con {Number(threshold) || 0} min, un día de 7 h de esquema necesita{' '}
-                <strong className="text-gray-900">
-                  más de {(7 + (Number(threshold) || 0) / 60).toFixed(2)} h
-                </strong>{' '}
-                trabajadas para que se pague una adicional
-              </div>
-            </div>
-          </div>
-
           {savePeriodMutation.error ? (
             <p className="mt-3 text-sm text-red-600">{(savePeriodMutation.error as Error).message}</p>
           ) : null}
@@ -234,11 +226,96 @@ export default function SettingsPage() {
               disabled={savePeriodMutation.isPending}
               onClick={() => savePeriodMutation.mutate()}
             >
-              {savePeriodMutation.isPending ? 'Guardando...' : 'Guardar período y umbral'}
+              {savePeriodMutation.isPending ? 'Guardando...' : 'Guardar período'}
             </button>
             {savePeriodMutation.isSuccess ? (
               <span className="text-sm text-green-700">Guardado</span>
             ) : null}
+          </div>
+        </section>
+
+        {/* ── Normalización ── */}
+        <section className={cardClass}>
+          <h2 className="text-lg font-semibold text-gray-900">Normalización</h2>
+          <p className="mt-1 mb-4 text-sm text-gray-500">
+            Un día se paga solo cuando la marcación acompaña al plan dentro de estos márgenes. Si no, queda
+            para normalizar y la preliquidación no se confirma hasta resolverlo. Llegar antes no cuenta:
+            no cambia lo que se paga.
+          </p>
+
+          <div className="grid gap-5 sm:grid-cols-3">
+            {([
+              ['late', 'Llegó tarde', 'Minutos de tolerancia en el ingreso de cada tramo'],
+              ['early', 'Se fue antes', 'Minutos de tolerancia en el egreso de cada tramo'],
+            ] as const).map(([k, label, hint]) => (
+              <div key={k}>
+                <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
+                <input className={`${fieldClass} w-28`} type="number" min="0" max="240" step="5"
+                  value={margins[k]} onChange={(e) => setMargins({ ...margins, [k]: e.target.value })} />
+                <p className="mt-1 text-xs text-gray-500">{hint}</p>
+              </div>
+            ))}
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Trabajó de más</label>
+              <input className={`${fieldClass} w-28`} type="number" min="0" max="240" step="5"
+                value={threshold} onChange={(e) => setThreshold(e.target.value)} />
+              <p className="mt-1 text-xs text-gray-500">
+                Por encima de esto se revisa, y es el mínimo para pagar horas autorizadas. Cuenta lo de antes de
+                entrar más lo de después de salir.
+              </p>
+            </div>
+          </div>
+
+          <p className="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-600">
+            En julio y agosto 2026, de los días con excedente de entre 30 y 45 minutos, la planilla pagó algo de más
+            en 2 de 32. Subir este valor a 45 saca esos días de la bandeja.
+          </p>
+
+          <div className="mt-6 space-y-3 border-t border-gray-200 pt-4">
+            <label className="flex items-start gap-2 text-sm text-gray-700">
+              <input type="checkbox" className="mt-0.5 h-4 w-4" checked={margins.missing}
+                onChange={(e) => setMargins({ ...margins, missing: e.target.checked })} />
+              <span>
+                Un día sin ninguna marcación se revisa
+                <span className="block text-xs text-gray-500">
+                  Apagado, se paga el plan y queda un aviso. En julio y agosto, en los agentes con antigüedad la planilla
+                  pagó el plan en todos los días así: siempre fue "se olvidó de marcar".
+                </span>
+              </span>
+            </label>
+            <label className="flex items-start gap-2 text-sm text-gray-700">
+              <input type="checkbox" className="mt-0.5 h-4 w-4" checked={margins.incomplete}
+                onChange={(e) => setMargins({ ...margins, incomplete: e.target.checked })} />
+              <span>
+                Un ingreso sin egreso se revisa
+                <span className="block text-xs text-gray-500">Mismo criterio que el anterior, para las marcaciones a medias.</span>
+              </span>
+            </label>
+            <div className="flex flex-wrap items-end gap-3">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Agentes nuevos: se revisa todo durante</label>
+                <div className="flex items-center gap-2">
+                  <input className={`${fieldClass} w-24`} type="number" min="0" max="90"
+                    value={margins.newHire} onChange={(e) => setMargins({ ...margins, newHire: e.target.value })} />
+                  <span className="text-sm text-gray-600">días desde la fecha de ingreso</span>
+                </div>
+              </div>
+              <p className="basis-full text-xs text-gray-500">
+                Es donde está el riesgo: inducción y capacitación no siguen el esquema. En agosto, los cinco ingresos
+                del 07/08 tuvieron sus dos primeras semanas distintas del plan.
+              </p>
+            </div>
+          </div>
+
+          {saveMarginsMutation.error ? (
+            <p className="mt-3 text-sm text-red-600">{(saveMarginsMutation.error as Error).message}</p>
+          ) : null}
+          <div className="mt-4 flex items-center gap-3">
+            <button type="button" className={primaryButtonClass} disabled={saveMarginsMutation.isPending}
+              onClick={() => saveMarginsMutation.mutate()}>
+              {saveMarginsMutation.isPending ? 'Guardando y recalculando...' : 'Guardar márgenes'}
+            </button>
+            {saveMarginsMutation.isSuccess ? <span className="text-sm text-green-700">Guardado</span> : null}
           </div>
         </section>
       </div>

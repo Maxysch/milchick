@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth.js';
+import { afterChange } from './_util.js';
 import { createProfileSchema, updateProfileSchema } from '@milchick/shared';
 
 const router = Router();
@@ -71,6 +72,7 @@ router.patch('/:id', requireRole('admin', 'supervisor'), async (req, res: Respon
     .single();
 
   if (error) { res.status(500).json({ error: error.message }); return; }
+  await afterChange({ profileId: String(req.params.id) });
   res.json(data);
 });
 

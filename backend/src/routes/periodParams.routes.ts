@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth.js';
+import { afterChange } from './_util.js';
 import { upsertPeriodParamsSchema } from '@milchick/shared';
 
 const router = Router();
@@ -98,6 +99,8 @@ router.put('/', requireRole('admin', 'supervisor'), async (req: AuthRequest, res
     return;
   }
 
+  const desde = `${year}-${String(month).padStart(2, '0')}-01`;
+  for (const a of agents) await afterChange({ profileId: a.profile_id, from: desde });
   res.json({ saved: agents.length });
 });
 

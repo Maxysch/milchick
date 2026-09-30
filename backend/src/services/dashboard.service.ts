@@ -1,4 +1,6 @@
 import { supabaseAdmin } from '../config/supabase.js';
+import { localToday } from '../config/time.js';
+import { addDays } from './settlement-calc.js';
 
 /**
  * Lo que hay pendiente de hacer, para que la pantalla de inicio diga algo en vez
@@ -7,7 +9,10 @@ import { supabaseAdmin } from '../config/supabase.js';
 export interface DashboardSummary {
   active_agents: number;
   draft_settlements: number;
-  pending_warnings: number;
+  /** Días que no cierran contra el plan, en borradores. Un día con dos motivos cuenta una vez */
+  days_to_normalize: number;
+  /** Los mismos días por mes (YYYY-MM), del más viejo al más nuevo */
+  to_normalize_by_month: { month: string; days: number }[];
   /** Agentes con esquema hoy que todavía no marcaron ingreso */
   missing_clock_in_today: { profile_id: string; name: string; starts_at: string }[];
   /** Marcaciones abiertas: entraron y nunca marcaron la salida */
@@ -26,17 +31,18 @@ interface ProfileRow {
 const fullName = (p: ProfileRow) => `${p.last_name}, ${p.first_name}`;
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
-  const today = new Date().toISOString().split('T')[0];
+  // Hoy en Buenos Aires, no en la zona del servidor
+  const today = localToday();
   const dayOfWeek = new Date(today + 'T12:00:00').getDay();
 
   // Ventana corta para las marcaciones abiertas: más atrás que esto ya no es
   // "se olvidó de marcar", es historia que hay que corregir desde Marcaciones.
-  const since = new Date(Date.now() - 14 * 86_400_000).toISOString().split('T')[0];
+  const since = addDays(today, -14);
 
   const [
     { data: agents },
     { count: draftCount },
-    { count: warningCount },
+    { data: blockingWarnings },
     { data: schedulesToday },
     { data: clockToday },
     { data: openEntries },
@@ -55,8 +61,13 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       .eq('status', 'draft'),
     supabaseAdmin
       .from('pre_settlement_warnings')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'pending'),
+      .select('pre_settlement_id, date, pre_settlements!inner(period_to, status)')
+      .eq('status', 'pending')
+      // Sólo cuenta lo que hay que resolver: los informativos no frenan nada, y
+      // la evaluación faltante no es un día
+      .eq('blocking', true)
+      .neq('code', 'missing_period_params')
+      .eq('pre_settlements.status', 'draft'),
     supabaseAdmin
       .from('schedules')
       .select('profile_id, start_time')
@@ -112,6 +123,24 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       clock_in: e.clock_in.slice(0, 5),
     }));
 
+  // ── Días a normalizar, por mes ──
+  // El mes de un período es el de su último día: con corte el 21, "octubre" va
+  // del 21/09 al 20/10
+  const dias = new Map<string, Set<string>>();
+  for (const w of (blockingWarnings ?? []) as unknown as {
+    pre_settlement_id: string;
+    date: string;
+    pre_settlements: { period_to: string };
+  }[]) {
+    const month = w.pre_settlements.period_to.slice(0, 7);
+    const set = dias.get(month) ?? new Set<string>();
+    set.add(`${w.pre_settlement_id}|${w.date}`);
+    dias.set(month, set);
+  }
+  const toNormalizeByMonth = [...dias.entries()]
+    .map(([month, set]) => ({ month, days: set.size }))
+    .sort((a, b) => a.month.localeCompare(b.month));
+
   // ── Configuración incompleta ──
   const withSchedule = new Set(
     ((allSchedules ?? []) as { profile_id: string }[]).map((s) => s.profile_id)
@@ -123,7 +152,8 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   return {
     active_agents: profiles.length,
     draft_settlements: draftCount ?? 0,
-    pending_warnings: warningCount ?? 0,
+    days_to_normalize: toNormalizeByMonth.reduce((s, m) => s + m.days, 0),
+    to_normalize_by_month: toNormalizeByMonth,
     missing_clock_in_today: missingClockInToday,
     open_clock_entries: openClockEntries,
     agents_without_schedule: profiles

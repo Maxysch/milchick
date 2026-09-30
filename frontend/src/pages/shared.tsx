@@ -1,3 +1,4 @@
+import type { DayCase } from '../lib/normalization';
 import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
@@ -7,7 +8,7 @@ export type Role = 'admin' | 'supervisor' | 'agent';
 export type ExceptionType = 'vacation' | 'absence' | 'schedule_change' | 'extraordinary_coverage';
 export type Band = 'day_ld' | 'night_ld' | 'day_hd' | 'night_hd';
 export type Tier = 'normal' | 'additional' | 'overtime_50' | 'overtime_100';
-export type LineSource = 'schedule' | 'exception' | 'overtime' | 'manual' | 'adjustment';
+export type LineSource = 'schedule' | 'exception' | 'overtime' | 'manual' | 'adjustment' | 'correction' | 'compensation';
 export type PreSettlementStatus = 'draft' | 'confirmed' | 'cancelled';
 
 export interface Profile {
@@ -65,6 +66,8 @@ export interface ExceptionRecord {
   client_id: string | null;
   notes: string | null;
   clients?: NameRelation | null;
+  /** Horario del día, en cambio de jornada y cobertura. Reemplaza al esquema. */
+  blocks?: { start_time: string; end_time: string }[] | null;
 }
 
 export interface OvertimeRecord {
@@ -79,6 +82,8 @@ export interface OvertimeRecord {
   client_id: string | null;
   notes: string | null;
   clients?: NameRelation | null;
+  /** Pagar aunque la marcación no lo respalde */
+  uncapped?: boolean;
 }
 
 export interface AdjustmentRecord {
@@ -117,6 +122,7 @@ export interface PreSettlementRecord {
   status: PreSettlementStatus;
   total_amount: number;
   profiles?: ProfileRelation | null;
+  recalculated_at?: string | null;
 }
 
 export interface TimeEntry {
@@ -149,6 +155,9 @@ export interface PreSettlementDailyLine {
   clock_times?: TimeEntry[] | null;
   /** Excepción vigente ese día (vacaciones, licencia, ausencia…) */
   day_exception?: { exception_type: string; notes: string | null } | null;
+  /** Si el día se normalizó, cómo */
+  day_correction?: DayCorrectionRecord | null;
+  day_status?: string | null;
   /** Horas fuera del esquema cargadas ese día */
   day_overtime?: {
     hours: number;
@@ -192,8 +201,12 @@ export type WarningCode =
   | 'left_early'
   | 'worked_without_schedule'
   | 'worked_more_than_schedule'
+  | 'worked_other_hours'
+  | 'worked_on_holiday'
+  | 'clocked_on_leave'
   | 'additional_without_excess'
   | 'additional_over_worked'
+  | 'additional_unverified'
   | 'absence'
   | 'missing_period_params';
 
@@ -210,6 +223,34 @@ export interface SettlementWarning {
   reviewed_at: string | null;
   daily_lines: PreSettlementDailyLine[];
   clock_times: TimeEntry[] | null;
+  /** Bloquea la confirmación hasta normalizar el día */
+  blocking: boolean;
+  context: DayCase['context'];
+  suggestion: DayCase['suggestion'];
+  /** Qué pasó ese día, según el último cálculo */
+  day: DaySummary | null;
+}
+
+export interface DaySummary {
+  date: string;
+  status: string;
+  plan: { start_time: string; end_time: string }[];
+  marked: { start_time: string; end_time: string }[];
+  regularHours: number;
+  exception: string | null;
+  correction: string | null;
+  newHire: boolean;
+}
+
+export interface DayCorrectionRecord {
+  id: string;
+  date: string;
+  resolution: string;
+  blocks: { start_time: string; end_time: string }[] | null;
+  lines: { band: Band; tier: Tier; hours: number }[] | null;
+  note: string | null;
+  effects: Record<string, string[]> | null;
+  creator?: { first_name: string; last_name: string } | null;
 }
 
 export interface PreSettlementDetail extends PreSettlementRecord {
@@ -219,6 +260,13 @@ export interface PreSettlementDetail extends PreSettlementRecord {
   settlement_warnings: SettlementWarning[];
   pending_warnings: number;
   warnings: PreSettlementWarnings;
+  /** Días que faltan normalizar */
+  blocking_pending: number;
+  blocking_dates: string[];
+  corrections: DayCorrectionRecord[];
+  day_summary: DaySummary[];
+  day_status_count: Record<string, number>;
+  can_confirm: boolean;
 }
 
 export interface PeriodSummaryRow {
@@ -233,22 +281,27 @@ export interface PeriodSummaryRow {
   manual_items: number;
   net: number;
   pending_warnings: number;
+  blocking_pending: number;
 }
 
 export interface BulkResult {
   profile_id: string;
   name: string;
-  status: 'generated' | 'skipped' | 'failed';
+  status: 'generated' | 'updated' | 'skipped' | 'failed';
   pre_settlement_id?: string;
   total_amount?: number;
   warnings?: number;
+  /** Días a normalizar */
+  blocking?: number;
   reason?: string;
 }
 
 export interface DashboardSummary {
   active_agents: number;
   draft_settlements: number;
-  pending_warnings: number;
+  /** Días que no cierran contra el plan (un día con dos motivos cuenta una vez) */
+  days_to_normalize: number;
+  to_normalize_by_month: { month: string; days: number }[];
   missing_clock_in_today: { profile_id: string; name: string; starts_at: string }[];
   open_clock_entries: { profile_id: string; name: string; date: string; clock_in: string }[];
   agents_without_schedule: { profile_id: string; name: string }[];
@@ -268,6 +321,11 @@ export interface GlobalSettings {
     id?: string;
     period_start_day: number;
     additional_threshold_minutes?: number;
+    late_arrival_margin_minutes?: number;
+    early_departure_margin_minutes?: number;
+    missing_clock_blocks?: boolean;
+    incomplete_clock_blocks?: boolean;
+    new_hire_review_days?: number;
   };
 }
 
@@ -278,7 +336,10 @@ type ProfileRelation =
 
 export const cardClass = 'bg-white rounded-lg shadow p-6';
 export const pageTitleClass = 'text-2xl font-bold text-gray-900 mb-6';
-export const inputClass = 'border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:outline-none';
+/** Campo sin ancho, para los que llevan uno fijo: `${fieldClass} w-28`. Con inputClass el
+ *  w-full le gana a cualquier otro ancho y el campo se estira */
+export const fieldClass = 'border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none';
+export const inputClass = `${fieldClass} w-full`;
 export const selectClass = inputClass;
 export const textareaClass = `${inputClass} min-h-24`;
 export const primaryButtonClass = 'bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60';
@@ -361,13 +422,14 @@ export function getProfileRelationName(relation?: ProfileRelation | null) {
   return formatProfileName(relation as Pick<Profile, 'first_name' | 'last_name' | 'employee_id'>);
 }
 
+/** Hoy (YYYY-MM-DD) en la hora del navegador. toISOString daría el día de UTC: después de las 21 h, mañana */
 export function getToday() {
-  return new Date().toISOString().split('T')[0];
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 export function getMonthStart() {
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+  return `${getToday().slice(0, 7)}-01`;
 }
 
 export function normalizeTime(value: string | null | undefined) {

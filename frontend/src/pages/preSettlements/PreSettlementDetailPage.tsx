@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
-import { AlertTriangle, ArrowLeft, Clock, Info, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Clock, Info, RefreshCw, ShieldAlert, Trash2 } from 'lucide-react';
 import { api } from '../../lib/api';
 import {
   BAND_LABELS,
@@ -14,13 +14,19 @@ import {
   TIER_LABELS,
   LINE_SOURCE_LABELS,
   SETTLEMENT_STATUS_LABELS,
+  RESOLUTION_LABELS,
   WARNING_LABELS,
   WARNING_STATUS_LABELS,
+  timeAgo,
 } from '../../lib/utils';
+import DayResolver from '../../components/normalization/DayResolver';
+import type { DayCase } from '../../lib/normalization';
+import { monthOfPeriod, withMonth } from '../../lib/month';
 import {
   cardClass,
   EmptyState,
   ErrorState,
+  fieldClass,
   getBadgeClass,
   getProfileRelationName,
   getRelationName,
@@ -174,7 +180,7 @@ function DailyRow({
   day,
 }: {
   line: PreSettlementDailyLine;
-  onSave: (id: string, payload: { hours?: number; rate_per_hour?: number }) => void;
+  onSave: (id: string, payload: { hours: number }) => void;
   /** Desvío del día, si lo hay. Se muestra en la fila para resolverlo acá mismo. */
   warning?: SettlementWarning;
   isFocused: boolean;
@@ -184,14 +190,15 @@ function DailyRow({
   day: { isFirst: boolean; isLast: boolean; lineCount: number; totalHours: number; stripe: boolean };
 }) {
   const [hours, setHours] = useState(String(line.hours));
-  const [rate, setRate] = useState(String(line.rate_per_hour));
 
   useEffect(() => {
     setHours(String(line.hours));
-    setRate(String(line.rate_per_hour));
-  }, [line.hours, line.rate_per_hour]);
+  }, [line.hours]);
 
-  const computedAmount = (Number(hours || 0) * Number(rate || 0)) || 0;
+  // La tarifa no se edita: sale de la tarifa base del agente por la banda y el
+  // tramo. Para pagar distinto se cambian las horas, o la banda y el tramo.
+  const computedAmount = (Number(hours || 0) * Number(line.rate_per_hour || 0)) || 0;
+  const editable = line.source !== 'adjustment';
 
   const pendingWarning = warning?.status === 'pending' ? warning : undefined;
 
@@ -235,69 +242,69 @@ function DailyRow({
         {pendingWarning && day.isFirst && (
           <div className="mt-1 max-w-xs text-xs text-amber-800">
             {WARNING_LABELS[pendingWarning.code] ?? pendingWarning.code}: {pendingWarning.detail}
-            <button
-              type="button"
-              className="mt-1 block text-blue-600 hover:text-blue-700 hover:underline"
-              onClick={() => onAcceptWarning(pendingWarning.id)}
-            >
-              Está bien, marcar revisado
-            </button>
+            {pendingWarning.blocking ? (
+              <a href="#normalizar" className="mt-1 block font-medium text-blue-600 hover:underline">
+                Normalizar este día ↑
+              </a>
+            ) : (
+              <button
+                type="button"
+                className="mt-1 block text-blue-600 hover:text-blue-700 hover:underline"
+                onClick={() => onAcceptWarning(pendingWarning.id)}
+              >
+                Visto
+              </button>
+            )}
           </div>
         )}
       </td>
       <td className="px-4 py-3 text-sm text-gray-700">{hourLabel(line.band, line.tier)}</td>
       <td className="px-4 py-3 text-sm text-gray-700">
-        <input
-          className={inputClass}
-          type="number"
-          min="0"
-          step="0.25"
-          value={hours}
-          onChange={(event) => setHours(event.target.value)}
-          onBlur={() => {
-            const value = Number(hours);
-            if (value !== line.hours) {
-              onSave(line.id, { hours: value });
-            }
-          }}
-        />
+        {editable ? (
+          <input
+            className={`${fieldClass} w-24`}
+            type="number"
+            min="0"
+            step="0.25"
+            value={hours}
+            title="Cambiar las horas deja una corrección del día, que se conserva al recalcular"
+            onChange={(event) => setHours(event.target.value)}
+            onBlur={() => {
+              const value = Number(hours);
+              if (value !== line.hours) {
+                onSave(line.id, { hours: value });
+              }
+            }}
+          />
+        ) : (
+          <span>{line.hours}</span>
+        )}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-700">
-        <input
-          className={inputClass}
-          type="number"
-          min="0"
-          step="0.01"
-          value={rate}
-          onChange={(event) => setRate(event.target.value)}
-          onBlur={() => {
-            const value = Number(rate);
-            if (value !== line.rate_per_hour) {
-              onSave(line.id, { rate_per_hour: value });
-            }
-          }}
-        />
-      </td>
+      <td className="px-4 py-3 text-sm text-gray-500">{formatCurrency(line.rate_per_hour)}</td>
       <td className="px-4 py-3 text-sm font-medium text-gray-900">{formatCurrency(computedAmount)}</td>
       <td className="px-4 py-3 text-sm text-gray-700">{getRelationName(line.clients)}</td>
       <td className="px-4 py-3 text-sm text-gray-700">
         <div className="flex flex-wrap items-center gap-2">
-          <span className={getBadgeClass(
-            line.source === 'manual' ? 'purple'
-              : line.source === 'adjustment' ? 'blue'
-              : line.source === 'exception' ? 'yellow'
-              : 'gray'
-          )}>
+          <span
+            className={getBadgeClass(
+              line.source === 'manual' ? 'purple'
+                : line.source === 'correction' ? 'green'
+                : line.source === 'adjustment' || line.source === 'compensation' ? 'blue'
+                : line.source === 'exception' ? 'yellow'
+                : 'gray'
+            )}
+            title={line.day_correction ? RESOLUTION_LABELS[line.day_correction.resolution] : undefined}
+          >
             {LINE_SOURCE_LABELS[line.source] ?? line.source}
           </span>
           {/* Proyectado = la fecha todavía no ocurrió cuando se generó.
               Se concilia el mes siguiente si la realidad fue otra. */}
           {line.is_projected && <span className={getBadgeClass('blue')}>Proyectado</span>}
-          {line.source === 'manual' && onDelete && (
+          {editable && onDelete && (
             <button
               type="button"
               className="text-gray-400 hover:text-red-600"
-              title="Borrar la línea agregada a mano"
+              title="Sacar esta línea: queda como corrección del día"
               onClick={() => onDelete(line.id)}
             >
               <Trash2 className="h-4 w-4" />
@@ -479,7 +486,7 @@ export default function PreSettlementDetailPage() {
   });
 
   const dailyMutation = useMutation({
-    mutationFn: ({ lineId, payload }: { lineId: string; payload: { hours?: number; rate_per_hour?: number } }) => api.patch(`/pre-settlements/daily/${lineId}`, payload),
+    mutationFn: ({ lineId, payload }: { lineId: string; payload: { hours: number } }) => api.patch(`/pre-settlements/daily/${lineId}`, payload),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['pre-settlement', id] });
       await queryClient.invalidateQueries({ queryKey: ['pre-settlements'] });
@@ -567,8 +574,16 @@ export default function PreSettlementDetailPage() {
     },
   });
 
+  const recalcMutation = useMutation({
+    mutationFn: () => api.post(`/pre-settlements/${id}/recalculate`),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['pre-settlement', id] });
+      await queryClient.invalidateQueries({ queryKey: ['normalization-queue'] });
+    },
+  });
+
   const statusMutation = useMutation({
-    mutationFn: (status: 'confirmed' | 'cancelled') => api.patch(`/pre-settlements/${id}/status`, { status }),
+    mutationFn: (status: 'confirmed' | 'cancelled' | 'draft') => api.patch(`/pre-settlements/${id}/status`, { status }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['pre-settlement', id] });
       await queryClient.invalidateQueries({ queryKey: ['pre-settlements'] });
@@ -625,6 +640,38 @@ export default function PreSettlementDetailPage() {
     });
   }
 
+  // Los días que bloquean, con el mismo formato que la bandeja de normalización
+  const casos: DayCase[] = [];
+  {
+    const porFecha = new Map<string, SettlementWarning[]>();
+    for (const w of detail.settlement_warnings ?? []) {
+      if (!w.blocking || w.status !== 'pending' || w.code === 'missing_period_params') continue;
+      porFecha.set(w.date, [...(porFecha.get(w.date) ?? []), w]);
+    }
+    for (const [date, ws] of [...porFecha.entries()].sort()) {
+      const d = ws[0].day;
+      casos.push({
+        profile_id: detail.profile_id,
+        pre_settlement_id: detail.id,
+        date,
+        codes: ws.map((w) => w.code),
+        details: ws.map((w) => w.detail),
+        plan: d?.plan ?? [],
+        marked: d?.marked ?? [],
+        new_hire: d?.newHire ?? false,
+        exception: d?.exception ?? null,
+        suggestion: ws.find((w) => w.suggestion)?.suggestion ?? null,
+        context: ws.find((w) => w.context)?.context ?? null,
+      });
+    }
+  }
+  const faltaEvaluacion = (detail.settlement_warnings ?? []).some(
+    (w) => w.code === 'missing_period_params' && w.status === 'pending'
+  );
+  const informativos = (detail.settlement_warnings ?? []).filter((w) => !w.blocking);
+  const conteo = detail.day_status_count ?? {};
+  const esBorrador = detail.status === 'draft';
+
   // Un día puede tener varios desvíos; se muestra el primero pendiente.
   const warningByDate = new Map<string, SettlementWarning>();
   for (const w of detail.settlement_warnings ?? []) {
@@ -638,7 +685,7 @@ export default function PreSettlementDetailPage() {
     <div className="min-h-screen bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
         <div>
-          <Link to="/pre-settlements" className="mb-3 inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+          <Link to={withMonth('/pre-settlements', monthOfPeriod(detail.period_to))} className="mb-3 inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
             <ArrowLeft className="h-4 w-4" />
             Volver
           </Link>
@@ -648,14 +695,65 @@ export default function PreSettlementDetailPage() {
               <div className="text-lg font-semibold text-gray-900">{getProfileRelationName(detail.profiles)}</div>
               <div className="text-sm text-gray-500">{formatDate(detail.period_from)} - {formatDate(detail.period_to)}</div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4">
+              {esBorrador ? (
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800"
+                  disabled={recalcMutation.isPending}
+                  onClick={() => recalcMutation.mutate()}
+                  title="Trae las marcaciones nuevas. Los cambios en excepciones, horas o correcciones ya se aplican solos."
+                >
+                  <RefreshCw className={`h-4 w-4 ${recalcMutation.isPending ? 'animate-spin' : ''}`} />
+                  Actualizada {timeAgo(detail.recalculated_at)}
+                </button>
+              ) : null}
               <span className={getBadgeClass(detail.status === 'confirmed' ? 'green' : detail.status === 'cancelled' ? 'red' : 'yellow')}>
                 {SETTLEMENT_STATUS_LABELS[detail.status] ?? detail.status}
               </span>
               <div className="text-xl font-semibold text-gray-900">{formatCurrency(detail.total_amount)}</div>
             </div>
           </div>
+          {detail.day_summary?.length ? (
+            <p className="mt-2 text-sm text-gray-500">
+              {conteo.auto ?? 0} días se pagaron solos
+              {conteo.unverified ? ` · ${conteo.unverified} sin marcación completa` : ''}
+              {conteo.corrected ? ` · ${conteo.corrected} normalizados` : ''}
+              {conteo.needs_review ? ` · ${conteo.needs_review} a normalizar` : ''}
+              {conteo.leave ? ` · ${conteo.leave} de licencia` : ''}
+              {conteo.holiday ? ` · ${conteo.holiday} feriado${conteo.holiday > 1 ? 's' : ''}` : ''}
+            </p>
+          ) : null}
         </div>
+
+        {esBorrador && (casos.length > 0 || faltaEvaluacion) ? (
+          <section id="normalizar" className={`${cardClass} border border-amber-200`}>
+            <div className="mb-4 flex items-start gap-3">
+              <ShieldAlert className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" />
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {casos.length
+                    ? `${casos.length} ${casos.length === 1 ? 'día a normalizar' : 'días a normalizar'}`
+                    : 'Falta un dato para confirmar'}
+                </h2>
+                <p className="text-sm text-gray-600">
+                  Hasta resolverlos, se pagan según el plan y la preliquidación no se puede confirmar.
+                  {casos.length > 1 ? ' También se pueden resolver en bloque desde ' : ''}
+                  {casos.length > 1 ? <Link to={withMonth('/normalization', monthOfPeriod(detail.period_to))} className="text-blue-700 underline">Normalización</Link> : null}
+                </p>
+                {faltaEvaluacion ? (
+                  <p className="mt-1 text-sm text-amber-800">
+                    Falta la evaluación mensual: el REG y el SUPER REG salieron del valor por defecto del agente.{' '}
+                    <Link to="/period-params" className="font-medium underline">Cargarla</Link>
+                  </p>
+                ) : null}
+              </div>
+            </div>
+            <div className="space-y-2">
+              {casos.map((c) => <DayResolver key={c.date} day={c} />)}
+            </div>
+          </section>
+        ) : null}
 
         {/* Warnings */}
         {detail.warnings?.has_projected && (
@@ -667,7 +765,7 @@ export default function PreSettlementDetailPage() {
           </div>
         )}
         <WarningNotice
-          warnings={detail.settlement_warnings ?? []}
+          warnings={informativos}
           onFocusDate={(date) => {
             setFocusedDate(date);
             document.getElementById(`dia-${date}`)?.scrollIntoView({
@@ -708,7 +806,7 @@ export default function PreSettlementDetailPage() {
                       }
                       day={dayContext.get(line.id)!}
                       onDelete={(lineId) => {
-                        if (window.confirm('¿Borrar esta línea agregada a mano?')) {
+                        if (window.confirm('¿Sacar esta línea? El día queda corregido a mano y se puede deshacer desde Normalización.')) {
                           deleteLineMutation.mutate(lineId);
                         }
                       }}
@@ -966,9 +1064,43 @@ export default function PreSettlementDetailPage() {
             <div className="text-sm text-gray-500">Total general</div>
             <div className="text-2xl font-semibold text-gray-900">{formatCurrency(grandTotal)}</div>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <button type="button" className={primaryButtonClass} onClick={() => statusMutation.mutate('confirmed')} disabled={statusMutation.isPending}>Confirmar</button>
-            <button type="button" className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700" onClick={() => statusMutation.mutate('cancelled')} disabled={statusMutation.isPending}>Cancelar</button>
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-wrap gap-3">
+              {esBorrador ? (
+                <>
+                  <button
+                    type="button"
+                    className={primaryButtonClass}
+                    onClick={() => statusMutation.mutate('confirmed')}
+                    disabled={statusMutation.isPending || !detail.can_confirm}
+                    title={detail.can_confirm ? undefined : 'Quedan días a normalizar o falta la evaluación mensual'}
+                  >
+                    {statusMutation.isPending ? 'Confirmando...' : 'Confirmar'}
+                  </button>
+                  <button type="button" className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700" onClick={() => statusMutation.mutate('cancelled')} disabled={statusMutation.isPending}>Cancelar</button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200"
+                  onClick={() => {
+                    if (window.confirm('¿Volver a borrador? Se va a recalcular con los datos de hoy.')) statusMutation.mutate('draft');
+                  }}
+                  disabled={statusMutation.isPending}
+                >
+                  Volver a borrador
+                </button>
+              )}
+            </div>
+            {esBorrador && !detail.can_confirm ? (
+              <p className="text-sm text-amber-700">
+                {detail.blocking_pending
+                  ? `Se confirma cuando no quede ningún día a normalizar (quedan ${detail.blocking_pending}).`
+                  : 'Falta la evaluación mensual.'}
+              </p>
+            ) : null}
+            {/* Confirmar recalcula antes: si los datos cambiaron desde que se revisó, avisa en vez de confirmar */}
+            {statusMutation.error ? <p className="max-w-md text-right text-sm text-red-600">{(statusMutation.error as Error).message}</p> : null}
           </div>
         </section>
       </div>

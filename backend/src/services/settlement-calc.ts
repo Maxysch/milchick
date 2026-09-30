@@ -127,20 +127,17 @@ export function emptyBandHours(): BandHours {
 }
 
 /**
- * Reparte un tramo horario entre las cuatro bandas.
- * Si `endTime` es menor o igual que `startTime`, se asume que cruza la medianoche.
+ * Reparte un tramo en minutos —desde la medianoche de `date`, puede pasar de
+ * 1440— entre las cuatro bandas.
  */
-export function splitIntoBands(date: string, startTime: string, endTime: string): BandHours {
-  const start = timeToMinutes(startTime);
-  const rawEnd = timeToMinutes(endTime);
-  const end = rawEnd > start ? rawEnd : rawEnd + MIN_24;
-
+export function splitRangeIntoBands(date: string, start: number, end: number): BandHours {
   const result = emptyBandHours();
+  if (end <= start) return result;
   const startDow = isoDayOfWeek(date);
 
   // Recorremos los segmentos delimitados por los cortes de banda de cada día tocado
   const cuts: number[] = [start, end];
-  for (let dayOffset = 0; dayOffset <= Math.floor(end / MIN_24); dayOffset++) {
+  for (let dayOffset = Math.floor(start / MIN_24); dayOffset <= Math.floor(end / MIN_24); dayOffset++) {
     for (const bp of BREAKPOINTS) {
       const abs = dayOffset * MIN_24 + bp;
       if (abs > start && abs < end) cuts.push(abs);
@@ -158,6 +155,26 @@ export function splitIntoBands(date: string, startTime: string, endTime: string)
   }
 
   return result;
+}
+
+/**
+ * Reparte un tramo horario entre las cuatro bandas.
+ * Si `endTime` es menor o igual que `startTime`, se asume que cruza la medianoche.
+ */
+export function splitIntoBands(date: string, startTime: string, endTime: string): BandHours {
+  const start = timeToMinutes(startTime);
+  return splitRangeIntoBands(date, start, endMinutes(start, timeToMinutes(endTime)));
+}
+
+/**
+ * Fin de un tramo en minutos desde la medianoche del día de inicio. Si es
+ * anterior al inicio, cruza la medianoche (22:00–02:00). Si es igual, el tramo
+ * no dura nada: una entrada y una salida en el mismo minuto son un doble toque,
+ * no 24 horas de trabajo.
+ */
+export function endMinutes(start: number, rawEnd: number): number {
+  if (rawEnd > start) return rawEnd;
+  return rawEnd === start ? start : rawEnd + MIN_24;
 }
 
 // ─── Subtotal ───────────────────────────────────────────────────────
@@ -426,6 +443,12 @@ export interface OvertimeRecord {
   end_time: string | null;
   tier: Tier;
   client_id: string | null;
+  /**
+   * Pagar aunque la marcación no lo respalde. Es la forma de decir "esto se
+   * trabajó y la marcación está mal", o de pagar un arrastre en un día sin
+   * excedente. Sin esto, lo autorizado se topea contra lo trabajado.
+   */
+  uncapped?: boolean;
 }
 
 export type DayExceptionType =
@@ -435,10 +458,20 @@ export type DayExceptionType =
   | 'schedule_change'
   | 'extraordinary_coverage';
 
+/**
+ * Tipos de excepción que pueden traer un horario propio. Cuando lo traen, ese
+ * horario REEMPLAZA al esquema del día: es la única forma de decir "este
+ * miércoles fue de 17 a 23" sin que el sistema lo tome como horas de más.
+ */
+export const EXCEPTIONS_WITH_HOURS: DayExceptionType[] = ['schedule_change', 'extraordinary_coverage'];
+
 export interface DayContext {
   date: string;
   isHoliday: boolean;
   exception: DayExceptionType | null;
+  /** Horario de la excepción, si lo trae. Reemplaza al esquema de ese día. */
+  exceptionBlocks?: TimeBlock[] | null;
+  exceptionClientId?: string | null;
 }
 
 export type LineSource =
@@ -446,7 +479,9 @@ export type LineSource =
   | 'exception'
   | 'overtime'
   | 'manual'
-  | 'adjustment';   // diferencia contra lo proyectado en el período anterior
+  | 'adjustment'     // diferencia contra lo proyectado en el período anterior
+  | 'correction'     // el día lo normalizó un supervisor
+  | 'compensation';  // compensación fija por día trabajado
 
 export interface DailyLine {
   date: string;
@@ -460,6 +495,87 @@ export interface DailyLine {
 /** Umbral por defecto: por debajo de esto el excedente no habilita adicionales. */
 export const ADDITIONAL_THRESHOLD_HOURS = 0.5;
 
+// ─── Tramos en minutos ──────────────────────────────────────────────
+
+/** Un tramo "HH:mm"–"HH:mm". Si termina antes de empezar, cruza la medianoche. */
+export interface TimeBlock {
+  start_time: string;
+  end_time: string;
+}
+
+/** Un tramo en minutos desde la medianoche del día. Puede pasar de 1440. */
+export type MinuteRange = [number, number];
+
+export function blockToRange(b: TimeBlock): MinuteRange {
+  const start = timeToMinutes(b.start_time);
+  return [start, endMinutes(start, timeToMinutes(b.end_time))];
+}
+
+export function rangeToBlock([a, b]: MinuteRange): TimeBlock {
+  return { start_time: minutesToTime(a), end_time: minutesToTime(b) };
+}
+
+/** Une tramos superpuestos o contiguos. */
+export function unionRanges(ranges: MinuteRange[]): MinuteRange[] {
+  const sorted = ranges.filter(([a, b]) => b > a).sort((x, y) => x[0] - y[0]);
+  const out: MinuteRange[] = [];
+  for (const [a, b] of sorted) {
+    const last = out[out.length - 1];
+    if (last && a <= last[1]) last[1] = Math.max(last[1], b);
+    else out.push([a, b]);
+  }
+  return out;
+}
+
+export function rangeMinutes(ranges: MinuteRange[]): number {
+  return ranges.reduce((s, [a, b]) => s + (b - a), 0);
+}
+
+export function intersectRanges(a: MinuteRange[], b: MinuteRange[]): MinuteRange[] {
+  const out: MinuteRange[] = [];
+  for (const [a1, a2] of a) {
+    for (const [b1, b2] of b) {
+      const s = Math.max(a1, b1);
+      const e = Math.min(a2, b2);
+      if (e > s) out.push([s, e]);
+    }
+  }
+  return unionRanges(out);
+}
+
+/** Lo que queda de `a` después de sacarle `b`. */
+export function subtractRanges(a: MinuteRange[], b: MinuteRange[]): MinuteRange[] {
+  let result = unionRanges(a);
+  for (const [b1, b2] of unionRanges(b)) {
+    const next: MinuteRange[] = [];
+    for (const [a1, a2] of result) {
+      if (b2 <= a1 || b1 >= a2) {
+        next.push([a1, a2]);
+        continue;
+      }
+      if (b1 > a1) next.push([a1, b1]);
+      if (b2 < a2) next.push([b2, a2]);
+    }
+    result = next;
+  }
+  return result;
+}
+
+function bandHoursOfRanges(date: string, ranges: MinuteRange[]): BandHours {
+  const acc = emptyBandHours();
+  for (const [s, e] of ranges) {
+    const b = splitRangeIntoBands(date, s, e);
+    for (const band of ALL_BANDS) acc[band] += b[band];
+  }
+  return acc;
+}
+
+function totalBandHours(b: BandHours): number {
+  return b.day_ld + b.night_ld + b.day_hd + b.night_hd;
+}
+
+// ─── Entradas del día ───────────────────────────────────────────────
+
 export interface BuildDailyLinesInput {
   days: DayContext[];
   /** Esquemas vigentes en el período, ya filtrados por fecha de vigencia */
@@ -467,7 +583,7 @@ export interface BuildDailyLinesInput {
   overtime: OvertimeRecord[];
   /**
    * Marcaciones del período. Sin esto las horas cargadas por el supervisor se
-   * pagan sin tope, que es el comportamiento anterior.
+   * pagan sin tope y no hay contra qué contrastar el plan.
    */
   observations?: Map<string, ClockObservation>;
   /** Excedente mínimo para que las horas cargadas se paguen */
@@ -479,7 +595,7 @@ export interface OvertimeOutcome {
   date: string;
   /** Horas que cargó el supervisor */
   loadedHours: number;
-  /** Horas efectivamente trabajadas fuera del esquema */
+  /** Horas trabajadas por encima de lo que se esperaba ese día */
   excessHours: number;
   /** Horas que se terminan pagando: min(cargado, excedente), o 0 bajo el umbral */
   paidHours: number;
@@ -498,203 +614,750 @@ export interface BuildDailyLinesResult {
 }
 
 /**
- * Horas trabajadas fuera del esquema en un día.
+ * Cómo resolvió un supervisor un día que no cerraba. Es un dato de entrada, no
+ * una edición del resultado: vive aparte y el cálculo lo relee cada vez, así que
+ * recalcular nunca pierde una decisión ya tomada.
  *
- * Es lo marcado menos lo que se superpone con el esquema, así que cuenta tanto
- * lo de antes de entrar como lo de después de salir. Llegar 20 minutos antes y
- * salir 20 después son 40 minutos de excedente, no dos veces 20 comparados
- * contra el umbral por separado.
+ *   plan   → está bien así: se paga lo planificado aunque la marcación diga otra cosa
+ *   marks  → se paga lo que se marcó
+ *   custom → se paga un horario que carga el supervisor
+ *   none   → ese día no se paga
+ *   manual → horas cargadas a mano por banda y tramo, desde la tabla
  */
-export function excessOverSchedule(
-  date: string,
-  slots: ScheduleSlot[],
-  obs: ClockObservation | undefined
-): number {
-  if (!obs || obs.clockedHours === null || obs.clockedHours <= 0) return 0;
+export type CorrectionResolution = 'plan' | 'marks' | 'custom' | 'none' | 'manual';
 
-  const scheduleRanges = slots.map((s) => {
-    const start = timeToMinutes(s.start_time);
-    const rawEnd = timeToMinutes(s.end_time);
-    return [start, rawEnd > start ? rawEnd : rawEnd + 24 * 60] as const;
-  });
+export interface CorrectionLine {
+  band: Band;
+  tier: Tier;
+  hours: number;
+}
 
-  // Los tramos van uno por uno. Medir el solape sobre el span del día
-  // (primer ingreso a último egreso) taparía un tramo desconectado del esquema:
-  // el hueco entre bloques contaría como si estuviera cubierto.
+export interface DayCorrection {
+  date: string;
+  resolution: CorrectionResolution;
+  /** Horario que se paga (plan, marks, custom). Vacío en `none`. */
+  blocks?: TimeBlock[] | null;
+  /** Sólo en `manual`: lo que se paga, tal cual */
+  lines?: CorrectionLine[] | null;
+  client_id?: string | null;
+}
+
+/**
+ * Cuándo un día se paga solo y cuándo hay que mirarlo.
+ *
+ * Los márgenes son por punta y por dirección. Llegar antes no cuenta: el plan se
+ * paga igual y no cambia nada. Lo que mueve la plata es llegar tarde, irse
+ * antes o quedarse de más.
+ */
+export interface NormalizationMargins {
+  lateArrivalMinutes: number;
+  earlyDepartureMinutes: number;
+  /** Excedente mínimo para pagar horas autorizadas y para avisar de las que no */
+  additionalThresholdMinutes: number;
+  /** Si un día con plan y sin ninguna marcación bloquea la confirmación */
+  missingClockBlocks: boolean;
+  /** Si un ingreso sin egreso (o un egreso sin ingreso) bloquea la confirmación */
+  incompleteClockBlocks: boolean;
+  /**
+   * Días desde el ingreso en los que un agente nuevo, sin marcación completa,
+   * se revisa igual. Es donde está el riesgo: inducción y capacitación.
+   */
+  newHireReviewDays: number;
+}
+
+/**
+ * Por defecto, un día sin marcación completa no bloquea. En julio y agosto la
+ * planilla pagó el plan en los 44 días así de agentes con antigüedad: siempre
+ * fue "se olvidó de marcar". Los que no, fueron todos de agentes en sus dos
+ * primeras semanas, y eso lo cubre `newHireReviewDays`.
+ */
+export const DEFAULT_MARGINS: NormalizationMargins = {
+  lateArrivalMinutes: 20,
+  earlyDepartureMinutes: 20,
+  additionalThresholdMinutes: 30,
+  missingClockBlocks: false,
+  incompleteClockBlocks: false,
+  newHireReviewDays: 14,
+};
+
+/** Minutos que se pagan por cada día trabajado, además del plan. */
+export interface DailyCompensation {
+  minutes: number;
+  band: Band;
+}
+
+export type DayStatus =
+  | 'auto'          // se pagó el plan y las marcaciones lo acompañan
+  | 'unverified'    // se pagó el plan sin marcación completa, sin bloquear
+  | 'needs_review'  // hay un desvío que bloquea: falta normalizarlo
+  | 'corrected'     // lo normalizó un supervisor
+  | 'projected'     // todavía no ocurrió
+  | 'leave'         // vacaciones o licencia paga
+  | 'holiday'       // feriado no trabajado
+  | 'absence'
+  | 'off';          // sin plan y sin trabajo
+
+export interface DayResult {
+  date: string;
+  status: DayStatus;
+  /** Lo que se esperaba: el esquema, o el horario de la excepción */
+  plan: TimeBlock[];
+  /** Lo que se marcó */
+  marked: TimeBlock[];
+  /** Horas regulares pagadas (sin horas autorizadas ni compensación) */
+  regularHours: number;
+  exception: DayExceptionType | null;
+  correction: CorrectionResolution | null;
+  /** Está dentro de las primeras semanas de un agente nuevo */
+  newHire: boolean;
+}
+
+export interface SettleDaysInput extends BuildDailyLinesInput {
+  corrections?: Map<string, DayCorrection>;
+  margins?: Partial<NormalizationMargins>;
+  compensation?: DailyCompensation | null;
+  /** Desde esta fecha, inclusive, los días son proyectados y no se contrastan */
+  today?: string;
+  /** Fecha de ingreso: antes de ella el esquema no rige */
+  hireDate?: string | null;
+}
+
+export interface SettleDaysResult extends BuildDailyLinesResult {
+  warnings: SettlementWarning[];
+  days: DayResult[];
+}
+
+// ─── Marcaciones ────────────────────────────────────────────────────
+
+export interface ClockObservation {
+  date: string;
+  /** Horas efectivamente marcadas ese día, si hay marcación */
+  clockedHours: number | null;
+  /** Primer ingreso del día */
+  clockIn: string | null;
+  /** Último egreso conocido del día */
+  clockOut: string | null;
+  /**
+   * Cada tramo marcado por separado. Hace falta para medir bien: un tramo
+   * desconectado del plan no se puede detectar mirando sólo el span del primer
+   * ingreso al último egreso.
+   */
+  segments?: { clockIn: string; clockOut: string }[];
+  /** Hay al menos un ingreso sin su egreso */
+  incomplete?: boolean;
+}
+
+function markedRanges(obs: ClockObservation | undefined): MinuteRange[] {
+  if (!obs) return [];
   const segments =
     obs.segments && obs.segments.length > 0
       ? obs.segments
       : obs.clockIn && obs.clockOut
         ? [{ clockIn: obs.clockIn, clockOut: obs.clockOut }]
         : [];
-
-  if (segments.length === 0) return 0;
-
-  let worked = 0;
-  let overlap = 0;
-  for (const seg of segments) {
-    const from = timeToMinutes(seg.clockIn);
-    const rawTo = timeToMinutes(seg.clockOut);
-    const to = rawTo > from ? rawTo : rawTo + 24 * 60;
-    worked += to - from;
-    for (const [a, b] of scheduleRanges) {
-      overlap += Math.max(0, Math.min(to, b) - Math.max(from, a));
-    }
-  }
-
-  return Math.max(0, (worked - overlap) / 60);
+  return unionRanges(
+    segments.map((s) => blockToRange({ start_time: s.clockIn, end_time: s.clockOut }))
+  );
 }
 
+function isIncomplete(obs: ClockObservation | undefined): boolean {
+  if (!obs) return false;
+  if (obs.incomplete !== undefined) return obs.incomplete;
+  return obs.clockIn !== null && obs.clockOut === null;
+}
+
+function hasAnyMark(obs: ClockObservation | undefined): boolean {
+  return (
+    !!obs &&
+    (obs.clockIn !== null || obs.clockOut !== null || (obs.segments?.length ?? 0) > 0 || !!obs.incomplete)
+  );
+}
+
+// ─── Avisos ─────────────────────────────────────────────────────────
+
+export type WarningCode =
+  | 'no_clock_in'
+  | 'no_clock_out'
+  | 'left_early'
+  | 'arrived_late'
+  | 'worked_without_schedule'
+  | 'worked_more_than_schedule'   // trabajó de más sin cubrir con horas autorizadas
+  | 'worked_other_hours'          // marcó en otro horario que el del plan
+  | 'worked_on_holiday'           // marcó en un feriado sin cobertura
+  | 'clocked_on_leave'            // marcó un día de ausencia, vacaciones o licencia
+  | 'additional_without_excess'   // se cargaron horas y no hubo excedente
+  | 'additional_over_worked'      // se cargó más de lo que estuvo
+  | 'additional_unverified'       // se pagó lo autorizado sin marcación completa que lo respalde
+  | 'absence'
+  | 'missing_period_params';      // no se cargó la evaluación del mes
+
+/** Datos para que la pantalla muestre el caso y proponga cómo resolverlo. */
+export interface WarningContext {
+  plan: TimeBlock[];
+  marked: TimeBlock[];
+  lateMinutes?: number;
+  earlyMinutes?: number;
+  excessHours?: number;
+  authorizedHours?: number;
+  /** Horas a autorizar si se decide pagarlas, redondeadas hacia abajo a la media hora */
+  suggestedHours?: number;
+  /** El tramo del plan que no tiene ninguna marcación */
+  missedBlock?: TimeBlock;
+}
+
+export interface SettlementWarning {
+  date: string;
+  code: WarningCode;
+  detail: string;
+  /** Bloquea la confirmación hasta que alguien normalice el día */
+  blocking?: boolean;
+  context?: WarningContext;
+}
+
+export const CLOCK_TOLERANCE_MINUTES = 15;
+
+function fmtBlocks(blocks: TimeBlock[]): string {
+  return blocks.length === 0 ? '—' : blocks.map((b) => `${b.start_time}–${b.end_time}`).join(' + ');
+}
+
+/** Horas para leer en un aviso: "41 min" debajo de la hora, "6,17 h" o "2 h" arriba */
+function fmtH(h: number): string {
+  const min = Math.round(h * 60);
+  return min < 60 ? `${min} min` : `${String(Number(h.toFixed(2))).replace('.', ',')} h`;
+}
+
+/** Minutos para leer en un aviso: "45 min", "2 h", "1 h 15 min" */
+function fmtMin(min: number): string {
+  if (min < 60) return `${min} min`;
+  const h = Math.floor(min / 60);
+  return min % 60 ? `${h} h ${min % 60} min` : `${h} h`;
+}
+
+const floorToHalfHour = (h: number) => Math.floor(h * 2 + 1e-9) / 2;
+
+/** "YYYY-MM-DD" + n días */
+export function addDays(date: string, n: number): string {
+  const d = new Date(date + 'T12:00:00Z');
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+// ─── El día, resuelto ───────────────────────────────────────────────
+
 /**
- * Construye el desglose diario a partir del ESQUEMA del agente.
+ * Resuelve cada día del período: qué se paga y si hace falta que alguien lo mire.
  *
- * Es la inversión respecto de la versión anterior del servicio: antes mandaban
- * las marcaciones y el esquema sólo se usaba para proyectar el futuro. En la
- * práctica el negocio paga el esquema, y las marcaciones sirven para detectar
- * desvíos que alguien tiene que revisar (ver `compareAgainstClockIns`).
+ * Cada día se evalúa en este orden, y el primero que aplica decide:
+ *
+ *   1. Corrección del supervisor  → se paga lo que dice la corrección
+ *   2. Ausencia                   → no se paga
+ *   3. Feriado sin cobertura      → no se paga como horas: va a la compensación
+ *   4. Vacaciones / licencia      → se paga el plan, sin esperar marcación
+ *   5. Día normal                 → se paga el plan
+ *
+ * El plan es el esquema, salvo que la excepción del día traiga su propio
+ * horario: ahí lo reemplaza.
+ *
+ * Encima de eso van las horas autorizadas (horas fuera del esquema), que se
+ * pagan hasta lo que el agente efectivamente trabajó por encima de lo esperado.
+ *
+ * Las marcaciones no pagan: contrastan. Un día que no cierra contra el plan más
+ * allá de los márgenes queda para normalizar y bloquea la confirmación.
  */
-export function buildDailyLines(input: BuildDailyLinesInput): BuildDailyLinesResult {
+export function settleDays(input: SettleDaysInput): SettleDaysResult {
   const {
     days,
     schedulesByDate,
     overtime,
     observations,
-    additionalThresholdHours = ADDITIONAL_THRESHOLD_HOURS,
+    corrections,
+    compensation,
+    today,
+    hireDate,
   } = input;
+
+  const m: NormalizationMargins = {
+    ...DEFAULT_MARGINS,
+    ...(input.additionalThresholdHours !== undefined
+      ? { additionalThresholdMinutes: input.additionalThresholdHours * 60 }
+      : {}),
+    ...input.margins,
+  };
+  const threshold = m.additionalThresholdMinutes;
+  const hasObservations = observations !== undefined;
+
   const lines: DailyLine[] = [];
+  const warnings: SettlementWarning[] = [];
+  const results: DayResult[] = [];
+  const overtimeOutcomes: OvertimeOutcome[] = [];
+  const absenceDates: string[] = [];
   let unworkedHolidayHours = 0;
   let vacationHours = 0;
-  const absenceDates: string[] = [];
-  const overtimeOutcomes: OvertimeOutcome[] = [];
+
+  // Horas autorizadas por día, en orden de recargo creciente: si hay que
+  // recortar, se recorta primero lo más caro y el resultado es explicable.
+  const otByDate = new Map<string, OvertimeRecord[]>();
+  for (const ot of [...overtime].sort(
+    (a, b) => ALL_TIERS.indexOf(a.tier) - ALL_TIERS.indexOf(b.tier)
+  )) {
+    const list = otByDate.get(ot.date) ?? [];
+    list.push(ot);
+    otByDate.set(ot.date, list);
+  }
+
+  const warn = (w: SettlementWarning) => warnings.push(w);
+
+  const reviewUntil = hireDate ? addDays(hireDate, m.newHireReviewDays) : null;
 
   for (const day of days) {
-    const slots = schedulesByDate(day.date);
-    const scheduledHours = slots.reduce((sum, s) => {
-      const b = splitIntoBands(day.date, s.start_time, s.end_time);
-      return sum + b.day_ld + b.night_ld + b.day_hd + b.night_hd;
-    }, 0);
+    const date = day.date;
+    const beforeHire = !!hireDate && date < hireDate;
+    const newHire = !!hireDate && !beforeHire && !!reviewUntil && date < reviewUntil;
+    // Antes del ingreso el esquema no rige. Una excepción con horario sí: es la
+    // forma de cargar un día de capacitación previo al alta.
+    const slots = beforeHire ? [] : schedulesByDate(date);
+    const scheduleHours = slots.reduce(
+      (s, x) => s + totalBandHours(splitIntoBands(date, x.start_time, x.end_time)),
+      0
+    );
 
-    if (day.exception === 'absence') {
-      absenceDates.push(day.date);
-      continue; // la ausencia no se paga
-    }
+    const exBlocks =
+      day.exception && EXCEPTIONS_WITH_HOURS.includes(day.exception) && day.exceptionBlocks?.length
+        ? day.exceptionBlocks
+        : null;
 
-    // Feriado no trabajado: no se pagan horas, se compensa como concepto.
-    // Si hay cobertura extraordinaria cargada, el feriado sí se trabajó.
-    if (day.isHoliday && day.exception !== 'extraordinary_coverage') {
-      unworkedHolidayHours += scheduledHours;
-      continue;
-    }
+    // El plan: el esquema, o el horario de la excepción si lo trae
+    const plan: TimeBlock[] = exBlocks ?? slots.map((s) => ({ start_time: s.start_time, end_time: s.end_time }));
+    const planRanges = unionRanges(plan.map(blockToRange));
+    const planClient = exBlocks ? (day.exceptionClientId ?? slots[0]?.client_id ?? null) : null;
 
-    // La licencia paga se liquida igual que un día normal, pero no suma al
-    // plus vacacional: eso es sólo para vacaciones.
-    if (day.exception === 'vacation') vacationHours += scheduledHours;
+    const obs = observations?.get(date);
+    const markedR = markedRanges(obs);
+    const marked = markedR.map(rangeToBlock);
+    const workedMin = rangeMinutes(markedR);
+    const incomplete = isIncomplete(obs);
+    const projected = today !== undefined && date >= today;
 
-    const source: LineSource = day.exception ? 'exception' : 'schedule';
-    for (const slot of slots) {
-      const bands = splitIntoBands(day.date, slot.start_time, slot.end_time);
-      for (const band of ALL_BANDS) {
-        if (bands[band] > 0) {
-          lines.push({
-            date: day.date,
-            band,
-            tier: 'normal',
-            hours: bands[band],
-            client_id: slot.client_id,
-            source,
-          });
+    const correction = corrections?.get(date) ?? null;
+
+    /** Líneas regulares desde un conjunto de tramos */
+    const pushBlocks = (blocks: TimeBlock[], source: LineSource, clientId: string | null) => {
+      let total = 0;
+      for (const b of blocks) {
+        const bands = splitIntoBands(date, b.start_time, b.end_time);
+        for (const band of ALL_BANDS) {
+          if (bands[band] > 0) {
+            lines.push({ date, band, tier: 'normal', hours: bands[band], client_id: clientId, source });
+            total += bands[band];
+          }
         }
       }
-    }
-  }
+      return total;
+    };
 
-  // ── Horas cargadas por el supervisor ──
-  //
-  // No se suman al esquema sin más: se pagan sólo en la medida en que el agente
-  // efectivamente estuvo. Un día de 7 h de esquema con 1 h cargada y 8 h
-  // trabajadas paga 7 normales + 1 adicional; si trabajó 7, la adicional no se
-  // paga. Y por debajo del umbral no se paga nada, para que unos minutos de más
-  // no habiliten una hora entera.
-  const paidDates = new Set(days.filter((d) => d.exception !== 'absence').map((d) => d.date));
-
-  // Presupuesto de horas pagables por día
-  const budget = new Map<string, number>();
-  const loadedByDate = new Map<string, number>();
-  for (const ot of overtime) {
-    if (!paidDates.has(ot.date)) continue;
-    loadedByDate.set(ot.date, (loadedByDate.get(ot.date) ?? 0) + ot.hours);
-  }
-
-  for (const [date, loaded] of loadedByDate) {
-    // Sin marcaciones no hay con qué topear: se paga lo cargado, como antes
-    if (!observations) {
-      budget.set(date, loaded);
-      overtimeOutcomes.push({ date, loadedHours: loaded, excessHours: loaded, paidHours: loaded });
-      continue;
-    }
-    const excess = excessOverSchedule(date, schedulesByDate(date), observations.get(date));
-    const payable = excess > additionalThresholdHours ? Math.min(loaded, excess) : 0;
-    budget.set(date, payable);
-    overtimeOutcomes.push({ date, loadedHours: loaded, excessHours: excess, paidHours: payable });
-  }
-
-  // Días con excedente pero sin nada cargado: quedan registrados para el aviso
-  if (observations) {
-    for (const day of days) {
-      if (loadedByDate.has(day.date) || !paidDates.has(day.date)) continue;
-      const excess = excessOverSchedule(day.date, schedulesByDate(day.date), observations.get(day.date));
-      if (excess > additionalThresholdHours) {
-        overtimeOutcomes.push({ date: day.date, loadedHours: 0, excessHours: excess, paidHours: 0 });
-      }
-    }
-  }
-
-  // Se consumen en orden de recargo creciente, para que el recorte sea
-  // determinístico y explicable cuando un día tiene más de un tramo cargado.
-  const ordered = [...overtime].sort(
-    (a, b) =>
-      a.date.localeCompare(b.date) || ALL_TIERS.indexOf(a.tier) - ALL_TIERS.indexOf(b.tier)
-  );
-
-  for (const ot of ordered) {
-    if (!paidDates.has(ot.date)) continue;
-
-    const remaining = budget.get(ot.date) ?? 0;
-    if (remaining <= 0.0001) continue;
-    const hours = Math.min(ot.hours, remaining);
-    budget.set(ot.date, remaining - hours);
-
-    const bands = ot.start_time && ot.end_time
-      ? splitIntoBands(ot.date, ot.start_time, ot.end_time)
-      : null;
-
-    if (bands) {
-      const total = bands.day_ld + bands.night_ld + bands.day_hd + bands.night_hd;
-      for (const band of ALL_BANDS) {
-        if (bands[band] > 0) {
-          lines.push({
-            date: ot.date,
-            band,
-            tier: ot.tier,
-            // Si las horas declaradas no coinciden con el tramo horario, se
-            // reparten en la misma proporción que las bandas.
-            hours: total > 0 ? (hours * bands[band]) / total : 0,
-            client_id: ot.client_id,
-            source: 'overtime',
-          });
+    /** Líneas regulares desde el esquema, conservando el cliente de cada bloque */
+    const pushSchedule = (source: LineSource) => {
+      if (exBlocks) return pushBlocks(exBlocks, source, planClient);
+      let total = 0;
+      for (const slot of slots) {
+        const bands = splitIntoBands(date, slot.start_time, slot.end_time);
+        for (const band of ALL_BANDS) {
+          if (bands[band] > 0) {
+            lines.push({ date, band, tier: 'normal', hours: bands[band], client_id: slot.client_id, source });
+            total += bands[band];
+          }
         }
       }
-    } else {
-      // Sin horario declarado se asume la banda diurna habitual
-      lines.push({
-        date: ot.date,
-        band: 'day_ld',
-        tier: ot.tier,
-        hours,
-        client_id: ot.client_id,
-        source: 'overtime',
+      return total;
+    };
+
+    /**
+     * Horas autorizadas del día, topeadas contra lo trabajado por encima de lo
+     * esperado. `expected` son los tramos que se esperaba que trabajara: el
+     * plan en un día normal, nada en un feriado o una licencia.
+     *
+     * El excedente es neto —lo trabajado menos lo esperado— y no "lo que cae
+     * fuera del horario". Así, una jornada corrida de lugar (esperado 09-15,
+     * marcado 17-23) no tiene excedente: son las mismas seis horas. Contarlas
+     * como horas de más es lo que producía el doble pago.
+     */
+    const payOvertime = (expected: MinuteRange[], informOnly: boolean, kind: 'regular' | 'holiday' | 'leave' | 'none') => {
+      const loadedRecords = otByDate.get(date) ?? [];
+      const loaded = loadedRecords.reduce((s, r) => s + Number(r.hours), 0);
+      const forced = loadedRecords.filter((r) => r.uncapped).reduce((s, r) => s + Number(r.hours), 0);
+
+      // Qué tan confiable es la marcación de este día
+      const evidence: 'absent' | 'none' | 'partial' | 'complete' =
+        !hasObservations ? 'absent'
+          : !hasAnyMark(obs) ? 'none'
+            : incomplete ? 'partial'
+              : 'complete';
+
+      // Excedente neto: lo trabajado menos lo esperado. Con marcación parcial es
+      // un piso: trabajó por lo menos eso.
+      const excessMin =
+        evidence === 'partial' || evidence === 'complete'
+          ? Math.max(0, workedMin - rangeMinutes(expected))
+          : null;
+
+      // Con marcación completa lo autorizado se contrasta contra lo trabajado:
+      //   - si no hubo excedente real (por debajo del umbral), no se paga
+      //   - si lo trabajado está dentro del margen de lo autorizado, se paga lo
+      //     autorizado: en julio y agosto la planilla lo hizo así en los 36 días
+      //     de ese tipo, nunca al minuto
+      //   - si trabajó claramente menos, se paga lo trabajado y se avisa
+      // Sin marcación completa no hay con qué contradecirlo: no saber cuánto
+      // trabajó no es lo mismo que saber que no trabajó.
+      const autorizado = loaded - forced;
+      const capped = evidence === 'complete'
+        ? excessMin! <= threshold
+          ? 0
+          : excessMin! >= autorizado * 60 - threshold
+            ? autorizado
+            : excessMin! / 60
+        : autorizado;
+      const budgetHours = Math.max(0, capped) + forced;
+
+      // Dónde cayó lo trabajado de más, para pagarlo en su banda. Se toma del
+      // final hacia atrás: lo típico es quedarse, no llegar antes.
+      let outside = subtractRanges(markedR, expected);
+      let remaining = budgetHours;
+      let paid = 0;
+
+      // Primero lo que se paga sin tope, después el resto
+      const ordered = [...loadedRecords.filter((r) => r.uncapped), ...loadedRecords.filter((r) => !r.uncapped)];
+      for (const ot of ordered) {
+        if (remaining <= 0.0001) break;
+        const hours = Math.min(Number(ot.hours), remaining);
+        remaining -= hours;
+        paid += hours;
+
+        if (ot.start_time && ot.end_time) {
+          const bands = splitIntoBands(date, ot.start_time, ot.end_time);
+          const total = totalBandHours(bands);
+          for (const band of ALL_BANDS) {
+            if (bands[band] > 0) {
+              lines.push({
+                date, band, tier: ot.tier,
+                // Si las horas declaradas no coinciden con el horario, se
+                // reparten en la misma proporción que las bandas
+                hours: total > 0 ? (hours * bands[band]) / total : 0,
+                client_id: ot.client_id, source: 'overtime',
+              });
+            }
+          }
+          continue;
+        }
+
+        if (outside.length === 0) {
+          // Sin marcación para ubicarlas: la banda diurna habitual
+          lines.push({ date, band: 'day_ld', tier: ot.tier, hours, client_id: ot.client_id, source: 'overtime' });
+          continue;
+        }
+
+        // Consumir los minutos de afuera, del último hacia atrás
+        let need = hours * 60;
+        const taken: MinuteRange[] = [];
+        const rest: MinuteRange[] = [];
+        for (let i = outside.length - 1; i >= 0; i--) {
+          const [a, b] = outside[i];
+          if (need <= 0) { rest.unshift([a, b]); continue; }
+          const len = b - a;
+          if (len <= need) { taken.push([a, b]); need -= len; }
+          else { taken.push([b - need, b]); rest.unshift([a, b - need]); need = 0; }
+        }
+        outside = rest;
+        const bands = bandHoursOfRanges(date, taken);
+        const placed = totalBandHours(bands);
+        for (const band of ALL_BANDS) {
+          if (bands[band] > 0) {
+            lines.push({ date, band, tier: ot.tier, hours: bands[band], client_id: ot.client_id, source: 'overtime' });
+          }
+        }
+        // Lo que no se pudo ubicar en la marcación va a la banda diurna
+        if (hours - placed > 0.0001) {
+          lines.push({ date, band: 'day_ld', tier: ot.tier, hours: hours - placed, client_id: ot.client_id, source: 'overtime' });
+        }
+      }
+
+      const excessHours = excessMin === null ? loaded : excessMin / 60;
+      if (loaded > 0 || (excessMin !== null && excessMin > threshold)) {
+        overtimeOutcomes.push({ date, loadedHours: loaded, excessHours, paidHours: paid });
+      }
+
+      if (evidence === 'absent') return { blocking: false };
+
+      const ctxBase: WarningContext = {
+        plan, marked,
+        excessHours: excessMin === null ? undefined : excessMin / 60,
+        authorizedHours: loaded,
+      };
+
+      // Lo autorizado sin marcación completa: se paga, y queda dicho
+      if (evidence !== 'complete' && loaded - forced > 0.0001) {
+        warn({
+          date, code: 'additional_unverified', blocking: false, context: ctxBase,
+          detail: `Se pagan ${fmtH(loaded - forced)} de lo autorizado sin una marcación completa que lo respalde`,
+        });
+      }
+
+      let blocking = false;
+
+      // Autorizado y no trabajado. Con marcación completa, si la diferencia pasa
+      // el umbral, alguien tiene que decidir: la regla dice no pagar, pero puede
+      // ser un arrastre mal cargado o una marcación mal hecha.
+      if (evidence === 'complete') {
+        const unsupportedMin = (loaded - paid) * 60;
+        if (unsupportedMin > 0.0001) {
+          const bloquea = !informOnly && unsupportedMin > threshold;
+          const code: WarningCode = paid < 0.0001 ? 'additional_without_excess' : 'additional_over_worked';
+          warn({
+            date, code, blocking: bloquea, context: ctxBase,
+            detail:
+              `Se autorizaron ${fmtH(loaded)} y la marcación muestra ${fmtH(excessMin! / 60)} ` +
+              `por encima de lo esperado: ${paid < 0.0001 ? 'no se paga ninguna' : `se pagan ${fmtH(paid)}`}` +
+              (bloquea ? `. Confirmá si ${paid < 0.0001 ? '' : 'las otras '}se pagan igual` : ''),
+          });
+          blocking ||= bloquea;
+        }
+      }
+
+      // Trabajado y no autorizado
+      if (informOnly || excessMin === null) return { blocking };
+      const uncoveredMin = excessMin - paid * 60;
+      if (uncoveredMin <= threshold) return { blocking };
+
+      const code: WarningCode =
+        kind === 'holiday' ? 'worked_on_holiday'
+          : kind === 'leave' ? 'clocked_on_leave'
+            : kind === 'none' ? 'worked_without_schedule'
+              : 'worked_more_than_schedule';
+
+      const uncoveredH = uncoveredMin / 60;
+      const where = `marcó ${fmtBlocks(marked)}`;
+      const detail =
+        code === 'worked_more_than_schedule'
+          ? loaded > 0
+            ? `Trabajó ${fmtH(excessMin / 60)} más que el plan (${fmtBlocks(plan)}) y se ` +
+              `autorizaron ${fmtH(loaded)}: quedan ${fmtH(uncoveredH)} sin autorizar`
+            : `Trabajó ${fmtH(uncoveredH)} más que el plan (${fmtBlocks(plan)}) sin horas autorizadas: ${where}`
+          : code === 'worked_on_holiday'
+            ? `Feriado sin cobertura cargada, pero ${where} (${fmtH(uncoveredH)})`
+            : code === 'clocked_on_leave'
+              ? `Día de ${day.exception === 'absence' ? 'ausencia' : 'licencia'}, pero ${where} (${fmtH(uncoveredH)})`
+              : `Sin esquema ese día, pero ${where} (${fmtH(uncoveredH)})`;
+
+      warn({
+        date, code, detail, blocking: true,
+        context: { ...ctxBase, suggestedHours: floorToHalfHour(uncoveredH) },
       });
+      return { blocking: true };
+    };
+
+    const addCompensation = (regular: number) => {
+      if (!compensation || compensation.minutes <= 0 || regular <= 0) return;
+      lines.push({
+        date, band: compensation.band, tier: 'normal',
+        hours: compensation.minutes / 60, client_id: null, source: 'compensation',
+      });
+    };
+
+    const finish = (status: DayStatus, regular: number) => {
+      results.push({
+        date, status, plan, marked, regularHours: regular,
+        exception: day.exception, correction: correction?.resolution ?? null,
+        newHire,
+      });
+    };
+
+    // ── 1. Corrección del supervisor ──
+    if (correction) {
+      if (correction.resolution === 'manual') {
+        let regular = 0;
+        for (const l of correction.lines ?? []) {
+          if (l.hours === 0) continue;
+          lines.push({ date, band: l.band, tier: l.tier, hours: l.hours, client_id: correction.client_id ?? null, source: 'correction' });
+          if (l.tier === 'normal') regular += l.hours;
+        }
+        // Un feriado normalizado sin horas sigue siendo un feriado no trabajado
+        if (day.isHoliday && regular === 0) unworkedHolidayHours += scheduleHours;
+        finish('corrected', regular);
+        continue;
+      }
+
+      const blocks = correction.resolution === 'none' ? [] : (correction.blocks ?? []);
+      const regular = pushBlocks(blocks, 'correction', correction.client_id ?? planClient ?? slots[0]?.client_id ?? null);
+
+      // Un feriado que se normalizó como no trabajado sigue compensándose
+      if (day.isHoliday && regular === 0) unworkedHolidayHours += scheduleHours;
+      // Mantener la licencia conserva el plus vacacional
+      if (day.exception === 'vacation' && correction.resolution === 'plan') vacationHours += regular;
+
+      if (day.exception !== 'absence') {
+        payOvertime(unionRanges(blocks.map(blockToRange)), true, 'regular');
+      }
+      if (day.exception !== 'vacation' && day.exception !== 'paid_leave') addCompensation(regular);
+      finish('corrected', regular);
+      continue;
     }
+
+    // ── 2. Ausencia ──
+    if (day.exception === 'absence') {
+      absenceDates.push(date);
+      if (hasObservations && !projected && workedMin > threshold) {
+        warn({
+          date, code: 'clocked_on_leave', blocking: true,
+          context: { plan, marked, excessHours: workedMin / 60, suggestedHours: floorToHalfHour(workedMin / 60) },
+          detail: `Día de ausencia, pero marcó ${fmtBlocks(marked)} (${fmtH(workedMin / 60)})`,
+        });
+        finish('needs_review', 0);
+      } else {
+        finish('absence', 0);
+      }
+      continue;
+    }
+
+    // ── 3. Feriado sin cobertura ──
+    if (day.isHoliday && day.exception !== 'extraordinary_coverage') {
+      unworkedHolidayHours += scheduleHours;
+      const { blocking } = projected ? { blocking: false } : payOvertime([], false, 'holiday');
+      finish(blocking ? 'needs_review' : 'holiday', 0);
+      continue;
+    }
+
+    // ── 4. Vacaciones y licencias ──
+    if (day.exception === 'vacation' || day.exception === 'paid_leave') {
+      const regular = pushSchedule('exception');
+      if (day.exception === 'vacation') vacationHours += regular;
+      const { blocking } = projected ? { blocking: false } : payOvertime([], false, 'leave');
+      finish(blocking ? 'needs_review' : 'leave', regular);
+      continue;
+    }
+
+    // ── 5. Día normal ──
+    const regular = pushSchedule(day.exception ? 'exception' : 'schedule');
+    addCompensation(regular);
+
+    if (projected) {
+      payOvertime(planRanges, true, 'regular');
+      finish(regular > 0 ? 'projected' : 'off', regular);
+      continue;
+    }
+
+    if (planRanges.length === 0) {
+      const { blocking } = payOvertime([], false, 'none');
+      finish(blocking ? 'needs_review' : 'off', regular);
+      continue;
+    }
+
+    if (!hasObservations) {
+      payOvertime(planRanges, false, 'regular');
+      finish('auto', regular);
+      continue;
+    }
+
+    // Contraste contra la marcación
+    let blocking = false;
+    let unverified = false;
+    const planMin = rangeMinutes(planRanges);
+
+    const nuevo = newHire ? ' — agente nuevo: se revisa igual' : '';
+    const bloqueaFaltante = m.missingClockBlocks || newHire;
+    const bloqueaIncompleta = m.incompleteClockBlocks || newHire;
+
+    if (!hasAnyMark(obs)) {
+      warn({
+        date, code: 'no_clock_in', blocking: bloqueaFaltante, context: { plan, marked },
+        detail: `Plan de ${fmtH(planMin / 60)} (${fmtBlocks(plan)}) sin ninguna marcación${nuevo}`,
+      });
+      blocking ||= bloqueaFaltante;
+      unverified = true;
+    } else if (incomplete && markedR.length === 0) {
+      warn({
+        date, code: 'no_clock_out', blocking: bloqueaIncompleta, context: { plan, marked },
+        detail: (obs?.clockIn
+          ? `Marcó ingreso a las ${obs.clockIn} y nunca el egreso`
+          : `Marcó egreso a las ${obs?.clockOut ?? '—'} sin haber marcado el ingreso`) + nuevo,
+      });
+      blocking ||= bloqueaIncompleta;
+      unverified = true;
+    } else {
+      if (incomplete) {
+        warn({
+          date, code: 'no_clock_out', blocking: bloqueaIncompleta, context: { plan, marked },
+          detail: `Quedó un ingreso sin su egreso${nuevo}`,
+        });
+        blocking ||= bloqueaIncompleta;
+      }
+
+      const covered = intersectRanges(planRanges, markedR);
+      const coveredMin = rangeMinutes(covered);
+
+      // Jornada corrida de lugar: nada del plan cubierto, o casi nada y trabajó
+      if (coveredMin === 0 || (coveredMin < planMin / 2 && workedMin >= planMin / 2)) {
+        warn({
+          date, code: 'worked_other_hours', blocking: true,
+          context: { plan, marked, excessHours: (workedMin - coveredMin) / 60 },
+          detail: `Marcó ${fmtBlocks(marked)} y el plan era ${fmtBlocks(plan)}`,
+        });
+        // Las horas autorizadas se siguen evaluando, pero el día ya bloquea
+        payOvertime(planRanges, true, 'regular');
+        finish('needs_review', regular);
+        continue;
+      }
+
+      // Tramo por tramo: los agentes marcan cada uno, así que el ingreso y el
+      // egreso se miden contra el tramo, no contra el día entero
+      const split = plan.length > 1;
+      const enTramo = (b: TimeBlock) => (split ? ` al tramo ${b.start_time}–${b.end_time}` : '');
+      let anyCovered = false;
+      for (let i = 0; i < plan.length; i++) {
+        const b = plan[i];
+        const B = blockToRange(b);
+        const cov = intersectRanges([B], markedR);
+
+        if (cov.length === 0) {
+          const code: WarningCode = anyCovered ? 'left_early' : 'arrived_late';
+          warn({
+            date, code, blocking: true,
+            context: { plan, marked, missedBlock: b, [anyCovered ? 'earlyMinutes' : 'lateMinutes']: B[1] - B[0] },
+            detail: `No marcó el tramo ${b.start_time}–${b.end_time}: marcó ${fmtBlocks(marked)}`,
+          });
+          blocking = true;
+          continue;
+        }
+        anyCovered = true;
+
+        const late = cov[0][0] - B[0];
+        const early = B[1] - cov[cov.length - 1][1];
+        const gap = B[1] - B[0] - rangeMinutes(cov) - late - early;
+
+        if (late > m.lateArrivalMinutes) {
+          warn({
+            date, code: 'arrived_late', blocking: true,
+            context: { plan, marked, lateMinutes: late },
+            detail: `Llegó ${fmtMin(late)} tarde${enTramo(b)}: marcó ${fmtBlocks(marked)}, el plan era ${fmtBlocks(plan)}`,
+          });
+          blocking = true;
+        }
+        if (early > m.earlyDepartureMinutes || gap > m.earlyDepartureMinutes) {
+          const detail = early > m.earlyDepartureMinutes
+            ? `Se fue ${fmtMin(early)} antes${split ? ` del tramo ${b.start_time}–${b.end_time}` : ''}`
+            : `Se ausentó ${fmtMin(gap)} en medio del tramo ${b.start_time}–${b.end_time}`;
+          warn({
+            date, code: 'left_early', blocking: true,
+            context: { plan, marked, earlyMinutes: Math.max(early, gap) },
+            detail: `${detail}: marcó ${fmtBlocks(marked)}, el plan era ${fmtBlocks(plan)}`,
+          });
+          blocking = true;
+        }
+      }
+    }
+
+    const ot = payOvertime(planRanges, false, 'regular');
+    blocking ||= ot.blocking;
+
+    finish(blocking ? 'needs_review' : unverified ? 'unverified' : 'auto', regular);
   }
 
   return {
@@ -703,7 +1366,18 @@ export function buildDailyLines(input: BuildDailyLinesInput): BuildDailyLinesRes
     vacationHours,
     absenceDates,
     overtimeOutcomes: overtimeOutcomes.sort((a, b) => a.date.localeCompare(b.date)),
+    warnings: warnings.sort((a, b) => a.date.localeCompare(b.date)),
+    days: results,
   };
+}
+
+/**
+ * El desglose de horas, sin los avisos. Es `settleDays` con la interfaz de
+ * antes, para quien sólo necesita las líneas.
+ */
+export function buildDailyLines(input: SettleDaysInput): BuildDailyLinesResult {
+  const { lines, unworkedHolidayHours, vacationHours, absenceDates, overtimeOutcomes } = settleDays(input);
+  return { lines, unworkedHolidayHours, vacationHours, absenceDates, overtimeOutcomes };
 }
 
 /**
@@ -731,173 +1405,64 @@ export function mergeDailyLines(lines: DailyLine[]): DailyLine[] {
   return [...merged.values()];
 }
 
-// ─── Alertas: qué dicen las marcaciones ─────────────────────────────
-
-export interface ClockObservation {
-  date: string;
-  /** Horas efectivamente marcadas ese día, si hay marcación */
-  clockedHours: number | null;
-  /** Primer ingreso del día */
-  clockIn: string | null;
-  /** Último egreso conocido del día */
-  clockOut: string | null;
-  /**
-   * Cada tramo marcado por separado. Hace falta para medir el excedente: un
-   * tramo desconectado del esquema (una cobertura a la noche, por ejemplo) no se
-   * puede detectar mirando sólo el span del primer ingreso al último egreso.
-   */
-  segments?: { clockIn: string; clockOut: string }[];
-}
-
-export type WarningCode =
-  | 'no_clock_in'
-  | 'no_clock_out'
-  | 'left_early'
-  | 'arrived_late'
-  | 'worked_without_schedule'
-  | 'worked_more_than_schedule'   // trabajó de más sin cubrir con horas cargadas
-  | 'additional_without_excess'   // se cargaron horas y no hubo excedente
-  | 'additional_over_worked'      // se cargó más de lo que estuvo
-  | 'absence'
-  | 'missing_period_params';     // no se cargó la evaluación del mes
-
-export interface SettlementWarning {
-  date: string;
-  code: WarningCode;
-  detail: string;
-}
-
-/** Tolerancia por defecto antes de marcar un desvío, en minutos. */
-export const CLOCK_TOLERANCE_MINUTES = 15;
-
 /**
- * Contrasta el esquema pagado contra lo que dicen las marcaciones.
- * No cambia importes: sólo señala los días que alguien debería mirar.
+ * Sólo los avisos que salen de contrastar el plan contra las marcaciones, sin
+ * horas autorizadas. Se conserva por compatibilidad con quien lo usaba así.
  */
 export function compareAgainstClockIns(
   days: DayContext[],
   schedulesByDate: (date: string) => ScheduleSlot[],
   observations: Map<string, ClockObservation>,
-  toleranceMinutes: number = CLOCK_TOLERANCE_MINUTES
+  margins?: Partial<NormalizationMargins>
 ): SettlementWarning[] {
-  const warnings: SettlementWarning[] = [];
-  const tolerance = toleranceMinutes / 60;
-
-  for (const day of days) {
-    const slots = schedulesByDate(day.date);
-    const obs = observations.get(day.date);
-
-    const scheduledHours = slots.reduce((sum, s) => {
-      const b = splitIntoBands(day.date, s.start_time, s.end_time);
-      return sum + b.day_ld + b.night_ld + b.day_hd + b.night_hd;
-    }, 0);
-
-    if (slots.length === 0) {
-      if (obs?.clockedHours) {
-        warnings.push({
-          date: day.date,
-          code: 'worked_without_schedule',
-          detail: `Marcó ${obs.clockedHours.toFixed(2)} h sin esquema asignado`,
-        });
-      }
-      continue;
-    }
-
-    // Los días justificados no generan alerta por falta de marcación
-    if (day.exception || day.isHoliday) continue;
-
-    if (!obs || obs.clockIn === null) {
-      warnings.push({
-        date: day.date,
-        code: 'no_clock_in',
-        detail: `Esquema de ${scheduledHours.toFixed(2)} h sin marcación de ingreso`,
-      });
-      continue;
-    }
-
-    if (obs.clockOut === null) {
-      warnings.push({
-        date: day.date,
-        code: 'no_clock_out',
-        detail: 'Marcó ingreso pero no egreso',
-      });
-      continue;
-    }
-
-    const scheduledStart = Math.min(...slots.map((s) => timeToMinutes(s.start_time)));
-    if (timeToMinutes(obs.clockIn) > scheduledStart + toleranceMinutes) {
-      warnings.push({
-        date: day.date,
-        code: 'arrived_late',
-        detail: `Ingresó ${obs.clockIn} y el esquema empieza ${minutesToTime(scheduledStart)}`,
-      });
-    }
-
-    if (obs.clockedHours !== null && obs.clockedHours < scheduledHours - tolerance) {
-      warnings.push({
-        date: day.date,
-        code: 'left_early',
-        detail: `Marcó ${obs.clockedHours.toFixed(2)} h contra ${scheduledHours.toFixed(2)} h de esquema`,
-      });
-    }
-
-    // Trabajar de más lo evalúa `reviewOvertimeOutcomes`, que además sabe si el
-    // supervisor cargó horas para cubrirlo.
-  }
-
-  return warnings;
+  return settleDays({ days, schedulesByDate, overtime: [], observations, margins }).warnings;
 }
 
 /**
- * Avisos sobre las horas cargadas por el supervisor.
- *
- * El motor recorta lo que se paga, pero nunca lo hace en silencio: cada recorte
- * y cada excedente sin cubrir sale acá para que alguien lo mire.
+ * Qué avisar según lo que pasó con las horas cargadas. `settleDays` ya lo hace
+ * día por día; esto queda para revisar resultados sueltos.
  */
 export function reviewOvertimeOutcomes(
   outcomes: OvertimeOutcome[],
   thresholdHours: number = ADDITIONAL_THRESHOLD_HOURS
 ): SettlementWarning[] {
   const warnings: SettlementWarning[] = [];
-  const fmt = (h: number) => h.toFixed(2);
 
   for (const o of outcomes) {
     const uncovered = o.excessHours - o.paidHours;
 
-    // Trabajó de más y no está cubierto. Se avisa cuando lo que falta cubrir
-    // supera el umbral por sí solo, para no llenar de avisos por diferencias
-    // de minutos contra lo que el supervisor ya autorizó.
     if (uncovered > thresholdHours) {
       warnings.push({
         date: o.date,
         code: 'worked_more_than_schedule',
+        blocking: true,
         detail:
           o.loadedHours > 0
-            ? `Trabajó ${fmt(o.excessHours)} h fuera del esquema y sólo hay ` +
-              `${fmt(o.loadedHours)} h cargadas: ${fmt(uncovered)} h sin autorizar`
-            : `Trabajó ${fmt(o.excessHours)} h fuera del esquema sin horas cargadas`,
+            ? `Trabajó ${fmtH(o.excessHours)} fuera del esquema y sólo se cargaron ` +
+              `${fmtH(o.loadedHours)}: quedan ${fmtH(uncovered)} sin autorizar`
+            : `Trabajó ${fmtH(o.excessHours)} fuera del esquema sin horas cargadas`,
       });
     }
 
-    // Cargó horas y ese día no hubo excedente: no se paga nada
     if (o.loadedHours > 0 && o.excessHours <= thresholdHours) {
       warnings.push({
         date: o.date,
         code: 'additional_without_excess',
+        blocking: false,
         detail:
-          `Hay ${fmt(o.loadedHours)} h cargadas pero el excedente trabajado fue de ` +
-          `${fmt(o.excessHours)} h: no se liquidan`,
+          `Se cargaron ${fmtH(o.loadedHours)} pero el excedente trabajado fue de ` +
+          `${fmtH(o.excessHours)}: no se liquidan`,
       });
     }
 
-    // Autorizó más de lo que estuvo: se recorta al excedente
     if (o.excessHours > thresholdHours && o.loadedHours > o.paidHours + 0.0001) {
       warnings.push({
         date: o.date,
         code: 'additional_over_worked',
+        blocking: false,
         detail:
-          `Se cargaron ${fmt(o.loadedHours)} h y se liquidan ${fmt(o.paidHours)} h, ` +
-          `que es lo que trabajó fuera del esquema`,
+          `Se cargaron ${fmtH(o.loadedHours)} y el excedente fue de ${fmtH(o.excessHours)}: ` +
+          `se pagan ${fmtH(o.paidHours)}`,
       });
     }
   }
@@ -905,10 +1470,93 @@ export function reviewOvertimeOutcomes(
   return warnings;
 }
 
-function minutesToTime(minutes: number): string {
-  const h = Math.floor(minutes / 60) % 24;
-  const m = minutes % 60;
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+// ─── Sugerencia de resolución ───────────────────────────────────────
+
+/**
+ * Las acciones con que se normaliza un día. Las tres primeras son correcciones;
+ * las dos últimas actúan sobre las horas autorizadas.
+ */
+export type ResolutionAction =
+  | 'plan'            // está bien así: se paga lo planificado
+  | 'marks'           // se paga lo marcado
+  | 'custom'          // se paga un horario que carga el supervisor
+  | 'none'            // no se paga
+  | 'authorize'       // autorizar las horas de más
+  | 'pay_authorized'; // pagar lo autorizado aunque la marcación no lo respalde
+
+export interface SuggestedResolution {
+  action: ResolutionAction;
+  hours?: number;
+  tier?: Tier;
+  reason: string;
+}
+
+/**
+ * La resolución más probable para un día que hay que normalizar.
+ *
+ * Sale de lo que hizo el liquidador en julio y agosto 2026: en los días de
+ * agentes con antigüedad que no cerraban contra el esquema, pagó el plan en 8
+ * de cada 10. La sugerencia no se aplica sola —pagar mal es justo lo que se
+ * quiere evitar— pero convierte la bandeja en una lista para revisar y
+ * confirmar, en lugar de una lista para resolver de a uno.
+ *
+ * Donde no hay un patrón claro —agentes nuevos, feriados, licencias— no se
+ * sugiere nada: ahí la decisión tiene que ser de una persona.
+ */
+export function suggestResolution(
+  day: DayResult,
+  dayWarnings: SettlementWarning[]
+): SuggestedResolution | null {
+  if (day.status !== 'needs_review' || day.newHire) return null;
+
+  const codes = new Set(dayWarnings.filter((w) => w.blocking).map((w) => w.code));
+  if (codes.size === 0) return null;
+
+  const horas = (bs: TimeBlock[]) => rangeMinutes(unionRanges(bs.map(blockToRange))) / 60;
+
+  if ([...codes].every((c) => c === 'additional_without_excess' || c === 'additional_over_worked')) {
+    return {
+      action: 'pay_authorized',
+      reason: 'Suele ser un arrastre del mes anterior o una marcación mal hecha',
+    };
+  }
+
+  if (codes.size === 1 && codes.has('worked_other_hours')) {
+    // Mismas horas en otro horario: se paga lo marcado, cada hora en su banda
+    if (Math.abs(horas(day.marked) - horas(day.plan)) <= 0.5) {
+      return {
+        action: 'marks',
+        reason: 'Trabajó las mismas horas en otro horario: se paga lo marcado, cada hora en su banda',
+      };
+    }
+    return { action: 'plan', reason: 'Lo marcado no alcanza a ser una jornada: suele ser una marcación mal hecha' };
+  }
+
+  if ([...codes].every((c) => c === 'worked_more_than_schedule' || c === 'arrived_late' || c === 'left_early')) {
+    // Un tramo entero sin marcar no es un desvío chico: se sugiere lo mismo
+    // —en julio y agosto se pagó el plan en esos casos— pero avisando qué mirar
+    const faltaTramo = dayWarnings.some((w) => w.blocking && w.context?.missedBlock);
+    return faltaTramo
+      ? { action: 'plan', reason: 'Lo habitual es pagar el plan aunque falte marcar un tramo. Si ese tramo no se trabajó, va "Pagar lo marcado"' }
+      : { action: 'plan', reason: 'Lo habitual: el desvío no cambia lo que se paga' };
+  }
+
+  return null;
+}
+
+/**
+ * Los tramos que conviene pagar si se decide "pagar lo marcado": la marcación
+ * tal cual, sin redondear.
+ */
+export function blocksFromObservation(obs: ClockObservation | undefined): TimeBlock[] {
+  return markedRanges(obs).map(rangeToBlock);
+}
+
+export function minutesToTime(minutes: number): string {
+  const normalized = ((minutes % MIN_24) + MIN_24) % MIN_24;
+  const h = Math.floor(normalized / 60);
+  const mm = normalized % 60;
+  return `${String(h).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
 
 // ─── Período de liquidación ─────────────────────────────────────────
@@ -940,6 +1588,17 @@ export function settlementPeriod(
     from: iso(new Date(Date.UTC(year, month - 2, startDay))),
     to: iso(new Date(Date.UTC(year, month - 1, startDay - 1))),
   };
+}
+
+/**
+ * El mes que toca cerrar: el último período que ya terminó. Con corte el día 1
+ * es el mes anterior; con corte el 21, el período "octubre" termina el 20 de
+ * octubre, así que desde el 21 lo que toca cerrar es octubre.
+ */
+export function periodToClose(today: string, startDay: number): { year: number; month: number } {
+  const [y, m, d] = today.split('-').map(Number);
+  if (startDay > 1 && d >= startDay) return { year: y, month: m };
+  return m === 1 ? { year: y - 1, month: 12 } : { year: y, month: m - 1 };
 }
 
 // ─── Conciliación contra lo ya pagado ───────────────────────────────

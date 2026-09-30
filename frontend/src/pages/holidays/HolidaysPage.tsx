@@ -8,6 +8,7 @@ import {
   cardClass,
   EmptyState,
   ErrorState,
+  fieldClass,
   getBadgeClass,
   inputClass,
   LoadingState,
@@ -131,7 +132,7 @@ export default function HolidaysPage() {
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Año</label>
             <input
-              className={`${inputClass} w-28`}
+              className={`${fieldClass} w-28`}
               type="number"
               min="2020"
               max="2100"

@@ -28,11 +28,22 @@ export const createProfileSchema = z.object({
   seniority_months: z.number().int().min(0).optional(),
   holiday_compensation_factor: z.number().min(0).max(2).optional(),
   vacation_plus_factor: z.number().min(0).max(2).optional(),
+  // Minutos que se pagan por cada día trabajado, además del plan
+  daily_compensation_minutes: z.number().int().min(0).max(240).optional(),
+  daily_compensation_band: z.enum(['day_ld', 'night_ld', 'day_hd', 'night_hd']).optional(),
 });
 export type CreateProfileInput = z.infer<typeof createProfileSchema>;
 
 export const updateProfileSchema = createProfileSchema.partial().omit({ password: true, email: true });
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
+// ─── Tramo horario ───
+const hhmm = z.string().regex(/^\d{2}:\d{2}$/, 'Formato HH:MM');
+export const timeBlockSchema = z.object({ start_time: hhmm, end_time: hhmm });
+export type TimeBlockInput = z.infer<typeof timeBlockSchema>;
+
+const bandEnum = z.enum(['day_ld', 'night_ld', 'day_hd', 'night_hd']);
+const tierEnum = z.enum(['normal', 'additional', 'overtime_50', 'overtime_100']);
 
 // ─── Client ───
 export const createClientSchema = z.object({
@@ -82,15 +93,25 @@ export const updateClockEntrySchema = createClockEntrySchema.partial().omit({ pr
 export type UpdateClockEntryInput = z.infer<typeof updateClockEntrySchema>;
 
 // ─── Exception ───
-export const createExceptionSchema = z.object({
+const exceptionBase = z.object({
   profile_id: z.string().uuid(),
   exception_type: z.enum(['vacation', 'paid_leave', 'absence', 'schedule_change', 'extraordinary_coverage']),
   date_from: z.string(),
   date_to: z.string(),
   client_id: z.string().uuid().nullable().optional(),
   notes: z.string().nullable().optional(),
+  // Horario del día: reemplaza al esquema. Sólo para cambio de jornada y cobertura.
+  blocks: z.array(timeBlockSchema).min(1).nullable().optional(),
 });
+const blocksSoloConHorario = (v: { exception_type?: string; blocks?: unknown[] | null }) =>
+  !v.blocks || v.exception_type === undefined ||
+  v.exception_type === 'schedule_change' || v.exception_type === 'extraordinary_coverage';
+export const createExceptionSchema = exceptionBase
+  .refine((v) => v.date_to >= v.date_from, { message: 'La fecha de fin es anterior a la de inicio' })
+  .refine(blocksSoloConHorario, { message: 'Sólo el cambio de jornada y la cobertura llevan horario' });
 export type CreateExceptionInput = z.infer<typeof createExceptionSchema>;
+export const updateExceptionSchema = exceptionBase.partial().omit({ profile_id: true })
+  .refine(blocksSoloConHorario, { message: 'Sólo el cambio de jornada y la cobertura llevan horario' });
 
 // ─── Overtime ───
 export const createOvertimeSchema = z.object({
@@ -102,8 +123,11 @@ export const createOvertimeSchema = z.object({
   end_time: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
   client_id: z.string().uuid().nullable().optional(),
   notes: z.string().nullable().optional(),
+  // Pagar aunque la marcación no lo respalde
+  uncapped: z.boolean().optional(),
 });
 export type CreateOvertimeInput = z.infer<typeof createOvertimeSchema>;
+export const updateOvertimeSchema = createOvertimeSchema.partial().omit({ profile_id: true });
 
 // ─── Holiday ───
 export const createHolidaySchema = z.object({
@@ -141,8 +165,8 @@ export const generatePreSettlementSchema = z.object({
 export type GeneratePreSettlementInput = z.infer<typeof generatePreSettlementSchema>;
 
 export const updatePreSettlementDailySchema = z.object({
-  hours: z.number().min(0).optional(),
-  rate_per_hour: z.number().min(0).optional(),
+  hours: z.number().min(0),
+  note: z.string().nullable().optional(),
 });
 export type UpdatePreSettlementDailyInput = z.infer<typeof updatePreSettlementDailySchema>;
 
@@ -197,10 +221,15 @@ export const updateRateFactorsSchema = z.object({
 export type UpdateRateFactorsInput = z.infer<typeof updateRateFactorsSchema>;
 
 export const updateSettlementSettingsSchema = z.object({
-  period_start_day: z.number().int().min(1).max(28),
+  period_start_day: z.number().int().min(1).max(28).optional(),
   /** Excedente mínimo del día para que se liquiden las horas cargadas */
   additional_threshold_minutes: z.number().int().min(0).max(240).optional(),
-});
+  late_arrival_margin_minutes: z.number().int().min(0).max(240).optional(),
+  early_departure_margin_minutes: z.number().int().min(0).max(240).optional(),
+  missing_clock_blocks: z.boolean().optional(),
+  incomplete_clock_blocks: z.boolean().optional(),
+  new_hire_review_days: z.number().int().min(0).max(90).optional(),
+}).refine((v) => Object.values(v).some((x) => x !== undefined), { message: 'No hay nada para guardar' });
 export type UpdateSettlementSettingsInput = z.infer<typeof updateSettlementSettingsSchema>;
 
 // ─── Revisión de desvíos ───
@@ -235,3 +264,33 @@ export const addDailyLineSchema = z.object({
   client_id: z.string().uuid().nullable().optional(),
 });
 export type AddDailyLineInput = z.infer<typeof addDailyLineSchema>;
+
+// ─── Normalización ───
+export const resolveDaySchema = z.object({
+  profile_id: z.string().uuid(),
+  date: z.string(),
+  action: z.enum(['plan', 'marks', 'custom', 'none', 'authorize', 'pay_authorized']),
+  blocks: z.array(timeBlockSchema).min(1).optional(),
+  hours: z.number().positive().optional(),
+  tier: tierEnum.optional(),
+  note: z.string().nullable().optional(),
+}).refine((v) => v.action !== 'custom' || !!v.blocks, { message: 'Cargá el horario que se paga' })
+  .refine((v) => v.action !== 'authorize' || (v.hours !== undefined && v.tier !== undefined), {
+    message: 'Para autorizar hacen falta las horas y el tramo',
+  });
+export type ResolveDayInput = z.infer<typeof resolveDaySchema>;
+
+export const resolveManySchema = z.object({ items: z.array(resolveDaySchema).min(1).max(500) });
+
+export const applyScheduleSuggestionSchema = z.object({
+  profile_id: z.string().uuid(),
+  day_of_week: z.number().int().min(0).max(6),
+  blocks: z.array(timeBlockSchema).min(1),
+  effective_from: z.string(),
+});
+export type ApplyScheduleSuggestionInput = z.infer<typeof applyScheduleSuggestionSchema>;
+
+export const setDayLinesSchema = z.object({
+  lines: z.array(z.object({ band: bandEnum, tier: tierEnum, hours: z.number().min(0) })),
+  note: z.string().nullable().optional(),
+});
