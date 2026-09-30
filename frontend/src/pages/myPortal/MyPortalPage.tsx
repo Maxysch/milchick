@@ -97,9 +97,9 @@ export default function MyPortalPage() {
           <div className="mb-4 space-y-1">
             {todayEntries.map((entry) => (
               <div key={String(entry.id)} className="text-sm text-gray-600">
-                Ingreso: <span className="font-medium">{String(entry.clock_in)}</span>
+                Ingreso: <span className="font-medium">{String(entry.clock_in).slice(0, 5)}</span>
                 {Boolean(entry.clock_out) && (
-                  <> — Egreso: <span className="font-medium">{String(entry.clock_out)}</span></>
+                  <> — Egreso: <span className="font-medium">{String(entry.clock_out).slice(0, 5)}</span></>
                 )}
                 {!entry.clock_out && (
                   <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">En curso</span>
@@ -163,7 +163,7 @@ export default function MyPortalPage() {
             {schedules.map((s) => (
               <div key={s.id as string} className="flex items-center gap-4 text-sm">
                 <span className="font-medium w-24">{DAY_NAMES[s.day_of_week as number]}</span>
-                <span>{s.start_time as string} - {s.end_time as string}</span>
+                <span>{(s.start_time as string).slice(0, 5)}–{(s.end_time as string).slice(0, 5)}</span>
                 <span className="text-gray-500">
                   {(s.clients as Record<string, string>)?.name || ''}
                 </span>

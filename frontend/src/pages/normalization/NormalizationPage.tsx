@@ -319,8 +319,8 @@ export default function NormalizationPage() {
                 <tbody className="divide-y divide-gray-100">
                   {correctionsQuery.data.map((c) => (
                     <tr key={c.id}>
-                      <td className="py-2 pr-4 text-gray-900">{c.profiles ? `${c.profiles.last_name}, ${c.profiles.first_name}` : '—'}</td>
-                      <td className="py-2 pr-4">{formatDayShort(c.date)}</td>
+                      <td className="whitespace-nowrap py-2 pr-4 text-gray-900">{c.profiles ? `${c.profiles.last_name}, ${c.profiles.first_name}` : '—'}</td>
+                      <td className="whitespace-nowrap py-2 pr-4">{formatDayShort(c.date)}</td>
                       <td className="py-2 pr-4">
                         <span className={getBadgeClass('green')}>{RESOLUTION_LABELS[c.resolution] ?? c.resolution}</span>
                         {c.blocks?.length ? <span className="ml-2 text-gray-500">{formatBlocks(c.blocks)}</span> : null}
@@ -328,7 +328,7 @@ export default function NormalizationPage() {
                         {c.effects?.overtime_uncapped ? <span className="ml-2 text-gray-500">+ autorizadas pagadas igual</span> : null}
                       </td>
                       <td className="py-2 pr-4 text-gray-500">{c.note ?? ''}</td>
-                      <td className="py-2 pr-4 text-gray-500">{c.creator ? `${c.creator.first_name} ${c.creator.last_name}` : ''}</td>
+                      <td className="whitespace-nowrap py-2 pr-4 text-gray-500">{c.creator ? `${c.creator.first_name} ${c.creator.last_name}` : ''}</td>
                       <td className="py-2 text-right">
                         {c.locked ? (
                           <span className="text-xs text-gray-400" title="Para cambiarla, volvé la preliquidación a borrador">Confirmada</span>
