@@ -78,12 +78,24 @@ editando la anterior. Así los meses ya liquidados conservan lo que se pagó.
 
 ## Esquemas
 
-Los bloques de cada agente por día de la semana, con cliente y vigencia.
+La pantalla muestra **la semana** del agente: una fila por día, con cada bloque
+ubicado en su horario sobre una línea de 6 a 24. El fondo marca la banda de cada
+hora —nocturna LD, diurna y nocturna HD—, así se ve qué parte de un horario va
+con recargo. **Semana vigente al** muestra el esquema que regía una fecha dada, y
+debajo, la tabla de **Bloques** con su vigencia y su estado (vigente, empieza más
+adelante, terminó).
+
+| Para… | Usá |
+|---|---|
+| Cargar un horario | **Agregar bloques**: el mismo bloque en varios días de una ("Lunes a viernes") |
+| Un horario que cambia desde un día | **Cambiar desde una fecha** (o tocar el bloque): el vigente se cierra el día anterior y el nuevo rige desde ahí |
+| Un error de carga | **Corregir**: cambia el bloque en toda su vigencia |
+| Un día puntual distinto | Una excepción con horario, no el esquema |
 
 - **Jornada partida** → un bloque por tramo, no uno solo de punta a punta. Los
   márgenes se miden tramo por tramo.
-- **Cambio de horario** → cerrá el esquema viejo con fecha de fin y creá uno
-  nuevo. No edites el vigente.
+- **Dos bloques del mismo día no se pueden pisar**: el sistema no deja guardarlo,
+  porque esas horas se pagarían dos veces.
 
 > Un esquema desactualizado es la causa número uno de días a normalizar: el
 > agente marca bien, pero contra un horario que ya no es el suyo, y el mismo día
@@ -105,8 +117,9 @@ horario nuevo al menos reduce esos días a la mitad.
   ya liquidados no cambian; los borradores se recalculan.
 - La **X** la ignora por ahora.
 
-Sobre julio 2026 propuso tres cambios: el jueves de Walter (08:00–13:00) y el
-lunes y martes de Ascona. En agosto, con horarios más irregulares, ninguno.
+Sobre julio 2026 propuso tres cambios: el jueves de un agente (de 08:00–12:00 a
+08:00–13:00) y el lunes y martes de otro. En agosto, con horarios más
+irregulares, ninguno.
 
 ## Clientes
 
@@ -182,7 +195,7 @@ Antes de cerrar (el paso 1 de *Cierre del mes* muestra casi todo esto):
 
 - [ ] **Agentes sin esquema** y **Agentes sin tarifa** en cero
 - [ ] Las altas del mes tienen **fecha de ingreso**, tarifa y esquema
-- [ ] Los cambios de horario se cargaron como esquema nuevo, no editando el viejo
+- [ ] Los cambios de horario se cargaron con **Cambiar desde una fecha**, no editando el vigente
 - [ ] Revisaste las **sugerencias de esquema**
 - [ ] Los feriados del mes están cargados en **Feriados**
 - [ ] La **Evaluación mensual** está completa para todos

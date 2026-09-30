@@ -25,6 +25,13 @@ El detalle del cálculo está en [Cómo se calcula](como-se-calcula.md).
 
 # Al cierre
 
+> **¿Cierre del mes o Preliquidación?** Cierre del mes es el **recorrido**; la
+> preliquidación es el **documento**. Cada agente tiene una preliquidación por
+> mes —sus horas día por día, los conceptos, el neto—, y *Cierre del mes* te
+> lleva por los cinco pasos para todos a la vez: el paso 3 las crea o actualiza,
+> el 4 resuelve sus días, el 5 las confirma. A *Preliquidación* vas cuando
+> necesitás el detalle de un agente o exportar el resumen.
+
 ## Cierre del mes
 
 La pantalla del cierre, en cinco pasos. Abre con el mes que toca cerrar —el

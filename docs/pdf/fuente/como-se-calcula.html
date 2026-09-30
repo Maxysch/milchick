@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Cómo se calcula la liquidación — Milchick</title>
+<link rel="stylesheet" href="estilo.css">
+<style>
+  @page { @bottom-left { content: 'Milchick · Cómo se calcula la liquidación'; } }
+  .orden { list-style: none; padding: 0; margin: 3mm 0 4mm; }
+  .orden li { display: grid; grid-template-columns: 9mm 48mm 1fr; gap: 3mm; align-items: center; margin: 0 0 2mm; break-inside: avoid; }
+  .orden .n { width: 9mm; height: 9mm; border-radius: 50%; background: var(--tinta); color: #fff; display: grid; place-items: center; font-weight: 800; }
+  .orden .que { border-radius: 2.5mm; padding: 2.4mm 3mm; font-weight: 700; color: var(--tinta); background: var(--fondo); border: 1px solid var(--borde); }
+  .orden .hace { font-size: 9pt; }
+  .orden li.primero .que { background: var(--azul-50); border-color: #93c5fd; }
+  .orden li.ultimo .que { background: var(--verde-50); border-color: #86efac; }
+</style>
+</head>
+<body>
+
+<section class="portada">
+  <div class="marca">{{i:chart-column}} Milchick <span>Control de presentismo</span></div>
+  <svg class="ilustracion" viewBox="0 0 200 200" fill="none" stroke="#fff" stroke-width="3">
+    <rect x="30" y="120" width="26" height="50" rx="5" fill="#fff" fill-opacity=".25"/>
+    <rect x="68" y="90" width="26" height="80" rx="5" fill="#fff" fill-opacity=".4"/>
+    <rect x="106" y="60" width="26" height="110" rx="5" fill="#fff" fill-opacity=".6"/>
+    <rect x="144" y="40" width="26" height="130" rx="5" fill="#fff" fill-opacity=".85"/>
+    <path d="M28 178h148" stroke-linecap="round"/>
+  </svg>
+  <div class="rol">Referencia</div>
+  <h1>Cómo se calcula<br>la liquidación</h1>
+  <p class="bajada">El orden en que se evalúa cada día, los márgenes, el tope de las horas autorizadas, las bandas, los conceptos y todos los avisos. Para cuando hace falta el detalle de un número.</p>
+  <div class="contenido">
+    <div><b>Cada día</b>Qué se paga, en qué orden se decide y qué lo manda a la bandeja.</div>
+    <div><b>Cada hora</b>Banda por cuándo cae, tramo por por qué se trabajó.</div>
+    <div><b>Validado</b>Contra las liquidaciones reales de julio y agosto 2026.</div>
+  </div>
+  <div class="version">Versión 2 · septiembre 2026</div>
+</section>
+
+<section class="indice">
+  <h2>Contenido</h2>
+  <ol>
+    <li><a href="#principio">El principio<small>El plan de cada día, y el orden en que se evalúa</small></a></li>
+    <li><a href="#contraste">El contraste contra la marcación<small>Márgenes por tramo y trabajo de más neto</small></a></li>
+    <li><a href="#autorizadas">Las horas autorizadas<small>El tope, las correcciones del día, las sugerencias y la compensación diaria</small></a></li>
+    <li><a href="#valor">El valor de cada hora<small>Bandas y tramos</small></a></li>
+    <li><a href="#conceptos">Los conceptos, el período y la conciliación</a></li>
+    <li><a href="#viva">La preliquidación viva<small>Recálculo, confirmación y todos los avisos</small></a></li>
+    <li><a href="#validacion">Cómo se validó<small>Julio y agosto 2026</small></a></li>
+  </ol>
+</section>
+
+<section class="capitulo" id="principio">
+  <div class="cap-titulo"><div class="num">1</div><div><h2>El principio</h2><p>El plan se paga solo cuando la marcación lo acompaña. Cuando no, el día se normaliza.</p></div></div>
+  <div class="resumen">
+    <div><div class="ico">{{i:calendar}}</div><b>El plan</b><p>Sale de los datos cargados: el esquema, o el horario de una excepción.</p></div>
+    <div class="verde"><div class="ico">{{i:circle-check}}</div><b>La marcación decide</b><p>Si acompaña al plan dentro de los márgenes, no hace falta nadie. Si no, el día queda a normalizar: se paga el plan mientras tanto y no se confirma.</p></div>
+    <div class="ambar"><div class="ico">{{i:scale}}</div><b>Normalizar es decidir</b><p>Una vez, qué se paga ese día. La decisión es un dato más: se conserva en cada recálculo y se puede deshacer.</p></div>
+  </div>
+
+  <h3 id="plan">{{i:calendar}} El plan de cada día</h3>
+  <table class="tabla">
+    <tr><th style="width:48%">Si ese día hay…</th><th>El plan es…</th></tr>
+    <tr><td>Un cambio de jornada o una cobertura extraordinaria con horario</td><td>Ese horario, en lugar del esquema</td></tr>
+    <tr><td>Cualquier otra cosa</td><td>El esquema vigente ese día</td></tr>
+    <tr><td>Una fecha anterior al ingreso del agente</td><td>Nada: el esquema todavía no rige</td></tr>
+  </table>
+  <p class="nota-pie">Si un día tiene más de una excepción, manda una, en este orden: ausencia, vacaciones, licencia paga, cobertura extraordinaria, cambio de jornada.</p>
+
+  <h3 id="orden">{{i:list-checks}} Qué pasa con cada día, y en qué orden</h3>
+  <p>El primero que aplica decide, y los siguientes no se miran.</p>
+  <ol class="orden">
+    <li class="primero"><span class="n">1</span><span class="que">Corrección del supervisor</span><span class="hace">Paga lo que dice la corrección. Nada más se evalúa.</span></li>
+    <li><span class="n">2</span><span class="que">Ausencia</span><span class="hace">No paga nada. Si marcó igual, queda a normalizar.</span></li>
+    <li><span class="n">3</span><span class="que">Feriado sin cobertura</span><span class="hace">No paga horas: las del esquema van a la compensación por feriado no trabajado. Si marcó, queda a normalizar.</span></li>
+    <li><span class="n">4</span><span class="que">Vacaciones o licencia paga</span><span class="hace">Paga el plan. Las vacaciones suman además al plus vacacional. Si marcó, queda a normalizar.</span></li>
+    <li class="ultimo"><span class="n">5</span><span class="que">Día de trabajo</span><span class="hace">Paga el plan y lo contrasta contra la marcación.</span></li>
+  </ol>
+  <p>Los días desde hoy en adelante se pagan <b>proyectados</b>: el plan, sin contrastar, porque todavía no pasaron.</p>
+</section>
+
+<section class="capitulo" id="contraste">
+  <div class="cap-titulo"><div class="num">2</div><div><h2>El contraste contra la marcación</h2><p>Tramo por tramo: en una jornada partida, cada tramo tiene su ingreso y su egreso.</p></div></div>
+
+  <figure class="diagrama">
+    <svg viewBox="0 0 680 250" class="dg-texto" font-size="10.5">
+      <!-- escala: 08:00 = 90 → 20:00 = 670 (48.33 px/h) -->
+      <g fill="#94a3b8" font-size="9" text-anchor="middle"><text x="90" y="246">08</text><text x="187" y="246">10</text><text x="283" y="246">12</text><text x="380" y="246">14</text><text x="477" y="246">16</text><text x="573" y="246">18</text><text x="670" y="246">20</text></g>
+      <g stroke="#f1f5f9"><line x1="187" y1="10" x2="187" y2="235"/><line x1="283" y1="10" x2="283" y2="235"/><line x1="380" y1="10" x2="380" y2="235"/><line x1="477" y1="10" x2="477" y2="235"/><line x1="573" y1="10" x2="573" y2="235"/></g>
+      <text x="0" y="30" font-weight="700" fill="#0f172a">Plan</text>
+      <rect x="138" y="14" width="145" height="26" rx="5" fill="#dbeafe" stroke="#93c5fd"/><text x="210" y="31" text-anchor="middle" fill="#1e3a8a" font-weight="600">09:00–12:00</text>
+      <rect x="428" y="14" width="194" height="26" rx="5" fill="#dbeafe" stroke="#93c5fd"/><text x="525" y="31" text-anchor="middle" fill="#1e3a8a" font-weight="600">15:00–19:00</text>
+      <!-- márgenes -->
+      <g fill="#fef3c7" opacity=".9"><rect x="138" y="48" width="16" height="190"/><rect x="267" y="48" width="16" height="190"/><rect x="428" y="48" width="16" height="190"/><rect x="606" y="48" width="16" height="190"/></g>
+      <text x="146" y="58" text-anchor="middle" fill="#b45309" font-size="8.5">20'</text><text x="275" y="58" text-anchor="middle" fill="#b45309" font-size="8.5">20'</text>
+      <!-- casos -->
+      <text x="0" y="86" font-weight="700" fill="#15803d">Se paga solo</text>
+      <rect x="146" y="72" width="140" height="20" rx="4" fill="#16a34a"/><rect x="432" y="72" width="190" height="20" rx="4" fill="#16a34a"/>
+      <text x="650" y="86" text-anchor="end" fill="#15803d" font-size="9">09:10–12:05 · 15:05–19:00</text>
+      <text x="0" y="126" font-weight="700" fill="#b45309">Llegó tarde</text>
+      <rect x="170" y="112" width="113" height="20" rx="4" fill="#f59e0b"/><rect x="428" y="112" width="194" height="20" rx="4" fill="#16a34a"/>
+      <text x="650" y="126" text-anchor="end" fill="#b45309" font-size="9">entró 09:40 al primer tramo</text>
+      <text x="0" y="166" font-weight="700" fill="#b45309">Se fue antes</text>
+      <rect x="138" y="152" width="145" height="20" rx="4" fill="#16a34a"/><rect x="428" y="152" width="145" height="20" rx="4" fill="#f59e0b"/>
+      <text x="650" y="166" text-anchor="end" fill="#b45309" font-size="9">salió 18:00 del segundo</text>
+      <text x="0" y="206" font-weight="700" fill="#b45309">Tramo sin marcar</text>
+      <rect x="428" y="192" width="194" height="20" rx="4" fill="#16a34a"/>
+      <rect x="138" y="192" width="145" height="20" rx="4" fill="none" stroke="#f59e0b" stroke-dasharray="4 3"/>
+      <text x="210" y="206" text-anchor="middle" fill="#b45309" font-size="9">sin marcas</text>
+      <text x="650" y="206" text-anchor="end" fill="#b45309" font-size="9">cuenta como llegó tarde</text>
+    </svg>
+    <figcaption>Las franjas amarillas son el margen: 20 minutos al entrar y al salir de cada tramo. Llegar antes no cuenta.</figcaption>
+  </figure>
+
+  <table class="tabla">
+    <tr><th style="width:52%">Qué encuentra</th><th>Resultado</th></tr>
+    <tr><td>Entró y salió de cada tramo dentro de los márgenes, y no trabajó de más</td><td><span class="chip verde">Se paga solo</span></td></tr>
+    <tr><td>Entró a un tramo más de 20 min tarde</td><td><span class="chip ambar">Llegó tarde</span></td></tr>
+    <tr><td>Salió de un tramo más de 20 min antes, o se ausentó más de 20 min en medio</td><td><span class="chip ambar">Se fue antes</span></td></tr>
+    <tr><td>No marcó un tramo entero</td><td><span class="chip ambar">Llegó tarde</span> si era el primero, <span class="chip ambar">Se fue antes</span> si era otro</td></tr>
+    <tr><td>La marcación casi no se superpone con el plan</td><td><span class="chip ambar">Marcó en otro horario</span></td></tr>
+    <tr><td>Trabajó más de 30 min por encima del plan, sin autorización</td><td><span class="chip ambar">Trabajó de más</span></td></tr>
+    <tr><td>No marcó nada</td><td>Se paga el plan, con aviso <span class="chip">No marcó</span></td></tr>
+    <tr><td>Marcó el ingreso y no el egreso, o al revés</td><td>Se paga el plan, con aviso <span class="chip">Marcación incompleta</span></td></tr>
+  </table>
+
+  <p class="nota-pie">Una entrada y una salida en el mismo minuto son un doble toque: cuentan cero, no veinticuatro horas.</p>
+  <div class="dos">
+    <div class="caja tip"><div class="tit">{{i:scale}} El trabajo de más se mide neto</div>Lo trabajado menos el plan. Una jornada corrida de lugar —plan 9 a 15, marcó 17 a 23— no tiene excedente: son las mismas seis horas. Así se evita pagar dos veces el mismo tiempo.</div>
+    <div class="caja"><div class="tit">{{i:user-plus}} Sin marcación o a medias</div>No frena en los agentes con antigüedad: en julio y agosto la planilla pagó el plan en todos esos días. Sí frena en los <b>agentes nuevos</b> —los primeros 14 días—, que además se revisan sin sugerencia.</div>
+  </div>
+</section>
+
+<section class="capitulo" id="autorizadas">
+  <div class="cap-titulo"><div class="num">3</div><div><h2>Las horas autorizadas</h2><p>Una autorización, no un pago: se pagan con su tramo, hasta lo que la marcación muestra de más.</p></div></div>
+
+  <div class="resumen">
+    <div class="verde"><div class="ico">{{i:circle-check}}</div><b>Con marcación completa</b><p>Se contrasta contra el trabajo de más neto (tabla de abajo).</p></div>
+    <div class="ambar"><div class="ico">{{i:hourglass}}</div><b>Sin marcación completa</b><p>No hay con qué contradecirlo: se paga lo autorizado, con el aviso <i>Autorizado sin marcación</i>.</p></div>
+    <div class="violeta"><div class="ico">{{i:badge-check}}</div><b>Pagar aunque no lo respalde</b><p>Las autorizaciones marcadas así se pagan siempre.</p></div>
+  </div>
+
+  <table class="tabla">
+    <tr><th style="width:38%">Trabajo de más neto</th><th>Se paga</th></tr>
+    <tr><td>Hasta el umbral (30 min)</td><td>Nada. Si lo autorizado pasa el umbral, queda a normalizar: <span class="chip ambar">Autorizado y no trabajado</span></td></tr>
+    <tr><td>A menos del umbral de lo autorizado</td><td><b>Todo lo autorizado</b>: en julio y agosto la planilla lo hizo así en todos los días de este tipo, nunca al minuto</td></tr>
+    <tr><td>Claramente menos que lo autorizado</td><td>Lo trabajado. Si la diferencia pasa el umbral, queda a normalizar: <span class="chip ambar">Autorizado de más</span></td></tr>
+  </table>
+
+  <p><b>En qué banda caen.</b> Si la autorización tiene inicio y fin, en esas horas. Si no, en lo marcado fuera del plan, del final hacia atrás —lo típico es quedarse, no llegar antes—. Sin marcación, en diurna LD. Si hay que recortar, se recorta primero lo de recargo más alto.</p>
+
+  <h3 id="normalizar">{{i:scale}} Normalizar: las correcciones del día</h3>
+  <table class="tabla">
+    <tr><th style="width:30%">Decisión</th><th>Qué se paga ese día</th></tr>
+    <tr><td>Está bien así</td><td>Lo que calculó el sistema: el plan —en un feriado no trabajado o una ausencia, nada— y las autorizadas según el tope</td></tr>
+    <tr><td>Pagar lo marcado</td><td>Lo marcado, como horas normales, cada una en su banda</td></tr>
+    <tr><td>Autorizar X h</td><td>Crea la autorización con su tramo y deja el día como <i>Está bien así</i></td></tr>
+    <tr><td>Pagar lo autorizado igual</td><td>Marca esas autorizaciones para pagarse sin tope y deja el día como <i>Está bien así</i></td></tr>
+    <tr><td>Pagar otro horario</td><td>Los tramos cargados, cada hora en su banda</td></tr>
+    <tr><td>No pagar el día</td><td>Nada. Un feriado se sigue compensando</td></tr>
+    <tr><td>Editar horas en el desglose</td><td>Exactamente esas horas: <i>Horas cargadas a mano</i></td></tr>
+  </table>
+  <p>La corrección registra lo que tocó —una autorización creada, una que pasó a pagarse sin tope— y <b>deshacerla revierte todo junto</b>. Una corrección de un mes confirmado no se cambia ni se deshace: primero se vuelve la preliquidación a borrador.</p>
+
+  <h4>{{i:sparkles}} Las sugerencias</h4>
+  <table class="tabla compacta">
+    <tr><th style="width:52%">Si el día…</th><th>Se sugiere</th></tr>
+    <tr><td>Sólo tiene autorizadas que la marcación no muestra</td><td>Pagar lo autorizado igual</td></tr>
+    <tr><td>Marcó en otro horario, las mismas horas (±30 min)</td><td>Pagar lo marcado</td></tr>
+    <tr><td>Marcó en otro horario, bastante menos</td><td>Está bien así</td></tr>
+    <tr><td>Llegó tarde, se fue antes o trabajó de más</td><td>Está bien así</td></tr>
+    <tr><td>Es de un agente nuevo, o cualquier otra combinación</td><td>Nada: se decide a mano</td></tr>
+  </table>
+
+  <h4>{{i:timer}} La compensación diaria fija</h4>
+  <p>Si el agente la tiene, cada día de trabajo que se paga suma esos minutos en la banda elegida, con origen <i>Compensación</i>. Entra al subtotal y no se paga en feriados, licencias ni ausencias.</p>
+</section>
+
+<section class="capitulo" id="valor">
+  <div class="cap-titulo"><div class="num">4</div><div><h2>El valor de cada hora</h2><p>Una sola tarifa base por agente; todo lo demás son multiplicadores iguales para todos.</p></div></div>
+
+  <div class="formula">valor hora = <b>tarifa base</b> × multiplicador de <b>banda</b> × multiplicador de <b>tramo</b></div>
+
+  <h3>{{i:moon}} Bandas: según cuándo cae la hora</h3>
+  <figure class="diagrama">
+    <svg id="bandas" viewBox="0 0 680 232" class="dg-texto" font-size="10"></svg>
+    <figcaption>La semana hora por hora, con las mismas reglas que usa el motor. Una jornada que cruza de una banda a otra se parte sola.</figcaption>
+  </figure>
+  <script>
+    (() => {
+      const bandAt = (d, m) => {
+        const fin = d <= 4 ? 21 * 60 : d === 5 ? 20 * 60 : -1;
+        if (m >= 360 && m < fin) return 'day_ld';
+        if (d <= 4 && m >= 21 * 60) return 'night_ld';
+        if (d >= 2 && d <= 5 && m < 300) return 'night_ld';
+        return m >= 21 * 60 || m < 360 ? 'night_hd' : 'day_hd';
+      };
+      const color = { day_ld: '#ffffff', night_ld: '#bfdbfe', day_hd: '#fde68a', night_hd: '#d8b4fe' };
+      const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+      const x0 = 80, ancho = 590, fila = 24, y0 = 14, paso = 15;
+      let s = '';
+      for (let h = 0; h <= 24; h += 3) s += `<text x="${x0 + (h / 24) * ancho}" y="10" text-anchor="middle" fill="#94a3b8">${String(h).padStart(2, '0')}</text>`;
+      dias.forEach((nombre, i) => {
+        const y = y0 + i * (fila + 4);
+        s += `<text x="0" y="${y + 16}" fill="#0f172a" font-weight="600">${nombre}</text>`;
+        let desde = 0, actual = bandAt(i + 1, 0);
+        const pintar = (a, b, band) => { s += `<rect x="${x0 + (a / 1440) * ancho}" y="${y}" width="${((b - a) / 1440) * ancho}" height="${fila}" fill="${color[band]}"/>`; };
+        for (let m = paso; m <= 1440; m += paso) {
+          const b = m === 1440 ? null : bandAt(i + 1, m);
+          if (b !== actual) { pintar(desde, m, actual); desde = m; actual = b; }
+        }
+        s += `<rect x="${x0}" y="${y}" width="${ancho}" height="${fila}" fill="none" stroke="#cbd5e1" rx="3"/>`;
+      });
+      const leyenda = [['day_ld', 'Diurna LD × 1'], ['night_ld', 'Nocturna LD × 1,13'], ['day_hd', 'Diurna HD × 1,0125'], ['night_hd', 'Nocturna HD × 1,1441']];
+      leyenda.forEach(([b, t], k) => {
+        const x = x0 + k * 150, y = y0 + 7 * (fila + 4) + 6;
+        s += `<rect x="${x}" y="${y}" width="14" height="10" rx="2" fill="${color[b]}" stroke="#cbd5e1"/><text x="${x + 20}" y="${y + 9}" fill="#334155">${t}</text>`;
+      });
+      document.getElementById('bandas').innerHTML = s;
+    })();
+  </script>
+  <p>LD es la semana hábil; HD arranca el <b>viernes a las 20:00</b> y va hasta el domingo a la medianoche. La Nocturna HD es 1,13 × 1,0125.</p>
+
+  <h3>{{i:zap}} Tramos: según por qué se trabajó esa hora</h3>
+  <div class="dos">
+    <table class="tabla compacta" style="margin-top:0">
+      <tr><th>Tramo</th><th>Multiplicador</th></tr>
+      <tr><td>Normal</td><td>1</td></tr>
+      <tr><td>Adicional</td><td>1,25</td></tr>
+      <tr><td>Extra 50%</td><td>1,50</td></tr>
+      <tr><td>Extra 100%</td><td>2,00</td></tr>
+    </table>
+    <div class="caja ejemplo" style="margin-top:0"><div class="tit">{{i:lightbulb}} Se combinan</div>Una hora adicional en banda nocturna LD vale <code>base × 1,13 × 1,25</code>. No hay redondeos intermedios: se redondea recién el importe final.</div>
+  </div>
+</section>
+
+<section class="capitulo" id="conceptos">
+  <div class="cap-titulo"><div class="num">5</div><div><h2>Los conceptos, el período y la conciliación</h2><p>Lo que va arriba del subtotal, y qué pasa con los días que todavía no ocurrieron.</p></div></div>
+
+  <table class="tabla">
+    <tr><th style="width:36%">Concepto</th><th>Cómo sale</th></tr>
+    <tr><td>Premio a la Excelencia (REG)</td><td>subtotal × el % del mes (gestión de personas + cuantitativo + cualitativo)</td></tr>
+    <tr><td>SUPER REG</td><td>subtotal × el % del mes</td></tr>
+    <tr><td>Antigüedad</td><td>subtotal × 0,08333% × meses reconocidos</td></tr>
+    <tr><td>Reintegro por uso de equipos</td><td>subtotal × su %</td></tr>
+    <tr><td>Compensación por feriado no trabajado</td><td>horas del feriado × valor hora × factor</td></tr>
+    <tr><td>Plus vacacional</td><td>horas de vacaciones × valor hora × factor</td></tr>
+    <tr><td>Reintegro de monotributo</td><td>importe cargado para ese mes</td></tr>
+  </table>
+  <p>El REG, el SUPER REG y el monotributo se cargan por agente y por mes en <i>Evaluación mensual</i>. A esto se suman los ítems manuales: importe fijo, porcentaje del subtotal, o por tiempo a valor hora. Los de porcentaje y los de tiempo se recalculan solos si cambian las horas; los de importe fijo, no.</p>
+
+  <h3>{{i:calendar-clock}} El período y la conciliación</h3>
+  <figure class="diagrama">
+    <svg viewBox="0 0 680 118" class="dg-texto" font-size="10.5">
+      <rect x="10" y="30" width="400" height="30" rx="5" fill="#16a34a"/>
+      <text x="210" y="49" text-anchor="middle" fill="#fff" font-weight="700">días que ya pasaron: contrastados contra la marcación</text>
+      <rect x="415" y="30" width="165" height="30" rx="5" fill="#bfdbfe"/>
+      <text x="497" y="49" text-anchor="middle" fill="#1e3a8a" font-weight="700">proyectados: el plan</text>
+      <line x1="412" y1="18" x2="412" y2="72" stroke="#0f172a" stroke-width="2"/>
+      <text x="412" y="12" text-anchor="middle" fill="#0f172a" font-weight="700" font-size="10">hoy</text>
+      <rect x="590" y="30" width="80" height="30" rx="5" fill="#fef3c7" stroke="#f59e0b"/>
+      <text x="630" y="49" text-anchor="middle" fill="#92400e" font-weight="700" font-size="10">mes siguiente</text>
+      <path d="M497 64 C 530 100, 600 100, 630 64" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="565" y="106" text-anchor="middle" fill="#92400e" font-size="9.5">si esos días fueron distintos, la diferencia entra como Ajuste</text>
+    </svg>
+  </figure>
+  <p>El período lo define el <b>día de corte</b> en Configuración; con 1 es el mes calendario, y el mes que toca cerrar es el último período que terminó. Si se liquida antes de que termine el mes, los días que faltan se pagan proyectados; si después fueron distintos, la diferencia entra en el período siguiente como <i>Ajuste mes anterior</i>, con la fecha original.</p>
+</section>
+
+<section class="capitulo" id="viva">
+  <div class="cap-titulo"><div class="num">6</div><div><h2>La preliquidación viva</h2><p>Un borrador no es una foto.</p></div></div>
+  <figure class="diagrama">
+    <svg viewBox="0 0 680 150" class="dg-texto" font-size="10.5">
+      <defs><marker id="fv" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#475569"/></marker></defs>
+      <rect x="10" y="40" width="190" height="70" rx="12" fill="#fffbeb" stroke="#fcd34d"/>
+      <text x="105" y="66" text-anchor="middle" font-weight="800" fill="#b45309" font-size="12">Borrador</text>
+      <text x="105" y="84" text-anchor="middle" fill="#92400e" font-size="9.5">se recalcula con cada dato</text>
+      <text x="105" y="98" text-anchor="middle" fill="#92400e" font-size="9.5">y con Actualizar</text>
+      <path d="M40 40 C 40 5, 170 5, 170 40" fill="none" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#fv)"/>
+      <text x="12" y="14" fill="#92400e" font-size="9">excepción · hora · feriado · esquema · tarifa · marcación · evaluación · corrección</text>
+      <rect x="250" y="40" width="190" height="70" rx="12" fill="#fff" stroke="#0f172a"/>
+      <text x="345" y="62" text-anchor="middle" font-weight="800" fill="#0f172a">Confirmar</text>
+      <text x="345" y="80" text-anchor="middle" fill="#334155" font-size="9.5">sin días a normalizar,</text>
+      <text x="345" y="93" text-anchor="middle" fill="#334155" font-size="9.5">con evaluación, mismo total</text>
+      <rect x="490" y="40" width="180" height="70" rx="12" fill="#15803d"/>
+      <text x="580" y="66" text-anchor="middle" font-weight="800" fill="#fff" font-size="12">Confirmada</text>
+      <text x="580" y="84" text-anchor="middle" fill="#dcfce7" font-size="9.5">constancia de lo pagado:</text>
+      <text x="580" y="98" text-anchor="middle" fill="#dcfce7" font-size="9.5">ya no se recalcula</text>
+      <line x1="200" y1="75" x2="246" y2="75" stroke="#475569" stroke-width="1.5" marker-end="url(#fv)"/>
+      <line x1="440" y1="75" x2="486" y2="75" stroke="#475569" stroke-width="1.5" marker-end="url(#fv)"/>
+      <path d="M580 110 C 580 145, 105 145, 105 112" fill="none" stroke="#475569" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#fv)"/>
+      <text x="345" y="144" text-anchor="middle" fill="#475569" font-size="9.5">Volver a borrador la reabre con los datos de ese momento</text>
+    </svg>
+  </figure>
+  <p>Si al confirmar el total cambió —entró una marcación o un dato nuevo—, no confirma y avisa, para que se mire antes.</p>
+
+  <h3 id="avisos">{{i:shield-alert}} Los avisos</h3>
+  <div class="dos">
+    <div>
+      <h4 style="margin-top:0"><span class="chip ambar">Frenan</span></h4>
+      <table class="tabla compacta" style="margin-top:1mm">
+        <tr><td>Llegó tarde</td><td>Entró tarde a un tramo, o no marcó el primero</td></tr>
+        <tr><td>Se fue antes</td><td>Salió antes, se ausentó en medio, o no marcó uno posterior</td></tr>
+        <tr><td>Marcó en otro horario</td><td>No cubre ni la mitad del plan, y trabajó al menos la mitad</td></tr>
+        <tr><td>Trabajó de más</td><td>Por encima del umbral, sin autorización</td></tr>
+        <tr><td>Trabajó sin esquema</td><td>Marcó un día sin plan</td></tr>
+        <tr><td>Trabajó un feriado</td><td>Sin cobertura cargada</td></tr>
+        <tr><td>Marcó un día de licencia</td><td>Vacaciones, licencia o ausencia</td></tr>
+        <tr><td>Autorizado y no trabajado · de más</td><td>La marcación completa no lo muestra</td></tr>
+        <tr><td>No marcó · Incompleta</td><td>Sólo agentes nuevos, o si se activó</td></tr>
+        <tr><td>Falta la evaluación</td><td>No es de un día</td></tr>
+      </table>
+    </div>
+    <div>
+      <h4 style="margin-top:0"><span class="chip">No frenan</span></h4>
+      <table class="tabla compacta" style="margin-top:1mm">
+        <tr><td>No marcó · Incompleta</td><td>Agentes con antigüedad: se pagó el plan</td></tr>
+        <tr><td>Autorizado sin marcación</td><td>Se pagó lo autorizado sin marcación completa</td></tr>
+        <tr><td>Autorizado de más · no trabajado</td><td>Cuando la diferencia no llega al umbral</td></tr>
+        <tr><td>Ausencia</td><td>Día de ausencia registrado</td></tr>
+      </table>
+      <div class="caja"><div class="tit">{{i:sparkles}} Sugerencias de esquema</div>Ocho semanas, el mismo día de la semana, distinto al esquema al menos tres veces y en el 75% de las semanas. Propone el horario típico —tramo por tramo, redondeado a 15 minutos— y sólo lo muestra si reduce a la mitad los días a normalizar.</div>
+    </div>
+  </div>
+</section>
+
+<section class="capitulo" id="validacion">
+  <div class="cap-titulo"><div class="num">7</div><div><h2>Cómo se validó</h2><p>Contra las liquidaciones hechas en Excel de julio y agosto 2026, con las marcaciones reales.</p></div></div>
+
+  <div class="numeros">
+    <div class="verde"><b>84%</b><span>de los días de julio se pagaron solos</span></div>
+    <div class="verde"><b>70%</b><span>de los de agosto, con cinco ingresos nuevos</span></div>
+    <div class="azul"><b>88%</b><span>de las veces la sugerida coincidió con la planilla</span></div>
+    <div><b>$ 0,00</b><span>de diferencia en el neto de cada agente</span></div>
+  </div>
+
+  <figure class="diagrama">
+    <svg viewBox="0 0 680 170" class="dg-texto" font-size="10.5">
+      <text x="0" y="14" font-weight="700" fill="#0f172a" font-size="11.5">Días con plan</text>
+      <text x="0" y="48" font-weight="700" fill="#0f172a">Julio</text>
+      <rect x="70" y="32" width="397" height="26" rx="4" fill="#16a34a"/>
+      <rect x="467" y="32" width="75" height="26" rx="4" fill="#f59e0b"/>
+      <text x="268" y="49" text-anchor="middle" fill="#fff" font-weight="700">233 solos</text>
+      <text x="504" y="49" text-anchor="middle" fill="#fff" font-weight="700">44</text>
+      <text x="552" y="49" fill="#64748b">de 277</text>
+      <text x="0" y="98" font-weight="700" fill="#0f172a">Agosto</text>
+      <rect x="70" y="82" width="431" height="26" rx="4" fill="#16a34a"/>
+      <rect x="501" y="82" width="129" height="26" rx="4" fill="#f59e0b"/>
+      <rect x="501" y="82" width="37" height="26" fill="#8b5cf6"/>
+      <text x="285" y="99" text-anchor="middle" fill="#fff" font-weight="700">253 solos</text>
+      <text x="584" y="99" text-anchor="middle" fill="#fff" font-weight="700">76</text>
+      <text x="519" y="99" text-anchor="middle" fill="#fff" font-weight="700" font-size="9.5">30</text>
+      <text x="640" y="99" fill="#64748b">359</text>
+      <g font-size="9.5">
+        <rect x="70" y="132" width="12" height="10" rx="2" fill="#16a34a"/><text x="88" y="141" fill="#334155">se pagaron solos</text>
+        <rect x="200" y="132" width="12" height="10" rx="2" fill="#f59e0b"/><text x="218" y="141" fill="#334155">para normalizar</text>
+        <rect x="330" y="132" width="12" height="10" rx="2" fill="#8b5cf6"/><text x="348" y="141" fill="#334155">de los ingresos nuevos, sus dos primeras semanas</text>
+      </g>
+      <text x="70" y="164" fill="#64748b" font-size="9.5">La sugerida coincidió con la decisión de la planilla en 38 de 43 días de julio y 67 de 76 de agosto.</text>
+    </svg>
+  </figure>
+
+  <div class="caja tip"><div class="tit">{{i:circle-check}} El neto cierra al centavo</div>Tomando las decisiones del liquidador como correcciones del día, el neto de cada agente cierra al centavo en los dos meses. Los únicos días que se pagan distinto sin pasar por la bandeja son seis en total, y en ninguno el sistema tiene dato para saberlo: la planilla pagó algo que no está en el esquema, las marcaciones ni las autorizaciones.</div>
+</section>
+
+</body>
+</html>

@@ -6,6 +6,11 @@
 | Supervisor | [Manual del supervisor](manual-supervisor.md) | 15 min |
 | Administrador | [Manual del administrador](manual-admin.md) | 10 min |
 
+**También en PDF**, con capturas de pantalla y diagramas, para imprimir o
+compartir: [agente](pdf/manual-agente.pdf) · [supervisor](pdf/manual-supervisor.pdf) ·
+[administrador](pdf/manual-admin.pdf) · [cómo se calcula](pdf/como-se-calcula.pdf).
+Se regeneran con `node docs/pdf/fuente/construir.mjs` (ver [LEEME](pdf/fuente/LEEME.md)).
+
 Y como referencia, cuando haga falta el detalle de un número:
 
 **[Cómo se calcula la liquidación](como-se-calcula.md)** — el orden en que se

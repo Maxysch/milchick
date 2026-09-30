@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Manual del supervisor — Milchick</title>
+<link rel="stylesheet" href="estilo.css">
+<style>@page { @bottom-left { content: 'Milchick · Manual del supervisor'; } }</style>
+</head>
+<body>
+
+<section class="portada">
+  <div class="marca">{{i:scale}} Milchick <span>Control de presentismo</span></div>
+  <svg class="ilustracion" viewBox="0 0 200 200" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round">
+    <rect x="30" y="30" width="140" height="150" rx="16" stroke-opacity=".9"/>
+    <path d="M55 70h60M55 100h80M55 130h50" stroke-opacity=".7" stroke-width="6"/>
+    <circle cx="140" cy="70" r="9" fill="#22c55e" stroke="none"/>
+    <circle cx="150" cy="100" r="9" fill="#22c55e" stroke="none"/>
+    <circle cx="120" cy="130" r="9" fill="#f59e0b" stroke="none"/>
+    <circle cx="152" cy="160" r="26" fill="#fff" stroke="none"/>
+    <path d="M140 160l8 8 16-17" stroke="#1d4ed8" stroke-width="6" stroke-linejoin="round"/>
+  </svg>
+  <div class="rol">Para supervisores y liquidadores</div>
+  <h1>Manual<br>del supervisor</h1>
+  <p class="bajada">Durante el mes cargás lo que ya sabés. Al cierre resolvés lo que el sistema no pudo decidir solo. Todo lo demás se paga solo.</p>
+  <div class="contenido">
+    <div><b>Cierre del mes</b>El recorrido del cierre en cinco pasos, de arriba abajo.</div>
+    <div><b>Normalización</b>Los días que no cierran, con la respuesta sugerida y aceptación en bloque.</div>
+    <div><b>Preliquidación</b>El detalle de cada agente, que se actualiza solo mientras es borrador.</div>
+  </div>
+  <div class="version">Versión 2 · septiembre 2026</div>
+</section>
+
+<section class="indice">
+  <h2>Contenido</h2>
+  <ol>
+    <li><a href="#idea">La idea en una página<small>Cómo decide el sistema qué se paga cada día</small></a></li>
+    <li><a href="#mapa">Dónde está cada cosa<small>El menú, y la diferencia entre Cierre del mes y Preliquidación</small></a></li>
+    <li><a href="#cierre">Cierre del mes<small>Los cinco pasos</small></a></li>
+    <li><a href="#bandeja">Normalización: la bandeja<small>Cómo se lee un día y qué decisión tomar</small></a></li>
+    <li><a href="#preliquidacion">Preliquidación<small>El detalle de cada agente, el desglose y la confirmación</small></a></li>
+    <li><a href="#mes">Durante el mes<small>Inicio, marcaciones, excepciones, horas autorizadas, feriados, evaluación</small></a></li>
+    <li><a href="#avisos">Los avisos<small>Cuáles frenan y cuáles son informativos</small></a></li>
+    <li><a href="#ritmo">El ritmo del mes<small>Qué hacer cada día, cuando pasa y al cierre</small></a></li>
+    <li><a href="#chuleta">Chuleta<small>Una página para tener a mano</small></a></li>
+  </ol>
+</section>
+
+<!-- ─────────────────────────────── 1 -->
+<section class="capitulo" id="idea">
+  <div class="cap-titulo"><div class="num">1</div><div><h2>La idea en una página</h2><p>Lo único que hay que entender antes de empezar.</p></div></div>
+
+  <p class="lead"><strong>El plan se paga solo cuando la marcación lo acompaña. Cuando no, el día se normaliza.</strong></p>
+
+  <figure class="diagrama">
+    <svg viewBox="0 0 680 235" class="dg-texto" font-size="11">
+      <defs><marker id="f1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#94a3b8"/></marker></defs>
+      <rect x="5" y="22" width="165" height="62" rx="10" fill="#eff6ff" stroke="#93c5fd"/>
+      <text x="87" y="46" text-anchor="middle" font-weight="700" fill="#1e3a8a">El plan del día</text>
+      <text x="87" y="63" text-anchor="middle" fill="#1e40af" font-size="9.8">el esquema, o el horario</text>
+      <text x="87" y="76" text-anchor="middle" fill="#1e40af" font-size="9.8">de una excepción</text>
+      <rect x="5" y="126" width="165" height="62" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+      <text x="87" y="152" text-anchor="middle" font-weight="700" fill="#0f172a">Lo que marcó</text>
+      <text x="87" y="169" text-anchor="middle" fill="#64748b" font-size="9.8">cada tramo, en el portal</text>
+      <line x1="170" y1="53" x2="222" y2="95" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#f1)"/>
+      <line x1="170" y1="157" x2="222" y2="118" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#f1)"/>
+      <path d="M290 50 L360 107 L290 164 L220 107 Z" fill="#fff" stroke="#0f172a" stroke-width="1.5"/>
+      <text x="290" y="100" text-anchor="middle" font-weight="700" fill="#0f172a" font-size="10.5">¿Acompaña</text>
+      <text x="290" y="114" text-anchor="middle" font-weight="700" fill="#0f172a" font-size="10.5">dentro de los</text>
+      <text x="290" y="128" text-anchor="middle" font-weight="700" fill="#0f172a" font-size="10.5">márgenes?</text>
+      <line x1="325" y1="78" x2="400" y2="45" stroke="#16a34a" stroke-width="1.8" marker-end="url(#f1)"/>
+      <text x="362" y="52" fill="#15803d" font-weight="700" font-size="10">sí</text>
+      <line x1="325" y1="136" x2="400" y2="166" stroke="#d97706" stroke-width="1.8" marker-end="url(#f1)"/>
+      <text x="360" y="167" fill="#b45309" font-weight="700" font-size="10">no</text>
+      <rect x="405" y="15" width="270" height="56" rx="10" fill="#15803d"/>
+      <text x="540" y="39" text-anchor="middle" font-weight="700" fill="#fff" font-size="12">Se paga solo</text>
+      <text x="540" y="56" text-anchor="middle" fill="#dcfce7" font-size="9.8">nadie tiene que tocarlo</text>
+      <rect x="405" y="132" width="128" height="68" rx="10" fill="#fffbeb" stroke="#fcd34d"/>
+      <text x="469" y="156" text-anchor="middle" font-weight="700" fill="#b45309">Normalización</text>
+      <text x="469" y="172" text-anchor="middle" fill="#92400e" font-size="9.5">con la respuesta</text>
+      <text x="469" y="185" text-anchor="middle" fill="#92400e" font-size="9.5">sugerida</text>
+      <line x1="533" y1="166" x2="545" y2="166" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#f1)"/>
+      <rect x="550" y="132" width="125" height="68" rx="10" fill="#1e3a8a"/>
+      <text x="612" y="156" text-anchor="middle" font-weight="700" fill="#fff">Una decisión</text>
+      <text x="612" y="172" text-anchor="middle" fill="#dbeafe" font-size="9.5">queda guardada y</text>
+      <text x="612" y="185" text-anchor="middle" fill="#dbeafe" font-size="9.5">se paga lo decidido</text>
+      <text x="340" y="224" text-anchor="middle" fill="#64748b" font-size="9.5">Mientras tanto se paga el plan, pero la preliquidación no se puede confirmar.</text>
+    </svg>
+  </figure>
+
+  <div class="resumen" style="--cols:4">
+    <div><div class="ico">{{i:calendar}}</div><b>Márgenes</b><p>20 minutos al entrar y 20 al salir de cada tramo. Llegar antes no cuenta.</p></div>
+    <div class="verde"><div class="ico">{{i:circle-check}}</div><b>Se paga solo</b><p>En julio y agosto, 84% y 70% de los días sin que nadie los toque.</p></div>
+    <div class="ambar"><div class="ico">{{i:sparkles}}</div><b>Sugerida</b><p>La que suele tomar el liquidador. Coincidió 9 de cada 10 veces.</p></div>
+    <div class="violeta"><div class="ico">{{i:undo-2}}</div><b>Se puede deshacer</b><p>Cada decisión queda con quién, cuándo y la nota.</p></div>
+  </div>
+
+  <h3>{{i:route}} Tu trabajo, en dos momentos</h3>
+  <div class="dos">
+    <div class="caja">
+      <div class="tit">{{i:calendar-clock}} Durante el mes</div>
+      <ul>
+        <li>Los agentes marcan desde su portal.</li>
+        <li>Cargás lo que ya sabés: <b>excepciones</b> (licencias, cambios de horario) y <b>horas autorizadas</b>.</li>
+        <li>Las preliquidaciones en borrador se <b>recalculan solas</b> con cada dato.</li>
+        <li>Si querés, vas resolviendo la bandeja de los días que ya pasaron.</li>
+      </ul>
+    </div>
+    <div class="caja">
+      <div class="tit">{{i:list-checks}} Al cierre, en Cierre del mes</div>
+      <ol style="margin:0">
+        <li>Datos del mes: esquemas, tarifas, feriados.</li>
+        <li>Evaluación mensual.</li>
+        <li>Preliquidar.</li>
+        <li>Normalizar lo que no cierra.</li>
+        <li>Confirmar y sacar el resumen para pagar.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────── 2 -->
+<section class="capitulo" id="mapa">
+  <div class="cap-titulo"><div class="num">2</div><div><h2>Dónde está cada cosa</h2><p>El menú está agrupado en lo del mes y los datos.</p></div></div>
+
+  <div class="dos" style="grid-template-columns: 42mm 1fr; gap: 7mm">
+    <figure class="captura" style="margin:0"><img src="img/menu.png" alt="Menú"></figure>
+    <div>
+      <table class="tabla compacta" style="margin-top:0">
+        <tr><th style="width:33%">Pantalla</th><th>Para qué</th></tr>
+        <tr><td>Inicio</td><td>Lo pendiente de hoy: quién no marcó, marcaciones abiertas, días a normalizar.</td></tr>
+        <tr><td>Cierre del mes</td><td>El <b>recorrido</b> del cierre, paso por paso, para todos los agentes.</td></tr>
+        <tr><td>Normalización</td><td>La bandeja de los días que no cierran.</td></tr>
+        <tr><td>Preliquidación</td><td>Las preliquidaciones de cada agente: detalle, ítems, confirmación, resumen del período.</td></tr>
+        <tr><td>Evaluación mensual</td><td>REG, SUPER REG y monotributo de cada agente, mes a mes.</td></tr>
+        <tr><td>Marcaciones</td><td>Corregir o reponer marcaciones.</td></tr>
+        <tr><td>Excepciones</td><td>Licencias, ausencias, cambios de jornada, coberturas, y las horas fuera del esquema.</td></tr>
+        <tr><td>Feriados</td><td>El calendario de feriados.</td></tr>
+        <tr><td>Esquemas</td><td>El horario habitual de cada agente.</td></tr>
+        <tr><td>Agentes · Clientes</td><td>Altas, tarifas, datos.</td></tr>
+        <tr><td>Configuración</td><td>Multiplicadores, período y márgenes (lo toca el administrador).</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="caja tip">
+    <div class="tit">{{i:lightbulb}} ¿Cierre del mes o Preliquidación?</div>
+    <p><b>Cierre del mes es el recorrido; la preliquidación es el documento.</b> Cada agente tiene una preliquidación por mes: sus horas día por día, los conceptos, el neto. <i>Cierre del mes</i> es la pantalla que te lleva de la mano por los cinco pasos del cierre para todos los agentes a la vez, y cada paso trabaja sobre esas preliquidaciones: el paso 3 las crea o actualiza, el 4 resuelve sus días, el 5 las confirma.</p>
+    <p style="margin:0">Usás <i>Cierre del mes</i> para avanzar con el mes, y <i>Preliquidación</i> cuando necesitás mirar o corregir el detalle de un agente, o exportar el resumen.</p>
+  </div>
+
+  <div class="caja">
+    <div class="tit">{{i:calendar}} El mes viaja entre pantallas</div>
+    Cierre del mes, Normalización, Preliquidación y Evaluación mensual abren en el <b>mes que toca cerrar</b> —el último que terminó—. Si elegís otro mes y pasás de una a otra con los links, el mes elegido viaja con vos.
+  </div>
+</section>
+
+<!-- ─────────────────────────────── 3 -->
+<section class="capitulo" id="cierre">
+  <div class="cap-titulo"><div class="num">3</div><div><h2>Cierre del mes</h2><p>El cierre en cinco pasos. Se hace de arriba abajo.</p></div></div>
+
+  <figure class="captura">
+    <img src="img/cierre.png" alt="Cierre del mes">
+    <ol class="leyenda">
+      <li><span>1</span>Falta la evaluación de dos agentes: <b>Cargarla</b> te lleva a Evaluación mensual.</li>
+      <li><span>2</span><b>Actualizar todas</b> recalcula y trae las marcaciones nuevas.</li>
+      <li><span>3</span><b>Ir a la bandeja</b>: los días que no cierran contra el plan.</li>
+      <li><span>4</span><b>Confirmar las listas</b>: las que ya no tienen nada pendiente.</li>
+    </ol>
+  </figure>
+
+  <table class="tabla">
+    <tr><th style="width:24%">Paso</th><th>Qué mira</th><th style="width:30%">Qué hacés</th></tr>
+    <tr><td>1 · Datos del mes</td><td>Agentes sin esquema o sin tarifa, y los feriados del mes</td><td>Completar lo que falte. Sin esquema y tarifa no se liquida</td></tr>
+    <tr><td>2 · Evaluación mensual</td><td>A quién le falta</td><td><b>Cargarla</b></td></tr>
+    <tr><td>3 · Preliquidar</td><td>Quién no tiene preliquidación</td><td><b>Preliquidar</b>, o <b>Actualizar todas</b></td></tr>
+    <tr><td>4 · Normalizar</td><td>Días que no cierran, y esquemas que parecen desactualizados</td><td><b>Ir a la bandeja</b></td></tr>
+    <tr><td>5 · Confirmar</td><td>Las que están listas</td><td><b>Confirmar las listas</b> y, al final, <b>Resumen para pagar</b></td></tr>
+  </table>
+
+  <div class="dos">
+    <div class="caja tip"><div class="tit">{{i:circle-check}} Cuándo está lista</div>Cuando no le quedan días a normalizar y tiene la evaluación cargada. En la tabla <b>Por agente</b> figura como <span class="chip azul">Lista</span>.</div>
+    <div class="caja ojo"><div class="tit">{{i:triangle-alert}} Si el paso 4 avisa esquemas desactualizados</div>Conviene corregirlos: cada uno genera un día a normalizar por semana, todos los meses.</div>
+  </div>
+
+  <figure class="captura w90">
+    <img src="img/cierre-agentes.png" alt="Por agente">
+    <figcaption>La tabla Por agente: el estado de cada uno, cuántos días le faltan y su neto. <b>Ver</b> abre su preliquidación.</figcaption>
+  </figure>
+</section>
+
+<!-- ─────────────────────────────── 4 -->
+<section class="capitulo" id="bandeja">
+  <div class="cap-titulo"><div class="num">4</div><div><h2>Normalización: la bandeja</h2><p>Los días del mes que no cierran, uno por renglón.</p></div></div>
+
+  <figure class="captura">
+    <img src="img/bandeja.png" alt="La bandeja de Normalización">
+    <ol class="leyenda">
+      <li><span>1</span>Cuántos días hay, cuántos tienen sugerencia y cuántos son de agentes nuevos.</li>
+      <li><span>2</span><b>Traer marcaciones nuevas</b>: recalcula con lo que marcaron desde la última vez.</li>
+      <li><span>3</span>Filtrá por agente: cada botón dice cuántos días le quedan.</li>
+      <li><span>4</span><b>Aceptar las sugeridas</b> en bloque. Vienen tildadas: destildá las que no van.</li>
+    </ol>
+  </figure>
+
+  <h3>{{i:mouse-pointer-click}} Cómo se lee un día</h3>
+  <figure class="captura">
+    <img src="img/bandeja-dia.png" alt="Un día a normalizar">
+    <ol class="leyenda">
+      <li><span>1</span>El motivo: acá, trabajó de más.</li>
+      <li><span>2</span>El plan y lo que marcó, uno debajo del otro, con el detalle abajo.</li>
+      <li><span>3</span>La decisión sugerida, resaltada. Abajo dice por qué se sugiere.</li>
+      <li><span>4</span>Una nota: es lo que explica el día cuando alguien pregunta en tres meses.</li>
+    </ol>
+  </figure>
+
+  <h3>{{i:scale}} Las decisiones</h3>
+  <p>Una sola por día: si el día tiene dos motivos —llegó tarde <b>y</b> tenía horas autorizadas— una decisión lo resuelve entero.</p>
+  <div class="decisiones">
+    <div class="decision destacada">
+      <div class="cab"><span class="btn primario">{{i:sparkles}} Está bien así</span><span class="chip azul">la más común</span></div>
+      <p class="que">Se paga lo que calculó el sistema: el plan, y las autorizadas hasta lo que se ve en la marcación.</p>
+      <p class="cuando"><b>Cuándo:</b> el desvío no cambia lo que corresponde pagar.</p>
+    </div>
+    <div class="decision">
+      <div class="cab"><span class="btn">Pagar lo marcado</span></div>
+      <p class="que">Se paga lo que marcó, todo como horas normales, cada hora en su banda.</p>
+      <p class="cuando"><b>Cuándo:</b> trabajó otro horario de verdad.</p>
+    </div>
+    <div class="decision">
+      <div class="cab"><span class="btn">Autorizar X h</span></div>
+      <p class="que">El plan más esas horas con el tramo que elijas, hasta lo que trabajó de más.</p>
+      <p class="cuando"><b>Cuándo:</b> trabajó de más y corresponde pagarlo con recargo.</p>
+    </div>
+    <div class="decision">
+      <div class="cab"><span class="btn">Pagar lo autorizado igual</span></div>
+      <p class="que">Lo autorizado se paga aunque la marcación no lo muestre.</p>
+      <p class="cuando"><b>Cuándo:</b> un arrastre del mes anterior, una marcación mal hecha.</p>
+    </div>
+    <div class="decision">
+      <div class="cab"><span class="btn">Pagar otro horario</span></div>
+      <p class="que">Los tramos que cargues, cada hora en su banda.</p>
+      <p class="cuando"><b>Cuándo:</b> lo acordado no es ni el plan ni lo marcado.</p>
+    </div>
+    <div class="decision">
+      <div class="cab"><span class="btn">No pagar el día</span></div>
+      <p class="que">Nada. Un feriado se sigue compensando.</p>
+      <p class="cuando"><b>Cuándo:</b> no trabajó y no corresponde pagarlo.</p>
+    </div>
+  </div>
+  <div class="caja clave"><div class="tit">{{i:triangle-alert}} Pagar lo marcado paga todo como horas normales</div>Si las horas de más van con recargo, la decisión es <b>Autorizar</b>, eligiendo bien el tramo: una hora Extra 100% vale el doble que una normal.</div>
+
+  <figure class="captura w90">
+    <img src="img/bandeja-autorizar.png" alt="Autorizar horas">
+    <figcaption><b>Autorizar</b> abre las horas —ya calculadas, redondeadas a la media hora— y el tramo.</figcaption>
+  </figure>
+  <figure class="captura w90">
+    <img src="img/bandeja-otro-horario.png" alt="Pagar otro horario">
+    <figcaption><b>Pagar otro horario</b> abre los tramos para cargar lo acordado. Se puede agregar más de uno.</figcaption>
+  </figure>
+
+  <h3>{{i:map}} Casos que conviene reconocer</h3>
+  <table class="tabla">
+    <tr><th style="width:30%">El día dice…</th><th>Qué significa</th><th style="width:27%">Lo habitual</th></tr>
+    <tr><td><span class="chip ambar">Marcó en otro horario</span></td><td>Trabajó, pero en otro horario que el plan.</td><td>Pagar lo marcado, si son las mismas horas</td></tr>
+    <tr><td><span class="chip ambar">Autorizado y no trabajado</span></td><td>Hay horas autorizadas que la marcación no muestra.</td><td>Pagar lo autorizado igual</td></tr>
+    <tr><td><span class="chip ambar">Trabajó un feriado</span></td><td>Marcó en un feriado sin cobertura cargada.</td><td><b>Dejarlo como feriado</b>, Pagar lo marcado o Autorizar, según lo acordado</td></tr>
+    <tr><td><span class="chip ambar">Marcó un día de licencia</span></td><td>Marcó en vacaciones, licencia o ausencia.</td><td><b>Dejar la licencia</b> o la ausencia, según lo acordado</td></tr>
+    <tr><td><span class="chip violeta">Agente nuevo</span></td><td>Sus primeras dos semanas: se revisan siempre y sin sugerencia.</td><td>Mirarlo con quien lo capacitó</td></tr>
+  </table>
+  <figure class="captura w90"><img src="img/bandeja-feriado.png" alt="Trabajó un feriado"><figcaption>En un feriado, <i>Está bien así</i> se llama <b>Dejarlo como feriado</b>: no paga el esquema y el feriado se sigue compensando.</figcaption></figure>
+  <figure class="captura w90"><img src="img/bandeja-nuevo.png" alt="Agente nuevo"><figcaption>Un agente nuevo: sin sugerencia, se decide mirando el caso.</figcaption></figure>
+
+  <div class="grupo">
+  <h3>{{i:check}} Aceptar en bloque</h3>
+  <div class="resumen" style="margin:2mm 0 3mm">
+    <div><div class="ico">{{i:list-checks}}</div><b>1 · Mirá la lista</b><p>Las sugeridas vienen tildadas. Destildá las que no van.</p></div>
+    <div><div class="ico">{{i:check}}</div><b>2 · Aceptar las sugeridas</b><p>Antes de aplicar te muestra cuántas de cada tipo.</p></div>
+    <div class="verde"><div class="ico">{{i:circle-check}}</div><b>3 · Sí, aceptarlas</b><p>Las que quedan, sin sugerencia, se resuelven de a una.</p></div>
+  </div>
+  <figure class="captura w90"><img src="img/bandeja-confirmar.png" alt="Aceptar las sugeridas"></figure>
+  </div>
+
+  <div class="grupo">
+  <h3>{{i:undo-2}} Correcciones aplicadas</h3>
+  <figure class="captura w90">
+    <img src="img/bandeja-correcciones.png" alt="Correcciones aplicadas">
+    <figcaption>Lo resuelto en el mes, con quién y la nota. <b>Deshacer</b> vuelve el día a calcularse solo y revierte lo que tocó (una autorización creada, por ejemplo). Las de un mes confirmado dicen <i>Confirmada</i>: para cambiarlas, primero hay que volver la preliquidación a borrador.</figcaption>
+  </figure>
+  </div>
+
+  <div class="caja tip"><div class="tit">{{i:calendar-clock}} Cuando el mismo problema se repite</div>Si un agente aparece todas las semanas el mismo día con el mismo desvío, el problema es el esquema. El sistema lo detecta y lo propone en <b>Esquemas</b>. Corregirlo saca esos días de la bandeja de ahí en adelante.</div>
+</section>
+
+<!-- ─────────────────────────────── 5 -->
+<section class="capitulo" id="preliquidacion">
+  <div class="cap-titulo"><div class="num">5</div><div><h2>Preliquidación</h2><p>Una por agente y por mes. Mientras es borrador, está viva.</p></div></div>
+
+  <div class="caja tip"><div class="tit">{{i:refresh-cw}} Se actualiza sola</div>Cada vez que cambia un dato del agente —una excepción, una hora autorizada, un feriado, el esquema, la tarifa, una marcación que corregís, la evaluación o la configuración— la preliquidación en borrador se recalcula. Las marcaciones que hacen los agentes entran cuando tocás <b>Actualizar</b> o <b>Traer marcaciones nuevas</b>.</div>
+
+  <figure class="captura w90">
+    <img src="img/preliq-lista.png" alt="Listado de preliquidaciones">
+    <figcaption>El listado: el mes, <b>Actualizar todas</b>, <b>Exportar resumen</b> y el resumen del período con horas, honorarios, conceptos, neto y estado de cada agente.</figcaption>
+  </figure>
+
+  <h3>{{i:file-text}} El detalle de un agente</h3>
+  <figure class="captura">
+    <img src="img/preliq-detalle.png" alt="Detalle de una preliquidación">
+    <ol class="leyenda">
+      <li><span>1</span>Cuándo se actualizó, el estado y el neto.</li>
+      <li><span>2</span>Cómo quedaron los días: solos, normalizados, a normalizar, feriados.</li>
+      <li><span>3</span>Los días a normalizar de este agente, con las mismas decisiones que la bandeja.</li>
+    </ol>
+  </figure>
+
+  <h3>{{i:list-checks}} El desglose diario</h3>
+  <figure class="captura w90"><img src="img/preliq-desglose.png" alt="Desglose diario"><figcaption>Dos días del desglose: uno pagado por el esquema y con un aviso pendiente, y otro normalizado con una hora adicional autorizada.</figcaption></figure>
+  <div class="dos" style="grid-template-columns: 1fr 1fr">
+    <div>
+      <table class="tabla compacta" style="margin-top:0">
+        <tr><th>Origen</th><th>De dónde sale</th></tr>
+        <tr><td><span class="chip">Esquema</span></td><td>El plan del día, pagado solo</td></tr>
+        <tr><td><span class="chip ambar">Excepción</span></td><td>Licencia, o el horario de una excepción</td></tr>
+        <tr><td><span class="chip">Autorizada</span></td><td>Horas autorizadas</td></tr>
+        <tr><td><span class="chip verde">Normalizado</span></td><td>Una decisión o una edición a mano</td></tr>
+        <tr><td><span class="chip azul">Compensación</span></td><td>La compensación diaria fija</td></tr>
+        <tr><td><span class="chip azul">Ajuste</span></td><td>Un día proyectado del mes anterior</td></tr>
+      </table>
+    </div>
+    <div>
+      <p style="margin-top:0">Cambiar las horas de una línea, o <b>Agregar un día</b>, deja una corrección <i>Horas cargadas a mano</i>, que se conserva en cada recálculo.</p>
+      <p>Una línea marcada <span class="chip azul">Proyectado</span> es un día que todavía no pasó: se paga el plan y, si termina distinto, la diferencia entra el mes siguiente.</p>
+      <p>El reloj junto a cada fecha muestra lo que marcó, las excepciones y las horas autorizadas de ese día.</p>
+    </div>
+  </div>
+  <figure class="captura w60">
+    <img src="img/preliq-compensacion.png" alt="Compensación diaria">
+    <figcaption>Un agente con compensación diaria fija: cada día suma sus minutos como una línea aparte.</figcaption>
+  </figure>
+
+  <h3>{{i:badge-check}} Confirmar</h3>
+  <figure class="captura"><img src="img/preliq-confirmar.png" alt="Confirmar"></figure>
+  <ul>
+    <li>Sólo se confirma <b>sin días a normalizar</b> y <b>con la evaluación cargada</b>.</li>
+    <li>Al confirmar se recalcula una última vez: si el total cambió porque entró un dato nuevo, avisa y no confirma, para que lo mires.</li>
+    <li>Confirmada, es la constancia de lo que se pagó: ya no se recalcula. <b>Volver a borrador</b> la reabre con los datos de ese momento.</li>
+  </ul>
+
+  <div class="grupo">
+  <h4>Los ítems</h4>
+  <table class="tabla compacta">
+    <tr><th>Forma</th><th>Cuándo</th><th>¿Se recalcula?</th></tr>
+    <tr><td>Importe fijo</td><td>Un reintegro puntual</td><td>No</td></tr>
+    <tr><td>Porcentaje del subtotal</td><td>Un premio sobre honorarios</td><td>Sí</td></tr>
+    <tr><td>Por tiempo, a valor hora</td><td>45 min × 20 días a Diurna LD</td><td>Sí</td></tr>
+  </table>
+  </div>
+</section>
+
+<!-- ─────────────────────────────── 6 -->
+<section class="capitulo" id="mes">
+  <div class="cap-titulo"><div class="num">6</div><div><h2>Durante el mes</h2><p>Lo que cargás cuando pasa. Una excepción a tiempo es un día que se paga solo.</p></div></div>
+
+  <h3>{{i:sun}} Inicio</h3>
+  <figure class="captura">
+    <img src="img/inicio.png" alt="Inicio">
+    <ol class="leyenda">
+      <li><span>1</span><b>Días a normalizar</b>, por mes. Te lleva a la bandeja del más viejo.</li>
+      <li><span>2</span><b>No marcaron hoy</b>: preguntá hoy, mientras se acuerdan.</li>
+    </ol>
+  </figure>
+  <p>Además: <b>Marcaciones sin cerrar</b> (alguien marcó ingreso y no egreso) y <b>Agentes sin esquema o sin tarifa</b>, que tiene que estar en cero.</p>
+
+  <h3>{{i:clock}} Marcaciones</h3>
+  <p>Corregís lo que el agente no pudo: un ingreso olvidado, un egreso abierto. <b>Carga individual</b> o <b>masiva</b> para varios días. Dejá una nota diciendo por qué. Corregir una marcación recalcula la preliquidación: si el día ahora acompaña al plan, sale solo de la bandeja.</p>
+
+  <h3>{{i:calendar-clock}} Excepciones</h3>
+  <figure class="captura w80">
+    <img src="img/excepciones.png" alt="Nueva excepción">
+    <ol class="leyenda">
+      <li><span>1</span>El tipo. Cambio de jornada y cobertura pueden llevar horario.</li>
+      <li><span>2</span>Con horario, ese es el plan del día: se paga solo si la marcación acompaña.</li>
+    </ol>
+  </figure>
+  <div class="dos" style="grid-template-columns: 1.3fr 1fr">
+    <div>
+      <table class="tabla compacta" style="margin-top:0">
+        <tr><th>Tipo</th><th>Qué hace</th></tr>
+        <tr><td>Ausencia</td><td>El día no se paga</td></tr>
+        <tr><td>Vacaciones</td><td>Se paga el plan y suma al plus vacacional</td></tr>
+        <tr><td>Licencia paga</td><td>Se paga el plan, sin plus vacacional</td></tr>
+        <tr><td>Cambio de jornada</td><td>Con horario, reemplaza al esquema ese día</td></tr>
+        <tr><td>Cobertura extraordinaria</td><td>En un feriado, lo vuelve día trabajado; con horario, sirve también un día sin esquema</td></tr>
+      </table>
+    </div>
+    <div class="caja" style="margin-top:0"><div class="tit">{{i:info}} Si un día tiene dos</div>Manda una: ausencia, vacaciones, licencia paga, cobertura y, al final, cambio de jornada. Cargala cuando la sabés: la preliquidación se actualiza sola.</div>
+  </div>
+
+  <div class="caja ejemplo">
+    <div class="tit">{{i:lightbulb}} Ejemplo: el miércoles hace otro horario</div>
+    <p>Trabaja de lunes a viernes de 9 a 15, y el miércoles va a hacer de 17 a 23. Cargás un <b>Cambio de jornada</b> para ese miércoles con horario 17:00 a 23:00.</p>
+    <figure class="diagrama" style="margin:2mm 0 1mm">
+      <svg viewBox="0 0 640 118" class="dg-texto" font-size="10.5">
+        <rect x="120" y="8" width="510" height="100" rx="6" fill="#fff" stroke="#e2e8f0"/>
+        <rect x="478" y="8" width="152" height="100" fill="#dbeafe" opacity=".85"/>
+        <text x="554" y="22" text-anchor="middle" fill="#1e40af" font-size="9">nocturna desde las 21</text>
+        <g fill="#94a3b8" font-size="9" text-anchor="middle"><text x="120" y="116">06</text><text x="205" y="116">09</text><text x="290" y="116">12</text><text x="375" y="116">15</text><text x="460" y="116">18</text><text x="545" y="116">21</text><text x="630" y="116">24</text></g>
+        <text x="0" y="46" fill="#0f172a" font-weight="700">Su esquema</text>
+        <rect x="205" y="30" width="170" height="26" rx="5" fill="#cbd5e1"/>
+        <text x="290" y="47" text-anchor="middle" fill="#334155" font-weight="600">09:00–15:00 (no ese día)</text>
+        <text x="0" y="86" fill="#0f172a" font-weight="700">La excepción</text>
+        <rect x="432" y="70" width="170" height="26" rx="5" fill="#2563eb"/>
+        <text x="517" y="87" text-anchor="middle" fill="#fff" font-weight="700">17:00–23:00</text>
+      </svg>
+    </figure>
+    <p style="margin:0">Si marca 17 a 23, el día se paga solo, con lo que pase de las 21 como nocturna. Si no cargás nada, cae en la bandeja como <i>Marcó en otro horario</i> y se resuelve con <b>Pagar lo marcado</b>.</p>
+  </div>
+
+  <h3>{{i:timer}} Horas fuera del esquema: las horas autorizadas</h3>
+  <div class="dos" style="grid-template-columns: 1.35fr 1fr">
+    <figure class="captura" style="margin-top:0">
+      <img src="img/horas-autorizadas.png" alt="Horas fuera del esquema">
+      <ol class="leyenda una">
+        <li><span>1</span>El tramo define el recargo: <b>elegirlo mal es el error más caro</b>.</li>
+        <li><span>2</span>Para pagar aunque la marcación no lo muestre (un arrastre, por ejemplo).</li>
+      </ol>
+    </figure>
+    <div>
+      <p style="margin-top:0">Es una <b>autorización</b>, no un pago: se paga con su tramo, hasta lo que la marcación muestra de más. Lo que se mide es el trabajo de más <i>neto</i>: lo trabajado menos el plan.</p>
+      <table class="tabla compacta">
+        <tr><th>Tramo</th><th>Se paga</th></tr>
+        <tr><td>Sin recargo</td><td>tarifa común</td></tr>
+        <tr><td>Adicional</td><td>× 1,25</td></tr>
+        <tr><td>Extra 50%</td><td>× 1,50</td></tr>
+        <tr><td>Extra 100%</td><td>× 2,00</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <figure class="diagrama">
+    <svg viewBox="0 0 680 190" class="dg-texto" font-size="10.5">
+      <text x="0" y="14" font-weight="700" fill="#0f172a" font-size="11.5">Jornada de 7 h con 1 h autorizada</text>
+      <g font-size="10">
+        <text x="0" y="45" fill="#334155" font-weight="600">Marcó 8 h</text>
+        <text x="0" y="85" fill="#334155" font-weight="600">Marcó 7 h 40</text>
+        <text x="0" y="125" fill="#334155" font-weight="600">Marcó 7 h 20</text>
+        <text x="0" y="165" fill="#334155" font-weight="600">Sin marcación</text>
+      </g>
+      <!-- barras: 7 h = 280 px -->
+      <g>
+        <rect x="100" y="30" width="280" height="22" rx="4" fill="#bfdbfe"/><rect x="380" y="30" width="40" height="22" rx="4" fill="#2563eb"/>
+        <rect x="100" y="70" width="280" height="22" rx="4" fill="#bfdbfe"/><rect x="380" y="70" width="27" height="22" rx="4" fill="#93c5fd"/><rect x="380" y="70" width="40" height="22" rx="4" fill="none" stroke="#2563eb" stroke-dasharray="3 2"/>
+        <rect x="100" y="110" width="280" height="22" rx="4" fill="#bfdbfe"/><rect x="380" y="110" width="13" height="22" rx="4" fill="#fcd34d"/>
+        <rect x="100" y="150" width="280" height="22" rx="4" fill="#e2e8f0"/><text x="240" y="165" text-anchor="middle" fill="#64748b" font-size="9.5">no hay con qué contrastarlo</text>
+      </g>
+      <g font-size="10">
+        <text x="440" y="45" fill="#0f172a"><tspan font-weight="700">7 + 1 adicional</tspan></text>
+        <text x="440" y="85" fill="#0f172a"><tspan font-weight="700">7 + 1 adicional</tspan><tspan fill="#64748b"> · a menos de 30 min de lo autorizado</tspan></text>
+        <text x="440" y="125" fill="#0f172a"><tspan font-weight="700">7</tspan><tspan fill="#b45309"> · queda en la bandeja: autorizado y no trabajado</tspan></text>
+        <text x="440" y="165" fill="#0f172a"><tspan font-weight="700">7 + 1 adicional</tspan><tspan fill="#64748b"> · con un aviso informativo</tspan></text>
+      </g>
+    </svg>
+  </figure>
+  <p>Y al revés: si trabajó de más <b>sin</b> autorización, se paga el plan y el día cae en la bandeja como <i>Trabajó de más</i>, con <b>Autorizar X h</b> ya calculado.</p>
+
+  <h3>{{i:calendar}} Feriados</h3>
+  <div class="dos lado">
+    <figure class="captura" style="margin-top:0"><img src="img/feriados.png" alt="Feriados"></figure>
+    <div>
+      <table class="tabla compacta" style="margin-top:0">
+        <tr><th>Qué pasó</th><th>Qué se paga</th></tr>
+        <tr><td>No trabajó</td><td>Ninguna hora: las del esquema van a la compensación por feriado</td></tr>
+        <tr><td>Trabajó, con cobertura cargada</td><td>El día como trabajado</td></tr>
+        <tr><td>Marcó sin cobertura</td><td>Queda en la bandeja</td></tr>
+      </table>
+      <div class="caja ojo" style="margin-bottom:0"><div class="tit">{{i:triangle-alert}} Un feriado que falta</div>se liquida como día normal. El paso 1 del cierre te muestra los cargados.</div>
+    </div>
+  </div>
+
+  <h3>{{i:award}} Evaluación mensual</h3>
+  <div class="dos lado">
+    <figure class="captura" style="margin-top:0"><img src="img/evaluacion.png" alt="Evaluación mensual"></figure>
+    <div>
+      <p style="margin-top:0">Por agente y por mes: los tres componentes del <b>REG</b>, el <b>SUPER REG</b> y el <b>reintegro de monotributo</b>.</p>
+      <p>Dependen de cómo performó cada uno <b>ese mes</b>, así que no se heredan. Un mes sin cargar arranca con el valor por defecto del agente, pero es una red, no un dato: <b>sin la evaluación cargada no se confirma</b>. El monotributo arranca en cero.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────── 7 -->
+<section class="capitulo" id="avisos">
+  <div class="cap-titulo"><div class="num">7</div><div><h2>Los avisos</h2><p>Los que frenan la confirmación hasta que decidís, y los que sólo quedan escritos.</p></div></div>
+
+  <h3>{{i:shield-alert}} A normalizar <span class="chip ambar" style="margin-left:2mm">frenan</span></h3>
+  <table class="tabla compacta">
+    <tr><th style="width:27%">Aviso</th><th>Qué pasó</th><th style="width:26%">Lo habitual</th></tr>
+    <tr><td>Llegó tarde</td><td>Entró a un tramo pasados los 20 min, o no marcó el primer tramo</td><td>Está bien así</td></tr>
+    <tr><td>Se fue antes</td><td>Salió 20 min antes, se ausentó en medio, o no marcó un tramo posterior</td><td>Está bien así</td></tr>
+    <tr><td>Marcó en otro horario</td><td>La marcación casi no se superpone con el plan</td><td>Pagar lo marcado, si son las mismas horas</td></tr>
+    <tr><td>Trabajó de más</td><td>Más de 30 min por encima del plan, sin autorización</td><td>Está bien así; Autorizar si corresponde</td></tr>
+    <tr><td>Trabajó sin esquema</td><td>Marcó un día sin plan</td><td>Autorizar o Pagar lo marcado</td></tr>
+    <tr><td>Trabajó un feriado</td><td>Marcó en un feriado sin cobertura</td><td>Según lo acordado</td></tr>
+    <tr><td>Marcó un día de licencia</td><td>Marcó en vacaciones, licencia o ausencia</td><td>Según lo acordado</td></tr>
+    <tr><td>Autorizado y no trabajado · Autorizado de más</td><td>La marcación no muestra lo autorizado</td><td>Pagar lo autorizado igual</td></tr>
+    <tr><td>No marcó · Marcación incompleta</td><td>Sólo en agentes nuevos, o si se activó en Configuración</td><td>Revisar con el agente</td></tr>
+    <tr><td>Falta la evaluación mensual</td><td>No es un día: falta cargarla</td><td>Evaluación mensual</td></tr>
+  </table>
+
+  <h3>{{i:info}} Informativos <span class="chip" style="margin-left:2mm">no frenan</span></h3>
+  <table class="tabla compacta">
+    <tr><th style="width:27%">Aviso</th><th>Qué significa</th></tr>
+    <tr><td>No marcó · Marcación incompleta</td><td>En agentes con antigüedad se paga el plan: en julio y agosto fue siempre un olvido</td></tr>
+    <tr><td>Autorizado sin marcación</td><td>Se pagó lo autorizado sin marcación completa para contrastarlo</td></tr>
+    <tr><td>Ausencia</td><td>Día de ausencia registrado: no se pagan horas</td></tr>
+  </table>
+
+  <div class="caja ojo"><div class="tit">{{i:triangle-alert}} Un día sin marcación, en un agente con antigüedad, se paga</div>Es lo que hizo siempre la planilla: en julio y agosto pagó el plan en los 44 días así. Si alguien faltó y nadie cargó la ausencia, el sistema lo paga con un aviso informativo. Si preferís revisarlos todos, el administrador puede activar <b>Un día sin ninguna marcación se revisa</b> en Configuración.</div>
+</section>
+
+<!-- ─────────────────────────────── 8 -->
+<section class="capitulo" id="ritmo">
+  <div class="cap-titulo"><div class="num">8</div><div><h2>El ritmo del mes</h2><p>Lo que ya sabés, cargalo cuando pasa. Al cierre queda sólo lo que nadie podía saber.</p></div></div>
+
+  <figure class="diagrama">
+    <svg viewBox="0 0 680 200" class="dg-texto" font-size="10.5">
+      <defs><marker id="f8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#0f172a"/></marker></defs>
+      <line x1="10" y1="30" x2="670" y2="30" stroke="#0f172a" stroke-width="2" marker-end="url(#f8)"/>
+      <circle cx="20" cy="30" r="5" fill="#0f172a"/><text x="20" y="18" fill="#0f172a" font-weight="700" font-size="10">día 1</text>
+      <circle cx="560" cy="30" r="5" fill="#2563eb"/><text x="560" y="18" text-anchor="middle" fill="#2563eb" font-weight="700" font-size="10">fin de mes</text>
+      <g>
+        <rect x="10" y="48" width="160" height="140" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+        <text x="22" y="70" font-weight="800" fill="#0f172a" font-size="11">Cada día</text>
+        <text x="22" y="92" fill="#334155">· Inicio: quién no marcó</text><text x="22" y="110" fill="#334155">  y quién no cerró</text>
+        <text x="22" y="130" fill="#334155">· Marcaciones: reponer</text><text x="22" y="148" fill="#334155">  lo que falta, con nota</text>
+      </g>
+      <g>
+        <rect x="180" y="48" width="160" height="140" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+        <text x="192" y="70" font-weight="800" fill="#0f172a" font-size="11">Cuando pasa</text>
+        <text x="192" y="92" fill="#334155">· Excepciones: licencias,</text><text x="192" y="110" fill="#334155">  ausencias, coberturas,</text><text x="192" y="128" fill="#334155">  cambios con horario</text>
+        <text x="192" y="148" fill="#334155">· Horas autorizadas,</text><text x="192" y="166" fill="#334155">  con su tramo</text>
+      </g>
+      <g>
+        <rect x="350" y="48" width="160" height="140" rx="10" fill="#fffbeb" stroke="#fcd34d"/>
+        <text x="362" y="70" font-weight="800" fill="#b45309" font-size="11">Cuando quieras</text>
+        <text x="362" y="92" fill="#92400e">· Normalización: resolver</text><text x="362" y="110" fill="#92400e">  los días que ya pasaron</text>
+        <text x="362" y="130" fill="#92400e">· Esquemas: aplicar las</text><text x="362" y="148" fill="#92400e">  sugerencias</text>
+      </g>
+      <g>
+        <rect x="520" y="48" width="160" height="140" rx="10" fill="#1e3a8a"/>
+        <text x="532" y="70" font-weight="800" fill="#fff" font-size="11">Al cierre</text>
+        <text x="532" y="92" fill="#dbeafe">1 · Datos del mes</text><text x="532" y="110" fill="#dbeafe">2 · Evaluación mensual</text><text x="532" y="128" fill="#dbeafe">3 · Preliquidar</text><text x="532" y="146" fill="#dbeafe">4 · Normalizar</text><text x="532" y="164" fill="#dbeafe">5 · Confirmar y pagar</text>
+      </g>
+    </svg>
+  </figure>
+
+  <div class="caja clave"><div class="tit">{{i:lightbulb}} Regla de oro</div>Una excepción cargada a tiempo es un día que se paga solo. La misma cosa descubierta en el cierre es un día en la bandeja, y alguien que ya no se acuerda qué pasó el día 9.</div>
+</section>
+
+<!-- ─────────────────────────────── chuleta -->
+<section class="chuleta" id="chuleta">
+  <div class="cap-titulo"><div class="num">{{i:zap}}</div><div><h2>Chuleta</h2><p>Una página para tener a mano.</p></div></div>
+  <div class="grilla">
+    <div class="bloque"><h4>{{i:list-checks}} El cierre</h4><ul><li>Cierre del mes, de arriba abajo</li><li>Lista = sin días a normalizar + evaluación cargada</li><li>Si el total cambió al confirmar, entró un dato nuevo: miralo</li><li>Al final, Resumen para pagar (CSV)</li></ul></div>
+    <div class="bloque"><h4>{{i:sparkles}} La bandeja</h4><ul><li>Una decisión por día, siempre con nota si no es obvio</li><li>Las sugeridas vienen tildadas: destildá y aceptá en bloque</li><li>Lo que queda sin sugerencia, de a uno</li><li>Todo se deshace desde Correcciones aplicadas</li></ul></div>
+    <div class="bloque"><h4>{{i:scale}} Qué decisión</h4><ul><li>El desvío no cambia lo que se paga → <b>Está bien así</b></li><li>Trabajó otro horario → <b>Pagar lo marcado</b></li><li>Trabajó de más y corresponde → <b>Autorizar</b> (ojo el tramo)</li><li>Arrastre o marcación mal hecha → <b>Pagar lo autorizado igual</b></li><li>Otra cosa acordada → <b>Pagar otro horario</b></li></ul></div>
+    <div class="bloque"><h4>{{i:calendar-clock}} Cargar a tiempo</h4><ul><li>Cambio de horario de un día → Excepción con horario</li><li>Licencia, vacaciones, ausencia → Excepción</li><li>Horas de más autorizadas → Horas fuera del esquema, con tramo</li><li>Trabajó un feriado → Cobertura extraordinaria</li></ul></div>
+    <div class="bloque"><h4>{{i:triangle-alert}} Errores caros</h4><ul><li>Tramo equivocado: Extra 100% es el doble</li><li>Pagar lo marcado cuando iba con recargo</li><li>Un feriado sin cargar: se paga como día normal</li><li>Editar un esquema vigente en vez de cambiarlo desde una fecha</li></ul></div>
+    <div class="bloque"><h4>{{i:refresh-cw}} Para recordar</h4><ul><li>El borrador se recalcula solo con cada dato</li><li>Las marcaciones de los agentes entran con Actualizar</li><li>El mes elegido viaja entre pantallas</li><li>Una confirmada no se toca: se vuelve a borrador</li></ul></div>
+  </div>
+</section>
+
+</body>
+</html>
