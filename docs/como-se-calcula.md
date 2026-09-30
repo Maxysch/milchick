@@ -203,6 +203,15 @@ A esto se le suman los **ítems manuales**, que pueden ser importe fijo, porcent
 del subtotal, o por tiempo a valor hora. Los de porcentaje y los de tiempo se
 recalculan solos si cambian las horas; los de importe fijo, no.
 
+Cada ítem manual lleva un **concepto del catálogo** (*Configuración → Conceptos de
+los ítems*). Dos nombres que sólo difieren en mayúsculas, acentos o signos son el
+mismo concepto: "Bono", "bono" y "BONO." no pueden convivir. En el resumen del
+período y en el CSV, cada concepto es una columna con su nombre —primero los del
+sistema, después los manuales que aparecen en el mes—.
+
+Al confirmar, cada ítem guarda el nombre que tenía su concepto. Si después se lo
+renombra o se lo unifica con otro, lo confirmado sigue mostrando lo que se pagó.
+
 ---
 
 ## 9. El período y la conciliación

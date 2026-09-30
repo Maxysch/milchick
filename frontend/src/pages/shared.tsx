@@ -188,6 +188,11 @@ export interface PreSettlementItem {
   factor?: number | null;
   unit_minutes?: number | null;
   days?: number | null;
+  /** El nombre del concepto: el que tenía al confirmar, o el actual del catálogo */
+  concept_label?: string;
+  /** Lo calcula el sistema: no se edita ni se borra */
+  concept_system?: boolean;
+  concept_name?: string | null;
 }
 
 export interface PreSettlementWarnings {
@@ -279,6 +284,8 @@ export interface PeriodSummaryRow {
   subtotal: number;
   concepts: Record<string, number>;
   manual_items: number;
+  /** Los ítems cargados a mano, por concepto */
+  manual_concepts?: Record<string, number>;
   net: number;
   pending_warnings: number;
   blocking_pending: number;

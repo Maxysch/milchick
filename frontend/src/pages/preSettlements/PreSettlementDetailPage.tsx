@@ -20,6 +20,7 @@ import {
   timeAgo,
 } from '../../lib/utils';
 import DayResolver from '../../components/normalization/DayResolver';
+import ItemsSection from '../../components/items/ItemsSection';
 import type { DayCase } from '../../lib/normalization';
 import { monthOfPeriod, withMonth } from '../../lib/month';
 import {
@@ -35,7 +36,6 @@ import {
   pageTitleClass,
   PreSettlementDailyLine,
   PreSettlementDetail,
-  PreSettlementItem,
   primaryButtonClass,
   SettlementWarning,
 } from '../shared';
@@ -317,60 +317,6 @@ function DailyRow({
   );
 }
 
-function ItemRow({ item, onSave, onDelete }: { item: PreSettlementItem; onSave: (id: string, payload: Partial<PreSettlementItem>) => void; onDelete: (id: string) => void }) {
-  const [concept, setConcept] = useState(item.concept);
-  const [description, setDescription] = useState(item.description ?? '');
-  const [amount, setAmount] = useState(String(item.amount));
-  const [percentageBase, setPercentageBase] = useState(item.percentage_base ?? '');
-  const [isPercentage, setIsPercentage] = useState(item.is_percentage);
-
-  useEffect(() => {
-    setConcept(item.concept);
-    setDescription(item.description ?? '');
-    setAmount(String(item.amount));
-    setPercentageBase(item.percentage_base ?? '');
-    setIsPercentage(item.is_percentage);
-  }, [item]);
-
-  return (
-    <tr>
-      <td className="px-4 py-3 text-sm text-gray-700">
-        <input className={inputClass} value={concept} onChange={(event) => setConcept(event.target.value)} onBlur={() => concept !== item.concept && onSave(item.id, { concept })} />
-      </td>
-      <td className="px-4 py-3 text-sm text-gray-700">
-        <input className={inputClass} value={description} onChange={(event) => setDescription(event.target.value)} onBlur={() => description !== (item.description ?? '') && onSave(item.id, { description: description || null })} />
-      </td>
-      <td className="px-4 py-3 text-sm text-gray-700">
-        <input className={inputClass} type="number" step="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} onBlur={() => Number(amount) !== item.amount && onSave(item.id, { amount: Number(amount) })} />
-      </td>
-      <td className="px-4 py-3 text-sm text-gray-700">
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={isPercentage}
-            onChange={(event) => {
-              const checked = event.target.checked;
-              setIsPercentage(checked);
-              if (checked !== item.is_percentage) {
-                onSave(item.id, { is_percentage: checked });
-              }
-            }}
-          />
-          Sí
-        </label>
-      </td>
-      <td className="px-4 py-3 text-sm text-gray-700">
-        <input className={inputClass} value={percentageBase} onChange={(event) => setPercentageBase(event.target.value)} onBlur={() => percentageBase !== (item.percentage_base ?? '') && onSave(item.id, { percentage_base: percentageBase || null })} />
-      </td>
-      <td className="px-4 py-3 text-sm text-gray-700">
-        <button type="button" className="rounded-lg bg-red-100 px-3 py-2 text-red-700 hover:bg-red-200" onClick={() => onDelete(item.id)}>
-          <Trash2 className="h-4 w-4" />
-        </button>
-      </td>
-    </tr>
-  );
-}
-
 /**
  * Aviso de desvíos.
  *
@@ -462,19 +408,6 @@ function WarningNotice({
 export default function PreSettlementDetailPage() {
   const { id } = useParams();
   const queryClient = useQueryClient();
-  const [newItem, setNewItem] = useState({
-    concept: '',
-    description: '',
-    kind: 'fixed' as 'fixed' | 'percentage' | 'hourly',
-    amount: '0',
-    percentage: '',
-    // Para el tipo por horas: se carga como minutos × días y se convierte
-    unitMinutes: '',
-    days: '',
-    band: 'day_ld',
-    tier: 'normal',
-    factor: '1',
-  });
   // Día resaltado al clickear un desvío del aviso de arriba
   const [focusedDate, setFocusedDate] = useState<string | null>(null);
   const [newLine, setNewLine] = useState({ date: '', band: 'day_ld', tier: 'normal', hours: '', client_id: '' });
@@ -526,53 +459,8 @@ export default function PreSettlementDetailPage() {
     },
   });
 
-  const itemMutation = useMutation({
-    mutationFn: ({ itemId, payload }: { itemId: string; payload: Partial<PreSettlementItem> }) => api.patch(`/pre-settlements/items/${itemId}`, payload),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['pre-settlement', id] });
-      await queryClient.invalidateQueries({ queryKey: ['pre-settlements'] });
-    },
-  });
 
-  const addItemMutation = useMutation({
-    mutationFn: () => {
-      const minutos = Number(newItem.unitMinutes) || 0;
-      const dias = Number(newItem.days) || 0;
-      const horas = Math.round(((minutos * dias) / 60) * 10000) / 10000;
 
-      return api.post(`/pre-settlements/${id}/items`, {
-        concept: newItem.concept,
-        description: newItem.description || null,
-        kind: newItem.kind,
-        // El backend recalcula lo que corresponda; el importe sólo manda en `fixed`
-        amount: newItem.kind === 'fixed' ? Number(newItem.amount) : 0,
-        percentage:
-          newItem.kind === 'percentage' ? (Number(newItem.percentage) || 0) / 100 : null,
-        quantity: newItem.kind === 'hourly' ? horas : null,
-        band: newItem.kind === 'hourly' ? newItem.band : null,
-        tier: newItem.kind === 'hourly' ? newItem.tier : null,
-        factor: newItem.kind === 'hourly' ? Number(newItem.factor) || 1 : null,
-        unit_minutes: newItem.kind === 'hourly' ? minutos : null,
-        days: newItem.kind === 'hourly' ? dias : null,
-      });
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['pre-settlement', id] });
-      await queryClient.invalidateQueries({ queryKey: ['pre-settlements'] });
-      setNewItem({
-        concept: '', description: '', kind: 'fixed', amount: '0', percentage: '',
-        unitMinutes: '', days: '', band: 'day_ld', tier: 'normal', factor: '1',
-      });
-    },
-  });
-
-  const deleteItemMutation = useMutation({
-    mutationFn: (itemId: string) => api.delete<void>(`/pre-settlements/items/${itemId}`),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['pre-settlement', id] });
-      await queryClient.invalidateQueries({ queryKey: ['pre-settlements'] });
-    },
-  });
 
   const recalcMutation = useMutation({
     mutationFn: () => api.post(`/pre-settlements/${id}/recalculate`),
@@ -609,8 +497,6 @@ export default function PreSettlementDetailPage() {
   const detail = detailQuery.data;
 
   // Minutos por día × días -> horas, que es lo que guarda el ítem
-  const itemHours =
-    Math.round(((Number(newItem.unitMinutes) || 0) * (Number(newItem.days) || 0) / 60) * 10000) / 10000;
 
   // Contexto de cada día: cuántas líneas tiene, el total de horas y si le toca
   // franja. Con esto la tabla puede leerse como bloques por fecha en vez de una
@@ -912,152 +798,7 @@ export default function PreSettlementDetailPage() {
           })}
         </section>
 
-        <section className={cardClass}>
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-gray-900">Ítems</h2>
-          </div>
-          <div className="mb-6 space-y-4 rounded-lg border border-gray-200 p-4">
-            <div className="grid gap-4 md:grid-cols-3">
-              <div>
-                <label className="mb-1 block text-xs text-gray-600">Concepto</label>
-                <input className={inputClass} placeholder="Ej. compensacion_especial" value={newItem.concept}
-                  onChange={(e) => setNewItem((c) => ({ ...c, concept: e.target.value }))} />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs text-gray-600">Descripción</label>
-                <input className={inputClass} value={newItem.description}
-                  onChange={(e) => setNewItem((c) => ({ ...c, description: e.target.value }))} />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs text-gray-600">Cómo se calcula</label>
-                <select className={inputClass} value={newItem.kind}
-                  onChange={(e) => setNewItem((c) => ({ ...c, kind: e.target.value as typeof c.kind }))}>
-                  <option value="fixed">Importe fijo</option>
-                  <option value="percentage">Porcentaje del subtotal</option>
-                  <option value="hourly">Por tiempo, a valor hora</option>
-                </select>
-              </div>
-            </div>
-
-            {newItem.kind === 'fixed' && (
-              <div className="md:w-48">
-                <label className="mb-1 block text-xs text-gray-600">Importe</label>
-                <input className={inputClass} type="number" step="0.01" value={newItem.amount}
-                  onChange={(e) => setNewItem((c) => ({ ...c, amount: e.target.value }))} />
-              </div>
-            )}
-
-            {newItem.kind === 'percentage' && (
-              <div className="flex flex-wrap items-end gap-4">
-                <div className="w-32">
-                  <label className="mb-1 block text-xs text-gray-600">Porcentaje</label>
-                  <input className={inputClass} type="number" step="0.5" min="0" max="100"
-                    value={newItem.percentage}
-                    onChange={(e) => setNewItem((c) => ({ ...c, percentage: e.target.value }))} />
-                </div>
-                <div className="pb-2 text-sm text-gray-600">
-                  Sobre el subtotal de horas. Se recalcula si se corrigen las horas.
-                </div>
-              </div>
-            )}
-
-            {newItem.kind === 'hourly' && (
-              <div className="space-y-3">
-                <div className="grid gap-4 md:grid-cols-5">
-                  <div>
-                    <label className="mb-1 block text-xs text-gray-600">Minutos por día</label>
-                    <input className={inputClass} type="number" min="0" step="5"
-                      placeholder="45" value={newItem.unitMinutes}
-                      onChange={(e) => setNewItem((c) => ({ ...c, unitMinutes: e.target.value }))} />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs text-gray-600">Días</label>
-                    <input className={inputClass} type="number" min="0" step="1"
-                      placeholder="21" value={newItem.days}
-                      onChange={(e) => setNewItem((c) => ({ ...c, days: e.target.value }))} />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs text-gray-600">Valor hora</label>
-                    <select className={inputClass} value={newItem.band}
-                      onChange={(e) => setNewItem((c) => ({ ...c, band: e.target.value }))}>
-                      {Object.entries(BAND_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs text-gray-600">Tramo</label>
-                    <select className={inputClass} value={newItem.tier}
-                      onChange={(e) => setNewItem((c) => ({ ...c, tier: e.target.value }))}>
-                      {Object.entries(TIER_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs text-gray-600">Factor</label>
-                    <input className={inputClass} type="number" min="0" max="2" step="0.05"
-                      value={newItem.factor}
-                      onChange={(e) => setNewItem((c) => ({ ...c, factor: e.target.value }))} />
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600">
-                  {itemHours > 0 ? (
-                    <>
-                      {newItem.unitMinutes || 0} min × {newItem.days || 0} días ={' '}
-                      <strong className="text-gray-900">{itemHours.toFixed(2)} h</strong>
-                      {' '}a {hourLabel(newItem.band, newItem.tier)}
-                      {Number(newItem.factor) !== 1 && ` × ${newItem.factor}`}
-                    </>
-                  ) : (
-                    'Cargá los minutos por día y la cantidad de días.'
-                  )}
-                </p>
-              </div>
-            )}
-
-            {addItemMutation.error ? (
-              <p className="text-sm text-red-600">{(addItemMutation.error as Error).message}</p>
-            ) : null}
-
-            <button type="button" className={primaryButtonClass}
-              onClick={() => addItemMutation.mutate()}
-              disabled={addItemMutation.isPending || !newItem.concept.trim() ||
-                (newItem.kind === 'hourly' && itemHours <= 0) ||
-                (newItem.kind === 'percentage' && !newItem.percentage)}>
-              {addItemMutation.isPending ? 'Agregando...' : 'Agregar ítem'}
-            </button>
-          </div>
-
-          {detail.items.length === 0 ? (
-            <EmptyState message="No hay ítems adicionales." />
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Concepto</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Descripción</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Monto</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">%</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Base</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
-                  {detail.items.map((item) => (
-                    <ItemRow
-                      key={item.id}
-                      item={item}
-                      onSave={(itemId, payload) => itemMutation.mutate({ itemId, payload })}
-                      onDelete={(itemId) => {
-                        if (window.confirm('¿Eliminar ítem?')) {
-                          deleteItemMutation.mutate(itemId);
-                        }
-                      }}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
+        <ItemsSection preSettlementId={detail.id} items={detail.items} editable={esBorrador} />
 
         <section className={`${cardClass} flex flex-col gap-4 md:flex-row md:items-center md:justify-between`}>
           <div>

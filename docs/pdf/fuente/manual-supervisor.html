@@ -27,7 +27,7 @@
     <div><b>Normalización</b>Los días que no cierran, con la respuesta sugerida y aceptación en bloque.</div>
     <div><b>Preliquidación</b>El detalle de cada agente, que se actualiza solo mientras es borrador.</div>
   </div>
-  <div class="version">Versión 2 · septiembre 2026</div>
+  <div class="version">Versión 2.1 · septiembre 2026</div>
 </section>
 
 <section class="indice">
@@ -337,6 +337,37 @@
     <figcaption>Un agente con compensación diaria fija: cada día suma sus minutos como una línea aparte.</figcaption>
   </figure>
 
+  <h3>{{i:tags}} Los ítems</h3>
+  <p style="margin-top:0">Arriba, los que calcula el sistema, marcados <span class="chip">Automático</span>: no se tocan, salen de la evaluación mensual y de los datos del agente. Abajo, los que cargás vos, cada uno con un <b>concepto del catálogo</b>.</p>
+  <div class="dos lado">
+    <figure class="captura" style="margin-top:0"><img src="img/items-elegir.png" alt="Elegir el concepto de un ítem"></figure>
+    <div>
+      <ul style="margin-top:0">
+        <li>Escribí en <b>Concepto</b> y elegí de la lista.</li>
+        <li>Si se parece a uno que ya existe, aparece en <b>¿Es alguno de estos?</b> Usá ese: así el mes suma todo en la misma columna.</li>
+        <li>Si no está, <b>Crear «…»</b> lo da de alta sin salir de la liquidación. Queda <i>a revisar</i> para el administrador.</li>
+        <li>Elegirlo trae cómo se calcula y su importe por defecto. Para ese ítem se pueden cambiar.</li>
+      </ul>
+    </div>
+  </div>
+  <figure class="captura w90">
+    <img src="img/items-tabla.png" alt="Los ítems de una preliquidación">
+    <ol class="leyenda">
+      <li><span>1</span>Los del sistema, <b>Automático</b>: se recalculan solos.</li>
+      <li><span>2</span>Los cargados a mano: el concepto se cambia desde acá y la descripción es libre, el porqué de ese ítem.</li>
+      <li><span>3</span>Cómo se calcula cada uno.</li>
+    </ol>
+  </figure>
+  <div class="grupo">
+  <table class="tabla compacta">
+    <tr><th>Forma</th><th>Cuándo</th><th>¿Se recalcula?</th></tr>
+    <tr><td>Importe fijo</td><td>Un reintegro puntual</td><td>No</td></tr>
+    <tr><td>Porcentaje del subtotal</td><td>Un premio sobre honorarios</td><td>Sí</td></tr>
+    <tr><td>Por tiempo, a valor hora</td><td>45 min × 20 días a Diurna LD</td><td>Sí</td></tr>
+  </table>
+  <div class="caja"><div class="tit">{{i:lock}} Al confirmar</div>Los ítems ya no cambian, y cada uno guarda el nombre que tenía su concepto: si después se renombra en el catálogo, lo confirmado sigue diciendo lo que se pagó.</div>
+  </div>
+
   <h3>{{i:badge-check}} Confirmar</h3>
   <figure class="captura"><img src="img/preliq-confirmar.png" alt="Confirmar"></figure>
   <ul>
@@ -345,15 +376,6 @@
     <li>Confirmada, es la constancia de lo que se pagó: ya no se recalcula. <b>Volver a borrador</b> la reabre con los datos de ese momento.</li>
   </ul>
 
-  <div class="grupo">
-  <h4>Los ítems</h4>
-  <table class="tabla compacta">
-    <tr><th>Forma</th><th>Cuándo</th><th>¿Se recalcula?</th></tr>
-    <tr><td>Importe fijo</td><td>Un reintegro puntual</td><td>No</td></tr>
-    <tr><td>Porcentaje del subtotal</td><td>Un premio sobre honorarios</td><td>Sí</td></tr>
-    <tr><td>Por tiempo, a valor hora</td><td>45 min × 20 días a Diurna LD</td><td>Sí</td></tr>
-  </table>
-  </div>
 </section>
 
 <!-- ─────────────────────────────── 6 -->
@@ -563,7 +585,7 @@
     <div class="bloque"><h4>{{i:sparkles}} La bandeja</h4><ul><li>Una decisión por día, siempre con nota si no es obvio</li><li>Las sugeridas vienen tildadas: destildá y aceptá en bloque</li><li>Lo que queda sin sugerencia, de a uno</li><li>Todo se deshace desde Correcciones aplicadas</li></ul></div>
     <div class="bloque"><h4>{{i:scale}} Qué decisión</h4><ul><li>El desvío no cambia lo que se paga → <b>Está bien así</b></li><li>Trabajó otro horario → <b>Pagar lo marcado</b></li><li>Trabajó de más y corresponde → <b>Autorizar</b> (ojo el tramo)</li><li>Arrastre o marcación mal hecha → <b>Pagar lo autorizado igual</b></li><li>Otra cosa acordada → <b>Pagar otro horario</b></li></ul></div>
     <div class="bloque"><h4>{{i:calendar-clock}} Cargar a tiempo</h4><ul><li>Cambio de horario de un día → Excepción con horario</li><li>Licencia, vacaciones, ausencia → Excepción</li><li>Horas de más autorizadas → Horas fuera del esquema, con tramo</li><li>Trabajó un feriado → Cobertura extraordinaria</li></ul></div>
-    <div class="bloque"><h4>{{i:triangle-alert}} Errores caros</h4><ul><li>Tramo equivocado: Extra 100% es el doble</li><li>Pagar lo marcado cuando iba con recargo</li><li>Un feriado sin cargar: se paga como día normal</li><li>Editar un esquema vigente en vez de cambiarlo desde una fecha</li></ul></div>
+    <div class="bloque"><h4>{{i:triangle-alert}} Errores caros</h4><ul><li>Tramo equivocado: Extra 100% es el doble</li><li>Pagar lo marcado cuando iba con recargo</li><li>Un feriado sin cargar: se paga como día normal</li><li>Editar un esquema vigente en vez de cambiarlo desde una fecha</li><li>Crear un concepto que ya existe con otro nombre</li></ul></div>
     <div class="bloque"><h4>{{i:refresh-cw}} Para recordar</h4><ul><li>El borrador se recalcula solo con cada dato</li><li>Las marcaciones de los agentes entran con Actualizar</li><li>El mes elegido viaja entre pantallas</li><li>Una confirmada no se toca: se vuelve a borrador</li></ul></div>
   </div>
 </section>

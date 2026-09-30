@@ -76,14 +76,14 @@ profiles ──────────┬──── agent_rates
   │                │
   │                └──── pre_settlements
   │                        ├── pre_settlement_daily ──── clients
-  │                        └── pre_settlement_items
+  │                        └── pre_settlement_items ──── item_concepts
   │
   ├──── normalization_rules
   ├──── settlement_rules
   └──── holidays (independiente)
 ```
 
-### Tablas (14 en total)
+### Tablas
 
 | Tabla | Propósito | Relaciones clave |
 |-------|-----------|-----------------|
@@ -105,6 +105,8 @@ profiles ──────────┬──── agent_rates
 | `settlement_settings` | Configuración del período de liquidación (26 → 25) | — |
 | `pre_settlement_warnings` | Desvíos entre lo pagado por esquema y las marcaciones | FK a pre_settlements |
 | `agent_period_params` | Valores del mes: REG, SUPER REG y reintegro de monotributo | FK a profiles |
+| `day_corrections` | Cómo se resolvió cada día normalizado: plan, marcaciones, horas a mano | FK a profiles |
+| `item_concepts` | Catálogo de conceptos de los ítems: los del sistema y los que se cargan a mano | — (los ítems apuntan por `key`) |
 
 La migración `008` siembra los datos reales de operación (clientes, agentes,
 tarifas, esquemas, feriados, excepciones, horas extra y marcaciones desde el
@@ -226,6 +228,17 @@ conceptos porcentuales, corregir una hora dejaba ~$950 obsoletos.
 
 Los `hourly` guardan además `unit_minutes` y `days`, para que el rastro diga
 "45 min × 21 días" en vez de "15,75 h".
+
+**El concepto de cada ítem sale del catálogo** (`item_concepts`, migración
+`019`). `pre_settlement_items.concept` es la clave del concepto, con FK y
+`ON UPDATE CASCADE`. Los nombres se comparan normalizados —minúsculas, sin
+acentos ni signos— con `concept_normalize()` en la base y `normalizeConceptName()`
+en `shared`: si se cambia una, hay que cambiar la otra. Los conceptos del sistema
+(`system = true`) son los que calcula el motor: se renombran y se reordenan, pero
+no se desactivan ni se cargan a mano. Nada se borra: un concepto se desactiva, o
+se unifica con otro, que mueve sus ítems. Al confirmar, cada ítem copia el nombre
+de su concepto en `concept_name`, para que lo confirmado no cambie si después se
+renombra.
 
 **Decisiones:**
 - **El período es el mes calendario.** Los días que todavía no ocurrieron se pagan

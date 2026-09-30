@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Info } from 'lucide-react';
 import { api } from '../../lib/api';
+import { useProfile } from '../../hooks/useProfile';
+import ConceptCatalog from '../../components/settings/ConceptCatalog';
 import { formatCurrency, formatDate, RATE_FACTOR_LABELS } from '../../lib/utils';
 import {
   cardClass,
@@ -23,6 +25,7 @@ const SAMPLE_RATE = 4040.16029;
 
 export default function SettingsPage() {
   const queryClient = useQueryClient();
+  const { profile } = useProfile();
   const [factors, setFactors] = useState<Record<string, string>>({});
   const [startDay, setStartDay] = useState('1');
   const [threshold, setThreshold] = useState('30');
@@ -318,6 +321,9 @@ export default function SettingsPage() {
             {saveMarginsMutation.isSuccess ? <span className="text-sm text-green-700">Guardado</span> : null}
           </div>
         </section>
+
+        {/* ── Conceptos de los ítems ── */}
+        <ConceptCatalog esAdmin={profile?.role === 'admin'} />
       </div>
     </div>
   );

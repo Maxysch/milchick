@@ -34,7 +34,7 @@
     <div><b>Cada hora</b>Banda por cuándo cae, tramo por por qué se trabajó.</div>
     <div><b>Validado</b>Contra las liquidaciones reales de julio y agosto 2026.</div>
   </div>
-  <div class="version">Versión 2 · septiembre 2026</div>
+  <div class="version">Versión 2.1 · septiembre 2026</div>
 </section>
 
 <section class="indice">
@@ -248,6 +248,7 @@
     <tr><td>Reintegro de monotributo</td><td>importe cargado para ese mes</td></tr>
   </table>
   <p>El REG, el SUPER REG y el monotributo se cargan por agente y por mes en <i>Evaluación mensual</i>. A esto se suman los ítems manuales: importe fijo, porcentaje del subtotal, o por tiempo a valor hora. Los de porcentaje y los de tiempo se recalculan solos si cambian las horas; los de importe fijo, no.</p>
+  <div class="caja"><div class="tit">{{i:tags}} Cada ítem, con un concepto del catálogo</div>Los ítems manuales se eligen de <i>Configuración → Conceptos de los ítems</i>. Dos nombres que sólo difieren en mayúsculas, acentos o signos son el mismo concepto: "Bono", "bono" y "BONO." no pueden convivir. En el resumen del período y en el CSV, cada concepto es una columna con su nombre —primero los del sistema, después los manuales del mes—. Al confirmar, cada ítem guarda el nombre que tenía su concepto: si después se lo renombra o se lo unifica, lo confirmado sigue mostrando lo que se pagó.</div>
 
   <h3>{{i:calendar-clock}} El período y la conciliación</h3>
   <figure class="diagrama">

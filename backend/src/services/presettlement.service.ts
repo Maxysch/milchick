@@ -1,4 +1,6 @@
 import { supabaseAdmin } from '../config/supabase.js';
+import { BusinessError } from './errors.js';
+import { assertManualConcept, conceptNames } from './concepts.service.js';
 import { localToday } from '../config/time.js';
 import {
   computeAdjustments,
@@ -83,13 +85,8 @@ export interface ComputedWarning extends SettlementWarning {
   suggestion: SuggestedResolution | null;
 }
 
-/** Lo que se le muestra a un error de negocio, no de sistema. */
-export class BusinessError extends Error {
-  constructor(message: string, readonly status = 409) {
-    super(message);
-    this.name = 'BusinessError';
-  }
-}
+// Vive en su propio módulo para que otros servicios lo usen sin ciclos
+export { BusinessError };
 
 /** Conceptos que calcula el motor, en el orden en que se muestran. */
 export const CONCEPT_ORDER = [
@@ -973,10 +970,25 @@ export async function getPreSettlementDetail(preSettlementId: string) {
   const statusCount: Record<string, number> = {};
   for (const d of daySummary) statusCount[d.status] = (statusCount[d.status] ?? 0) + 1;
 
+  // El nombre de cada concepto: el que tenía al confirmar, o el actual del catálogo.
+  // Los del sistema van primero, en el orden del catálogo.
+  const catalogo = await conceptNames();
+  const itemsConNombre = ((items ?? []) as Record<string, unknown>[])
+    .map((i) => {
+      const c = catalogo.get(i.concept as string);
+      return {
+        ...i,
+        concept_label: (i.concept_name as string | null) ?? c?.name ?? (i.concept as string),
+        concept_system: c?.system ?? AUTO_CONCEPTS.has(i.concept as string),
+        concept_order: c?.sort_order ?? 999,
+      };
+    })
+    .sort((a, b) => Number(b.concept_system) - Number(a.concept_system) || a.concept_order - b.concept_order);
+
   return {
     ...ps,
     daily: enrichedDaily,
-    items: items ?? [],
+    items: itemsConNombre,
     totals_by_type: totalsByType,
     settlement_warnings: enrichedWarnings,
     pending_warnings: pending.length,
@@ -1150,7 +1162,18 @@ export async function deleteDailyLine(lineId: string, userId: string) {
 
 // ─── Ítems ──────────────────────────────────────────────────────────
 
+/** Los ítems se cargan, cambian y borran sólo en un borrador */
+async function assertDraft(preSettlementId: string) {
+  const { data } = await supabaseAdmin.from('pre_settlements').select('status').eq('id', preSettlementId).maybeSingle();
+  if (!data) throw new BusinessError('Preliquidación no encontrada', 404);
+  if (data.status !== 'draft') {
+    throw new BusinessError('La preliquidación está confirmada: para cambiarla, volvela a borrador');
+  }
+}
+
 export async function addItem(preSettlementId: string, item: SettlementItem) {
+  await assertDraft(preSettlementId);
+  await assertManualConcept(item.concept);
   const { data, error } = await supabaseAdmin
     .from('pre_settlement_items')
     .insert({ ...item, pre_settlement_id: preSettlementId })
@@ -1166,11 +1189,16 @@ export async function addItem(preSettlementId: string, item: SettlementItem) {
 export async function updateItem(itemId: string, updates: Partial<SettlementItem>) {
   const { data: current } = await supabaseAdmin
     .from('pre_settlement_items')
-    .select('pre_settlement_id')
+    .select('pre_settlement_id, concept')
     .eq('id', itemId)
     .single();
 
-  if (!current) throw new Error('Item not found');
+  if (!current) throw new BusinessError('Ítem no encontrado', 404);
+  await assertDraft(current.pre_settlement_id);
+  if (AUTO_CONCEPTS.has(current.concept)) {
+    throw new BusinessError('Ese concepto lo calcula el sistema: sale de la evaluación mensual y de los datos del agente');
+  }
+  if (updates.concept && updates.concept !== current.concept) await assertManualConcept(updates.concept);
 
   const { data, error } = await supabaseAdmin
     .from('pre_settlement_items')
@@ -1188,11 +1216,15 @@ export async function updateItem(itemId: string, updates: Partial<SettlementItem
 export async function deleteItem(itemId: string) {
   const { data: current } = await supabaseAdmin
     .from('pre_settlement_items')
-    .select('pre_settlement_id')
+    .select('pre_settlement_id, concept')
     .eq('id', itemId)
     .single();
 
-  if (!current) throw new Error('Item not found');
+  if (!current) throw new BusinessError('Ítem no encontrado', 404);
+  await assertDraft(current.pre_settlement_id);
+  if (AUTO_CONCEPTS.has(current.concept)) {
+    throw new BusinessError('Ese concepto lo calcula el sistema: no se borra, se recalcula solo');
+  }
 
   const { error } = await supabaseAdmin.from('pre_settlement_items').delete().eq('id', itemId);
   if (error) throw new Error(error.message);
@@ -1352,10 +1384,30 @@ export async function updatePreSettlementStatus(
 
   if (error) throw new Error(error.message);
 
+  // Lo confirmado conserva el nombre de cada concepto; un borrador muestra el actual
+  if (status === 'confirmed') await snapshotConceptNames(preSettlementId);
+  if (status === 'draft' && current.status !== 'draft') {
+    await supabaseAdmin.from('pre_settlement_items').update({ concept_name: null }).eq('pre_settlement_id', preSettlementId);
+  }
+
   // Volver a borrador la deja viva otra vez
   if (status === 'draft' && current.status !== 'draft') await recalculatePreSettlement(preSettlementId);
 
   return data;
+}
+
+/** Guarda en cada ítem el nombre que tiene hoy su concepto */
+async function snapshotConceptNames(preSettlementId: string) {
+  const nombres = await conceptNames();
+  const { data } = await supabaseAdmin.from('pre_settlement_items').select('concept').eq('pre_settlement_id', preSettlementId);
+  for (const key of new Set(((data ?? []) as { concept: string }[]).map((i) => i.concept))) {
+    const nombre = nombres.get(key)?.name ?? key;
+    await supabaseAdmin
+      .from('pre_settlement_items')
+      .update({ concept_name: nombre })
+      .eq('pre_settlement_id', preSettlementId)
+      .eq('concept', key);
+  }
 }
 
 // ─── Generación masiva ──────────────────────────────────────────────
@@ -1447,6 +1499,8 @@ export interface PeriodSummaryRow {
   subtotal: number;
   concepts: Record<string, number>;
   manual_items: number;
+  /** Los ítems cargados a mano, por concepto del catálogo */
+  manual_concepts: Record<string, number>;
   net: number;
   pending_warnings: number;
   /** Días que faltan normalizar */
@@ -1490,6 +1544,7 @@ export async function getPeriodSummary(periodFrom: string, periodTo: string): Pr
   }
 
   const byConcept = new Map<string, Record<string, number>>();
+  const manualByConcept = new Map<string, Record<string, number>>();
   const manual = new Map<string, number>();
   for (const i of (items ?? []) as Record<string, unknown>[]) {
     const key = i.pre_settlement_id as string;
@@ -1501,6 +1556,9 @@ export async function getPeriodSummary(periodFrom: string, periodTo: string): Pr
       byConcept.set(key, c);
     } else {
       manual.set(key, (manual.get(key) ?? 0) + amount);
+      const m = manualByConcept.get(key) ?? {};
+      m[concept] = roundCents((m[concept] ?? 0) + amount);
+      manualByConcept.set(key, m);
     }
   }
 
@@ -1531,6 +1589,7 @@ export async function getPeriodSummary(periodFrom: string, periodTo: string): Pr
         subtotal: roundCents(a.subtotal),
         concepts: byConcept.get(id) ?? {},
         manual_items: roundCents(manual.get(id) ?? 0),
+        manual_concepts: manualByConcept.get(id) ?? {},
         net: Number(r.total_amount),
         pending_warnings: pending.get(id) ?? 0,
         blocking_pending: blockingDays.get(id)?.size ?? 0,

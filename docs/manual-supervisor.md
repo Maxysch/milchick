@@ -146,11 +146,32 @@ el plan y, si el día termina distinto, la diferencia entra el mes siguiente com
 
 ### Los ítems
 
+Arriba, los que calcula el sistema —REG, SUPER REG, antigüedad, equipos, feriado,
+vacaciones, monotributo—, marcados **Automático**: no se tocan, salen de la
+evaluación mensual y de los datos del agente.
+
+Abajo, los que cargás vos. Cada uno lleva un **concepto del catálogo**:
+
+- Escribí en *Concepto* y elegí de la lista. Si lo que escribiste se parece a uno
+  que ya existe —escribís "bono x objetivos" y está *Bono por objetivos*—,
+  aparece en **¿Es alguno de estos?**. Usá ese: así el mes suma todo en la misma
+  columna.
+- Si no está, **Crear «…»** lo da de alta en el momento, sin salir de la
+  liquidación. Queda *a revisar* para que el administrador lo confirme en
+  Configuración.
+- Elegir el concepto trae cómo se calcula y su importe por defecto. Para ese ítem
+  los podés cambiar.
+- La **descripción** es libre: el porqué de ese ítem en particular.
+
 | Forma | Cuándo | ¿Se recalcula? |
 |---|---|---|
 | Importe fijo | un reintegro puntual | No |
 | Porcentaje del subtotal | un premio sobre honorarios | Sí |
 | Por tiempo, a valor hora | 45 min × 20 días a Diurna LD | Sí |
+
+Los ítems se cargan y se cambian mientras la preliquidación es borrador. Al
+confirmarla, cada ítem guarda el nombre que tenía su concepto: si después se
+renombra en el catálogo, lo confirmado sigue diciendo lo que se pagó.
 
 ### Confirmar
 

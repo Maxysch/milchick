@@ -160,6 +160,31 @@ Los valores salen de las liquidaciones reales de julio y agosto 2026:
   de 32. **Subir *Trabajó de más* a 45** saca esos días de la bandeja; queda en 30
   hasta que lo decidas.
 
+### Conceptos de los ítems
+
+La lista de la que se eligen los ítems al liquidar. Evita que el mismo concepto
+aparezca escrito de tres formas y que el resumen del mes lo sume en tres columnas.
+
+| Acción | Qué hace |
+|---|---|
+| **Agregar concepto** | Nombre, cómo se calcula —importe fijo, porcentaje del subtotal o por tiempo a valor hora— y los valores por defecto, que se completan solos al elegirlo en un ítem. Si el nombre se parece a uno que ya existe, avisa |
+| **Editar** | Nombre, valores por defecto, descripción y orden. No toca los ítems ya cargados: los valores por defecto son para los nuevos |
+| **Desactivar** | Sale de la lista para elegir; los ítems que ya lo usan lo conservan. **Reactivar** lo devuelve. Nada se borra |
+| **Confirmar** | Para los *a revisar*: queda como está |
+| **Unificar con…** | Sus ítems pasan al otro concepto y este deja de existir. Primero se ofrecen los parecidos. Lo confirmado conserva el nombre con que se confirmó: sólo cambia en qué columna suma |
+
+**A revisar** son los que se crearon al liquidar, sólo con el nombre. Cuando hay,
+aparece un aviso arriba de la lista. Para cada uno: confirmalo si está bien,
+editalo para completarle los valores, o unificalo si ya existía con otro nombre.
+
+Los **del sistema** —REG, SUPER REG, antigüedad, equipos, feriado, vacaciones,
+monotributo— los calcula el motor: se les cambia el nombre, la descripción y el
+orden, pero no se desactivan ni se unifican.
+
+El catálogo lo edita el administrador. El supervisor lo ve y, al liquidar, puede
+crear el concepto que falte; ése queda a revisar. El **orden** es también el de
+las columnas del resumen en CSV: primero los del sistema, después los demás.
+
 ## Feriados
 
 Nombre, fecha y tipo —nacional o de la empresa—, y un selector de año para ver
@@ -178,8 +203,8 @@ carga una excepción de **cobertura extraordinaria**.
 
 - **Migraciones** — los `.sql` de `supabase/migrations/` se corren en orden desde
   el SQL Editor de Supabase. Una migración ya aplicada **no se edita**: si hay que
-  cambiar algo, va una nueva. La `018_normalizacion.sql` se puede volver a correr
-  sin romper nada.
+  cambiar algo, va una nueva. La `018_normalizacion.sql` y la
+  `019_conceptos.sql` se pueden volver a correr sin romper nada.
 - **Deploy** — ver [DEPLOY.md](../DEPLOY.md). Cada push a `main` publica.
 - **Si algo no responde** — abrí `/api/health`. Dice si el servidor está vivo, si
   llega a la base y contra qué proyecto. Es el primer lugar donde mirar.
@@ -198,4 +223,5 @@ Antes de cerrar (el paso 1 de *Cierre del mes* muestra casi todo esto):
 - [ ] Los cambios de horario se cargaron con **Cambiar desde una fecha**, no editando el vigente
 - [ ] Revisaste las **sugerencias de esquema**
 - [ ] Los feriados del mes están cargados en **Feriados**
+- [ ] No quedan conceptos **a revisar** en *Configuración → Conceptos de los ítems*
 - [ ] La **Evaluación mensual** está completa para todos

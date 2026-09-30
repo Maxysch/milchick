@@ -27,7 +27,9 @@ export class ApiError extends Error {
     message: string,
     readonly status: number,
     readonly detail?: string,
-    readonly code?: string | null
+    readonly code?: string | null,
+    /** El cuerpo de la respuesta, por si trae algo más que el mensaje */
+    readonly data?: Record<string, unknown> | null
   ) {
     super(message);
     this.name = 'ApiError';
@@ -73,7 +75,8 @@ async function request<T>(
       mensaje,
       res.status,
       typeof data?.detail === 'string' ? data.detail : undefined,
-      typeof data?.code === 'string' ? data.code : null
+      typeof data?.code === 'string' ? data.code : null,
+      data
     );
   }
 

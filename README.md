@@ -63,6 +63,9 @@ de Supabase.
 - `018` — normalización: las correcciones del día, el horario en las excepciones
   de cambio de jornada y cobertura, las autorizaciones que se pagan sin tope, la
   compensación diaria fija, los márgenes y los avisos que frenan la confirmación.
+- `019` — catálogo de conceptos de los ítems. Los conceptos que ya estaban
+  cargados como texto libre pasan al catálogo —los que sólo difieren en
+  mayúsculas o acentos se juntan— y quedan *a revisar* en Configuración.
   De la `009` en adelante son idempotentes.
 - `008` — datos reales de operación: 3 clientes, 13 agentes con sus tarifas,
   esquemas y parámetros de liquidación, feriados, excepciones, horas adicionales
@@ -203,6 +206,13 @@ configuración recalcula las preliquidaciones en borrador afectadas.
 - `PATCH /api/pre-settlements/items/:itemId` - Editar ítem
 - `DELETE /api/pre-settlements/items/:itemId` - Eliminar ítem
 - `PATCH /api/pre-settlements/:id/status` - Confirmar/cancelar
+
+### Item Concepts (catálogo de conceptos de los ítems)
+- `GET /api/item-concepts` - Los activos, para elegir al cargar un ítem
+- `GET /api/item-concepts?all=1` - Todos, con cuántos ítems usa cada uno
+- `POST /api/item-concepts` - Alta. El supervisor —o con `from_settlement: true`— da de alta sólo el nombre y queda a revisar; si el nombre ya existe devuelve 409 con el existente
+- `PATCH /api/item-concepts/:id` - Editar, confirmar, desactivar o reactivar (administrador)
+- `POST /api/item-concepts/:id/merge` - Unificar con otro: `{ into_id }` (administrador)
 
 ### Period Params (Evaluación mensual)
 - `GET /api/period-params?year=&month=` - REG, SUPER REG y reintegro de monotributo del mes

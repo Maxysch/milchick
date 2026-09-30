@@ -211,6 +211,33 @@ export const updatePreSettlementItemSchema = z.object({
 });
 export type UpdatePreSettlementItemInput = z.infer<typeof updatePreSettlementItemSchema>;
 
+// ─── Catálogo de conceptos de los ítems ───
+const itemKindEnum = z.enum(['fixed', 'percentage', 'hourly']);
+const conceptoBase = {
+  name: z.string().trim().min(2, 'El nombre es muy corto').max(80),
+  description: z.string().trim().max(300).nullable().optional(),
+  sort_order: z.number().int().min(0).max(9999).optional(),
+  // Cómo viene precargado el ítem al elegir el concepto
+  kind: itemKindEnum.optional(),
+  default_amount: z.number().min(0).nullable().optional(),
+  default_percentage: z.number().min(0).max(10).nullable().optional(),
+  default_unit_minutes: z.number().int().min(0).max(1440).nullable().optional(),
+  default_days: z.number().int().min(0).max(31).nullable().optional(),
+  default_band: bandEnum.nullable().optional(),
+  default_tier: tierEnum.nullable().optional(),
+  default_factor: z.number().min(0).max(10).nullable().optional(),
+};
+export const createItemConceptSchema = z.object(conceptoBase);
+export type CreateItemConceptInput = z.infer<typeof createItemConceptSchema>;
+export const updateItemConceptSchema = z.object({
+  ...conceptoBase,
+  name: conceptoBase.name.optional(),
+  is_active: z.boolean().optional(),
+  needs_review: z.boolean().optional(),
+});
+export type UpdateItemConceptInput = z.infer<typeof updateItemConceptSchema>;
+export const mergeItemConceptSchema = z.object({ into_id: z.string().uuid() });
+
 // ─── Configuración global de liquidación ───
 export const updateRateFactorsSchema = z.object({
   factors: z.array(z.object({

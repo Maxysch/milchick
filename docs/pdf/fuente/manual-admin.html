@@ -24,9 +24,9 @@
   <div class="contenido">
     <div><b>Agentes</b>Alta, fecha de ingreso, tarifa y compensación diaria.</div>
     <div><b>Esquemas</b>La semana de cada agente, los cambios desde una fecha y las sugerencias.</div>
-    <div><b>Configuración</b>Multiplicadores, período y márgenes de normalización.</div>
+    <div><b>Configuración</b>Multiplicadores, período, márgenes de normalización y conceptos de los ítems.</div>
   </div>
-  <div class="version">Versión 2 · septiembre 2026</div>
+  <div class="version">Versión 2.1 · septiembre 2026</div>
 </section>
 
 <section class="indice">
@@ -35,7 +35,7 @@
     <li><a href="#rol">Qué hace el administrador<small>Y qué cambia cuando tocás algo</small></a></li>
     <li><a href="#agentes">Dar de alta agentes<small>Fecha de ingreso, tarifa, parámetros y compensación diaria</small></a></li>
     <li><a href="#esquemas">Esquemas<small>La semana, cargar, cambiar desde una fecha, sugerencias</small></a></li>
-    <li><a href="#config">Configuración<small>Multiplicadores, período y márgenes</small></a></li>
+    <li><a href="#config">Configuración<small>Multiplicadores, período, márgenes y conceptos de los ítems</small></a></li>
     <li><a href="#feriados">Feriados y clientes</a></li>
     <li><a href="#mantenimiento">Mantenimiento<small>Migraciones, deploy, salud del sistema, hora</small></a></li>
     <li><a href="#checklist">Checklist de fin de mes</a></li>
@@ -48,10 +48,10 @@
   <div class="resumen">
     <div><div class="ico">{{i:users}}</div><b>Agentes y tarifas</b><p>El alta, la fecha de ingreso, la tarifa base y sus aumentos.</p></div>
     <div class="violeta"><div class="ico">{{i:calendar}}</div><b>Esquemas</b><p>El plan contra el que se contrasta la marcación. Un esquema al día es un día que se paga solo.</p></div>
-    <div class="ambar"><div class="ico">{{i:sliders-horizontal}}</div><b>Configuración</b><p>Multiplicadores, día de corte y márgenes de normalización.</p></div>
+    <div class="ambar"><div class="ico">{{i:sliders-horizontal}}</div><b>Configuración</b><p>Multiplicadores, día de corte, márgenes de normalización y conceptos de los ítems.</p></div>
   </div>
   <div class="caja tip"><div class="tit">{{i:refresh-cw}} Cada cambio recalcula</div>Los cambios en agentes, tarifas, esquemas, feriados y configuración recalculan solos las preliquidaciones en borrador. Las confirmadas no se tocan: son la constancia de lo que se pagó.</div>
-  <div class="caja"><div class="tit">{{i:info}} Dentro de la app</div>Las funciones de administrador y supervisor son casi idénticas: lo único exclusivo del administrador es <b>borrar clientes</b>. La diferencia real son las tareas de este manual.</div>
+  <div class="caja"><div class="tit">{{i:info}} Dentro de la app</div>Las funciones de administrador y supervisor son casi idénticas: lo exclusivo del administrador es <b>borrar clientes</b> y <b>editar el catálogo de conceptos</b>. La diferencia real son las tareas de este manual.</div>
 </section>
 
 <section class="capitulo" id="agentes">
@@ -228,6 +228,39 @@
     </ul>
   </div>
   <div class="caja ojo"><div class="tit">{{i:triangle-alert}} El riesgo de "sin marcación no frena"</div>Si alguien faltó y nadie cargó la ausencia, ese día se paga con un aviso informativo. Si en tu operación eso pasa, activá <b>Un día sin ninguna marcación se revisa</b>: esos días pasan a la bandeja.</div>
+  <h3>{{i:tags}} Conceptos de los ítems</h3>
+  <p style="margin-top:0">La lista de la que se eligen los ítems al liquidar. Evita que el mismo concepto aparezca escrito de tres formas y que el resumen del mes lo sume en tres columnas.</p>
+  <figure class="captura w80">
+    <img src="img/conceptos-catalogo.png" alt="Conceptos de los ítems">
+    <ol class="leyenda">
+      <li><span>1</span>Los creados al liquidar, sólo con el nombre, esperan tu revisión.</li>
+      <li><span>2</span>Activos, a revisar, desactivados.</li>
+      <li><span>3</span><b>Del sistema</b>: los calcula el motor. Se les cambia el nombre, la descripción y el orden; no se desactivan ni se unifican.</li>
+      <li><span>4</span>Uno a revisar: confirmalo si está bien, editalo para completarle los valores, o unificalo si ya existía.</li>
+    </ol>
+  </figure>
+  <div class="grupo">
+  <table class="tabla">
+    <tr><th style="width:22%">Acción</th><th>Qué hace</th></tr>
+    <tr><td>Agregar concepto</td><td>Nombre, cómo se calcula y los valores por defecto, que se completan solos al elegirlo en un ítem. Si el nombre se parece a uno que ya existe, avisa.</td></tr>
+    <tr><td>Editar</td><td>Nombre, valores por defecto, descripción y orden. <b>No toca los ítems ya cargados</b>: los valores por defecto son para los nuevos.</td></tr>
+    <tr><td>Desactivar</td><td>Sale de la lista para elegir; los ítems que ya lo usan lo conservan. <b>Reactivar</b> lo devuelve. Nada se borra.</td></tr>
+    <tr><td>Unificar con…</td><td>Sus ítems pasan al otro concepto y este deja de existir. Lo confirmado conserva el nombre con que se confirmó: sólo cambia en qué columna suma.</td></tr>
+  </table>
+  </div>
+  <h4>{{i:combine}} Unificar</h4>
+  <figure class="captura" style="margin-top:2mm">
+    <img src="img/conceptos-unificar.png" alt="Unificar un concepto con otro">
+    <figcaption>«Bono x objetivos» se creó al liquidar, pero ya existía «Bono por objetivos». Al unificar se ofrecen primero los parecidos.</figcaption>
+  </figure>
+  <h4>{{i:plus}} Agregar</h4>
+  <div class="dos lado">
+    <figure class="captura" style="margin-top:0">
+      <img src="img/conceptos-agregar.png" alt="Agregar un concepto">
+      <figcaption>Uno por tiempo, con sus valores por defecto.</figcaption>
+    </figure>
+    <div class="caja" style="margin-top:0"><div class="tit">{{i:info}} Quién hace qué</div>El catálogo lo edita el administrador. El supervisor lo ve y, al liquidar, puede crear el concepto que falte: ése queda a revisar. El <b>orden</b> es también el de las columnas del resumen en CSV, primero los del sistema.</div>
+  </div>
 </section>
 
 <section class="capitulo" id="feriados">
@@ -247,7 +280,7 @@
   <div class="cap-titulo"><div class="num">6</div><div><h2>Mantenimiento</h2><p>Para quien administra la instalación.</p></div></div>
   <table class="tabla">
     <tr><th style="width:24%">Qué</th><th>Cómo</th></tr>
-    <tr><td>Migraciones</td><td>Los <code>.sql</code> de <code>supabase/migrations/</code> se corren en orden desde el SQL Editor de Supabase. Una migración aplicada no se edita: si hay que cambiar algo, va una nueva. La <code>018_normalizacion.sql</code> se puede volver a correr sin romper nada.</td></tr>
+    <tr><td>Migraciones</td><td>Los <code>.sql</code> de <code>supabase/migrations/</code> se corren en orden desde el SQL Editor de Supabase. Una migración aplicada no se edita: si hay que cambiar algo, va una nueva. La <code>018_normalizacion.sql</code> y la <code>019_conceptos.sql</code> se pueden volver a correr sin romper nada.</td></tr>
     <tr><td>Deploy</td><td>Ver <code>DEPLOY.md</code>. Cada push a <code>main</code> publica.</td></tr>
     <tr><td>Si algo no responde</td><td>Abrí <code>/api/health</code>: dice si el servidor está vivo, si llega a la base y contra qué proyecto.</td></tr>
     <tr><td>La hora</td><td>Las marcaciones del portal se registran con la hora de Buenos Aires, esté donde esté el servidor. Otra zona se configura con <code>APP_TIMEZONE</code>.</td></tr>
@@ -263,6 +296,7 @@
     <li>Revisaste las <b>sugerencias de esquema</b></li>
     <li>Los feriados del mes están cargados</li>
     <li>La <b>Evaluación mensual</b> está completa para todos</li>
+    <li>No quedan conceptos <b>a revisar</b> en Configuración</li>
   </ul>
 </section>
 

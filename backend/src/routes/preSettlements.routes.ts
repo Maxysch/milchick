@@ -32,6 +32,7 @@ import {
 } from '../services/presettlement.service.js';
 import { confirmReady, getCloseStatus } from '../services/close.service.js';
 import { periodToClose } from '../services/settlement-calc.js';
+import { conceptNames } from '../services/concepts.service.js';
 import { localToday } from '../config/time.js';
 import { sendError } from './_util.js';
 
@@ -119,9 +120,16 @@ router.get('/summary', async (req, res: Response) => {
       return;
     }
 
+    // Una columna por concepto, con el nombre del catálogo: primero los que
+    // calcula el sistema y después los cargados a mano que aparecen en el mes
+    const catalogo = await conceptNames();
+    const nombre = (k: string) => catalogo.get(k)?.name ?? k;
+    const orden = (k: string) => catalogo.get(k)?.sort_order ?? 999;
+    const manuales = [...new Set(rows.flatMap((r) => Object.keys(r.manual_concepts ?? {})))]
+      .sort((a, b) => orden(a) - orden(b) || nombre(a).localeCompare(nombre(b), 'es'));
     const headers = [
       'Legajo', 'Agente', 'Estado', 'Horas', 'Honorarios',
-      ...CONCEPT_ORDER, 'Otros ítems', 'Neto a cobrar', 'Días sin normalizar',
+      ...CONCEPT_ORDER.map(nombre), ...manuales.map(nombre), 'Neto a cobrar', 'Días sin normalizar',
     ];
     // Punto y coma + BOM para que Excel en es-AR lo abra en columnas
     const esc = (v: unknown) => {
@@ -133,7 +141,8 @@ router.get('/summary', async (req, res: Response) => {
       lines.push([
         r.employee_id, r.name, r.status, r.hours, r.subtotal,
         ...CONCEPT_ORDER.map((c) => r.concepts[c] ?? 0),
-        r.manual_items, r.net, r.blocking_pending,
+        ...manuales.map((k) => r.manual_concepts?.[k] ?? 0),
+        r.net, r.blocking_pending,
       ].map(esc).join(';'));
     }
 
