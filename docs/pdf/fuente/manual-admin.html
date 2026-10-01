@@ -69,6 +69,28 @@
   </table>
   <div class="caja ojo"><div class="tit">{{i:triangle-alert}} Si invitás a alguien desde Supabase</div>El perfil se crea solo, pero <b>siempre con rol agente</b>: hay que corregírselo. Si alguien entra y no ve el menú que debería, casi siempre es esto.</div>
 
+  <h3>{{i:key-round}} El acceso: el email y la contraseña</h3>
+  <p style="margin-top:0">En la ficha de cada agente, arriba, está la tarjeta <b>Acceso</b>. Es solo del administrador: el supervisor ve el email pero no lo cambia.</p>
+  <figure class="captura w90">
+    <img src="img/agente-acceso.png" alt="La tarjeta Acceso de un agente con correo de prueba">
+    <ol class="leyenda">
+      <li><span>1</span>Un correo de prueba (<code>@peopleplus.local</code>) no recibe nada. La tarjeta lo avisa y no deja generar el enlace hasta que pongas el real.</li>
+      <li><span>2</span><b>Cambiar email</b>: cambia el email con el que entra, en el usuario de acceso y en el perfil a la vez.</li>
+      <li><span>3</span><b>Generar enlace</b>: para que el agente cree su contraseña.</li>
+    </ol>
+  </figure>
+  <div class="dos lado">
+    <figure class="captura" style="margin-top:0">
+      <img src="img/agente-enlace.png" alt="El enlace generado, listo para copiar">
+      <ol class="leyenda"><li><span>4</span>Copialo y pasáselo al agente, por ejemplo por WhatsApp.</li></ol>
+    </figure>
+    <figure class="captura" style="margin-top:0">
+      <img src="img/crear-contrasena.png" alt="Lo que ve el agente al abrir el enlace">
+      <figcaption>Lo que ve el agente al abrirlo: elige su propia contraseña.</figcaption>
+    </figure>
+  </div>
+  <div class="caja ojo"><div class="tit">{{i:triangle-alert}} El enlace es personal</div>Sirve una sola vez y vence en una hora. <b>Quien lo abre entra como ese agente</b>: mandáselo solo a él. Para alguien que olvidó su contraseña es lo mismo: generás uno nuevo. El agente también puede pedirlo solo con <i>¿Olvidaste tu contraseña?</i> en el login, si el correo de Supabase está configurado (ver <code>DEPLOY.md</code>).</div>
+
   <h3>{{i:user-plus}} La fecha de ingreso importa</h3>
   <figure class="diagrama">
     <svg viewBox="0 0 680 120" class="dg-texto" font-size="10.5">

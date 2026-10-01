@@ -7,6 +7,8 @@ import { useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { api } from '../../lib/api';
+import { useProfile } from '../../hooks/useProfile';
+import AccessCard from '../../components/agents/AccessCard';
 import { formatDate, formatCurrency } from '../../lib/utils';
 import {
   AgentRate,
@@ -66,6 +68,7 @@ export default function AgentFormPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const profilesQuery = useProfilesQuery();
+  const { profile: yo } = useProfile();
   const [rateError, setRateError] = useState<string | null>(null);
 
   const schema = useMemo(() => {
@@ -265,6 +268,10 @@ export default function AgentFormPage() {
           ) : null}
         </div>
 
+        {isEditing && id && profileQuery.data ? (
+          <AccessCard profileId={id} email={profileQuery.data.email} esAdmin={yo?.role === 'admin'} />
+        ) : null}
+
         <form className={`${cardClass} space-y-4`} onSubmit={handleProfileSubmit}>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
@@ -277,11 +284,13 @@ export default function AgentFormPage() {
               <input className={inputClass} {...form.register('last_name')} />
               <p className="mt-1 text-xs text-red-600">{form.formState.errors.last_name?.message}</p>
             </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
-              <input className={inputClass} {...form.register('email')} disabled={isEditing} />
-              <p className="mt-1 text-xs text-red-600">{form.formState.errors.email?.message}</p>
-            </div>
+            {!isEditing ? (
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
+                <input className={inputClass} {...form.register('email')} />
+                <p className="mt-1 text-xs text-red-600">{form.formState.errors.email?.message}</p>
+              </div>
+            ) : null}
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Legajo</label>
               <input className={inputClass} {...form.register('employee_id')} />

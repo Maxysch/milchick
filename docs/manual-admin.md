@@ -34,6 +34,25 @@ una:
 > **siempre con rol `agent`**. Hay que corregírselo a mano. Si alguien entra y no
 > ve el menú que debería, casi siempre es esto.
 
+### El acceso: el email y la contraseña
+
+En la ficha de cada agente, arriba, está la tarjeta **Acceso**. Es solo del
+administrador: el supervisor ve el email pero no lo cambia.
+
+| Qué | Para qué |
+|---|---|
+| **Cambiar email** | El email con el que entra. Se cambia en el usuario de acceso y en el perfil a la vez. Sirve para corregir los correos de prueba (`@peopleplus.local`), que no reciben nada |
+| **Generar enlace para crear la contraseña** | Te da un enlace. Lo copiás y se lo pasás al agente (WhatsApp, por ejemplo). Al abrirlo elige su propia contraseña. Sirve una vez y vence en una hora |
+
+- Si el email es de prueba, la tarjeta lo avisa y no deja generar el enlace hasta
+  que pongas el real.
+- El enlace es personal: **quien lo abre puede entrar como ese agente**. Mandáselo
+  solo a él.
+- Para alguien que ya tenía contraseña y la olvidó, es lo mismo: generás un enlace
+  nuevo.
+- El agente también puede pedirlo solo desde el login con **¿Olvidaste tu
+  contraseña?**, si el correo de Supabase está configurado (ver `DEPLOY.md`).
+
 ### La fecha de ingreso importa
 
 - **Antes de esa fecha el esquema no rige**: no se paga nada por esquema. Si hubo
@@ -223,5 +242,6 @@ Antes de cerrar (el paso 1 de *Cierre del mes* muestra casi todo esto):
 - [ ] Los cambios de horario se cargaron con **Cambiar desde una fecha**, no editando el vigente
 - [ ] Revisaste las **sugerencias de esquema**
 - [ ] Los feriados del mes están cargados en **Feriados**
+- [ ] Todos los agentes tienen un email real (no `@peopleplus.local`)
 - [ ] No quedan conceptos **a revisar** en *Configuración → Conceptos de los ítems*
 - [ ] La **Evaluación mensual** está completa para todos

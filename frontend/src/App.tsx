@@ -1,10 +1,12 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { supabase } from './lib/supabase';
 import AppLayout from './components/layout/AppLayout';
 import AuthGuard from './components/layout/AuthGuard';
 import RoleGuard from './components/layout/RoleGuard';
 
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
+const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'));
 const DashboardPage = lazy(() => import('./pages/dashboard/DashboardPage'));
 const MyPortalPage = lazy(() => import('./pages/myPortal/MyPortalPage'));
 const AgentsListPage = lazy(() => import('./pages/agents/AgentsListPage'));
@@ -30,12 +32,31 @@ function Loading() {
   );
 }
 
+/**
+ * Quien abre el enlace para crear su contraseña entra con una sesión de
+ * recuperación. Si Supabase lo devuelve a otra pantalla —porque la dirección de
+ * vuelta no está autorizada y cae en la raíz—, se lo lleva igual a elegir la
+ * contraseña, en vez de dejarlo adentro sin haberla creado.
+ */
+function RecuperacionDeContrasena() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((evento) => {
+      if (evento === 'PASSWORD_RECOVERY') navigate('/reset-password', { replace: true });
+    });
+    return () => data.subscription.unsubscribe();
+  }, [navigate]);
+  return null;
+}
+
 function App() {
   return (
     <BrowserRouter>
+      <RecuperacionDeContrasena />
       <Suspense fallback={<Loading />}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route
             element={
               <AuthGuard>

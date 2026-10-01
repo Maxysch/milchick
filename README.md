@@ -127,6 +127,8 @@ los Excel originales.
 - `GET /api/profiles` - Listar
 - `POST /api/profiles` - Crear
 - `PATCH /api/profiles/:id` - Actualizar
+- `PATCH /api/profiles/:id/email` - Cambiar el email con el que entra (administrador): `{ email }`
+- `POST /api/profiles/:id/access-link` - Enlace para que el agente cree su contraseña (administrador): `{ redirect_to? }`. No manda correo: devuelve el enlace
 
 ### Clients
 - `GET /api/clients` - Listar

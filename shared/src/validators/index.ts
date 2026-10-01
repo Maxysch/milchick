@@ -35,6 +35,18 @@ export const createProfileSchema = z.object({
 export type CreateProfileInput = z.infer<typeof createProfileSchema>;
 
 export const updateProfileSchema = createProfileSchema.partial().omit({ password: true, email: true });
+
+// ─── Acceso: el email con el que entra y el enlace para crear la contraseña ───
+export const changeProfileEmailSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+});
+export type ChangeProfileEmailInput = z.infer<typeof changeProfileEmailSchema>;
+
+export const accessLinkSchema = z.object({
+  // A dónde vuelve el agente después de abrir el enlace: la pantalla de la contraseña
+  redirect_to: z.string().url().optional(),
+});
+export type AccessLinkInput = z.infer<typeof accessLinkSchema>;
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 
 // ─── Tramo horario ───

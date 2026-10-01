@@ -2,7 +2,9 @@ import { Router, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase.js';
 import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth.js';
 import { afterChange } from './_util.js';
-import { createProfileSchema, updateProfileSchema } from '@milchick/shared';
+import { accessLinkSchema, changeProfileEmailSchema, createProfileSchema, updateProfileSchema } from '@milchick/shared';
+import { changeEmail, createAccessLink } from '../services/access.service.js';
+import { sendError } from './_util.js';
 
 const router = Router();
 router.use(authMiddleware);
@@ -74,6 +76,29 @@ router.patch('/:id', requireRole('admin', 'supervisor'), async (req, res: Respon
   if (error) { res.status(500).json({ error: error.message }); return; }
   await afterChange({ profileId: String(req.params.id) });
   res.json(data);
+});
+
+// Cambiar el email con el que entra (sólo el administrador: es la llave de la cuenta)
+router.patch('/:id/email', requireRole('admin'), async (req, res: Response) => {
+  const parsed = changeProfileEmailSchema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: 'Ingresá un email válido' }); return; }
+  try {
+    res.json(await changeEmail(String(req.params.id), parsed.data.email));
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// El enlace para que el agente cree su contraseña (sólo el administrador). No se
+// manda por correo: se devuelve para pasárselo por otro medio.
+router.post('/:id/access-link', requireRole('admin'), async (req, res: Response) => {
+  const parsed = accessLinkSchema.safeParse(req.body ?? {});
+  if (!parsed.success) { res.status(400).json({ error: 'redirect_to no es una URL' }); return; }
+  try {
+    res.json(await createAccessLink(String(req.params.id), parsed.data.redirect_to));
+  } catch (err) {
+    sendError(res, err);
+  }
 });
 
 // Toggle active status

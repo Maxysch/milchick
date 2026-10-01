@@ -77,7 +77,33 @@ una quinta variable, `APP_TIMEZONE` (por ejemplo `America/Montevideo`).
 
 ---
 
-## Paso 2 — Verificar
+## Paso 2 — Configurar el acceso en Supabase
+
+Para que los agentes puedan crear o recuperar su contraseña, en Supabase →
+**Authentication → URL Configuration**:
+
+| Campo | Qué poner |
+|---|---|
+| **Site URL** | La dirección de la app, por ejemplo `https://<tu-proyecto>.vercel.app` |
+| **Redirect URLs** | `https://<tu-proyecto>.vercel.app/reset-password` |
+
+Sin esto, el enlace igual funciona —la app detecta la sesión de recuperación y
+lleva a elegir la contraseña—, pero conviene tenerlo bien.
+
+**Los correos de Supabase no son confiables en el plan gratuito.** El servicio de
+correo de fábrica manda muy pocos por hora y, en proyectos nuevos, sólo a
+direcciones del equipo. Por eso el administrador puede **generar el enlace a
+mano** en *Agentes → (el agente) → Acceso* y pasárselo por WhatsApp: no depende de
+ningún correo. El "¿Olvidaste tu contraseña?" del login sí manda un correo; para
+que llegue a cualquiera hay que configurar un SMTP propio en **Authentication →
+Emails → SMTP Settings**.
+
+Un enlace vale una vez y dura una hora (**Authentication → Sessions**, o
+*Emails → OTP Expiration*).
+
+---
+
+## Paso 3 — Verificar
 
 1. `https://<tu-proyecto>.vercel.app/api/health` tiene que devolver
    `{"status":"ok",...}`. Si eso anda, la función está viva.
