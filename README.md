@@ -66,7 +66,10 @@ de Supabase.
 - `019` — catálogo de conceptos de los ítems. Los conceptos que ya estaban
   cargados como texto libre pasan al catálogo —los que sólo difieren en
   mayúsculas o acentos se juntan— y quedan *a revisar* en Configuración.
-  De la `009` en adelante son idempotentes.
+- `020` — repara los usuarios de acceso que creó la `008` con un INSERT directo:
+  les faltaban campos de tokens y Supabase no podía leerlos, así que no se les
+  podía cambiar el email ni generar el enlace para crear la contraseña. Aplicar
+  después de la `019`. De la `009` en adelante son idempotentes.
 - `008` — datos reales de operación: 3 clientes, 13 agentes con sus tarifas,
   esquemas y parámetros de liquidación, feriados, excepciones, horas adicionales
   y 721 marcaciones desde el 01/06/2026. Es idempotente.

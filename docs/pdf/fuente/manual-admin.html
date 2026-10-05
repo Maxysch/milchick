@@ -90,6 +90,7 @@
     </figure>
   </div>
   <div class="caja ojo"><div class="tit">{{i:triangle-alert}} El enlace es personal</div>Sirve una sola vez y vence en una hora. <b>Quien lo abre entra como ese agente</b>: mandáselo solo a él. Para alguien que olvidó su contraseña es lo mismo: generás uno nuevo. El agente también puede pedirlo solo con <i>¿Olvidaste tu contraseña?</i> en el login, si el correo de Supabase está configurado (ver <code>DEPLOY.md</code>).</div>
+  <div class="caja"><div class="tit">{{i:wrench}} Si da error al cambiar el email o generar el enlace</div>En uno de los agentes de la carga inicial, falta aplicar la migración <code>020_reparar_usuarios_de_acceso.sql</code>. Esos usuarios se crearon con campos en blanco que Supabase no sabe leer; la migración los completa.</div>
 
   <h3>{{i:user-plus}} La fecha de ingreso importa</h3>
   <figure class="diagrama">
@@ -302,7 +303,7 @@
   <div class="cap-titulo"><div class="num">6</div><div><h2>Mantenimiento</h2><p>Para quien administra la instalación.</p></div></div>
   <table class="tabla">
     <tr><th style="width:24%">Qué</th><th>Cómo</th></tr>
-    <tr><td>Migraciones</td><td>Los <code>.sql</code> de <code>supabase/migrations/</code> se corren en orden desde el SQL Editor de Supabase. Una migración aplicada no se edita: si hay que cambiar algo, va una nueva. La <code>018_normalizacion.sql</code> y la <code>019_conceptos.sql</code> se pueden volver a correr sin romper nada.</td></tr>
+    <tr><td>Migraciones</td><td>Los <code>.sql</code> de <code>supabase/migrations/</code> se corren en orden desde el SQL Editor de Supabase. Una migración aplicada no se edita: si hay que cambiar algo, va una nueva. La <code>018_normalizacion.sql</code>, la <code>019_conceptos.sql</code> y la <code>020_reparar_usuarios_de_acceso.sql</code> se pueden volver a correr sin romper nada.</td></tr>
     <tr><td>Deploy</td><td>Ver <code>DEPLOY.md</code>. Cada push a <code>main</code> publica.</td></tr>
     <tr><td>Si algo no responde</td><td>Abrí <code>/api/health</code>: dice si el servidor está vivo, si llega a la base y contra qué proyecto.</td></tr>
     <tr><td>La hora</td><td>Las marcaciones del portal se registran con la hora de Buenos Aires, esté donde esté el servidor. Otra zona se configura con <code>APP_TIMEZONE</code>.</td></tr>

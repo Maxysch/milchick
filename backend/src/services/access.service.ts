@@ -9,6 +9,7 @@
  */
 import { supabaseAdmin } from '../config/supabase.js';
 import { BusinessError } from './errors.js';
+import { mensajeDeAcceso } from './access-errors.js';
 
 async function perfil(id: string) {
   const { data } = await supabaseAdmin.from('profiles').select('id, email, first_name, last_name').eq('id', id).maybeSingle();
@@ -32,7 +33,7 @@ export async function changeEmail(profileId: string, nuevo: string): Promise<{ e
   const { error } = await supabaseAdmin.auth.admin.updateUserById(profileId, { email: nuevo, email_confirm: true });
   if (error) {
     const repetido = /already|registered|exists|duplicate/i.test(error.message);
-    throw new BusinessError(repetido ? 'Ese email ya está registrado en otro usuario' : `No se pudo cambiar el email: ${error.message}`, repetido ? 409 : 400);
+    throw new BusinessError(repetido ? 'Ese email ya está registrado en otro usuario' : `No se pudo cambiar el email: ${mensajeDeAcceso(error)}`, repetido ? 409 : 400);
   }
 
   const { error: errPerfil } = await supabaseAdmin.from('profiles').update({ email: nuevo }).eq('id', profileId);
@@ -57,7 +58,7 @@ export async function createAccessLink(profileId: string, redirectTo?: string): 
     options: redirectTo ? { redirectTo } : undefined,
   });
   if (error || !data?.properties?.action_link) {
-    throw new BusinessError(`No se pudo generar el enlace: ${error?.message ?? 'respuesta vacía'}`, 400);
+    throw new BusinessError(`No se pudo generar el enlace: ${error ? mensajeDeAcceso(error) : 'respuesta vacía'}`, 400);
   }
   return { link: data.properties.action_link, email: p.email };
 }

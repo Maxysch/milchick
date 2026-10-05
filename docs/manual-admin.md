@@ -53,6 +53,11 @@ administrador: el supervisor ve el email pero no lo cambia.
 - El agente también puede pedirlo solo desde el login con **¿Olvidaste tu
   contraseña?**, si el correo de Supabase está configurado (ver `DEPLOY.md`).
 
+> **Si al cambiar el email o generar el enlace da un error** y es uno de los
+> agentes de la carga inicial, falta aplicar la migración
+> `020_reparar_usuarios_de_acceso.sql`. Esos usuarios se crearon con campos en
+> blanco que Supabase no sabe leer; la migración los completa.
+
 ### La fecha de ingreso importa
 
 - **Antes de esa fecha el esquema no rige**: no se paga nada por esquema. Si hubo
@@ -222,8 +227,9 @@ carga una excepción de **cobertura extraordinaria**.
 
 - **Migraciones** — los `.sql` de `supabase/migrations/` se corren en orden desde
   el SQL Editor de Supabase. Una migración ya aplicada **no se edita**: si hay que
-  cambiar algo, va una nueva. La `018_normalizacion.sql` y la
-  `019_conceptos.sql` se pueden volver a correr sin romper nada.
+  cambiar algo, va una nueva. La `018_normalizacion.sql`, la
+  `019_conceptos.sql` y la `020_reparar_usuarios_de_acceso.sql` se pueden volver
+  a correr sin romper nada.
 - **Deploy** — ver [DEPLOY.md](../DEPLOY.md). Cada push a `main` publica.
 - **Si algo no responde** — abrí `/api/health`. Dice si el servidor está vivo, si
   llega a la base y contra qué proyecto. Es el primer lugar donde mirar.
