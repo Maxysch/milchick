@@ -337,6 +337,15 @@
     <figcaption>Un agente con compensación diaria fija: cada día suma sus minutos como una línea aparte.</figcaption>
   </figure>
 
+  <h3>{{i:file-down}} Descargar la liquidación en PDF</h3>
+  <p style="margin-top:0">En el detalle de cada agente, el botón <b>Descargar PDF</b> genera su liquidación para entregársela: el período, las <b>horas por tipo</b>, el <b>detalle día por día</b> (banda y tramo, cliente, horas, valor hora e importe), los <b>conceptos</b> y el <b>total a cobrar</b>. Los feriados no trabajados y las ausencias figuran como día sin horas.</p>
+  <ul>
+    <li>No lleva nada interno: ni avisos, ni decisiones de la bandeja, ni notas.</li>
+    <li>Si la preliquidación <b>no está confirmada</b>, sale marcada <span class="chip ambar">BORRADOR</span> y el archivo termina en <code>-borrador</code>: los importes pueden cambiar. Para entregarla conviene confirmarla antes.</li>
+    <li>Los días <span class="chip azul">Proyectado</span> llevan esa nota: se pagan según el esquema y se ajustan el mes siguiente si cambian.</li>
+    <li>Se genera en el navegador: no se guarda ni se envía por correo. El archivo se llama <code>liquidacion-apellido-2026-09.pdf</code>.</li>
+  </ul>
+
   <h3>{{i:tags}} Los ítems</h3>
   <p style="margin-top:0">Arriba, los que calcula el sistema, marcados <span class="chip">Automático</span>: no se tocan, salen de la evaluación mensual y de los datos del agente. Abajo, los que cargás vos, cada uno con un <b>concepto del catálogo</b>.</p>
   <div class="dos lado">

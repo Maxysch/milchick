@@ -144,6 +144,23 @@ Una línea con la marca **Proyectado** es de un día que todavía no pasó: se p
 el plan y, si el día termina distinto, la diferencia entra el mes siguiente como
 *Ajuste mes anterior*.
 
+### Descargar la liquidación en PDF
+
+En el detalle de cada agente, el botón **Descargar PDF** genera su liquidación para
+entregársela: el período, el total de horas y de honorarios, las **horas por tipo**,
+el **detalle día por día** (banda y tramo, cliente, horas, valor hora e importe), los
+**conceptos** y el **total a cobrar**. Los feriados no trabajados y las ausencias
+figuran como día sin horas.
+
+- No lleva nada interno: ni avisos, ni decisiones de la bandeja, ni notas.
+- Si la preliquidación **no está confirmada**, el PDF sale marcado **BORRADOR** y
+  el archivo termina en `-borrador`: los importes pueden cambiar. Para entregarla
+  a un agente conviene confirmarla antes.
+- Los días **Proyectado** (que todavía no pasaron) llevan esa nota, con la
+  aclaración de que se ajustan el mes siguiente si cambian.
+- El archivo se llama `liquidacion-apellido-2026-09.pdf`. Se genera en el
+  navegador: no se guarda en ningún lado ni se envía por correo.
+
 ### Los ítems
 
 Arriba, los que calcula el sistema —REG, SUPER REG, antigüedad, equipos, feriado,

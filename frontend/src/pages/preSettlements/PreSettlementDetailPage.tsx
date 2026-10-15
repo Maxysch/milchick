@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
-import { AlertTriangle, ArrowLeft, Clock, Info, RefreshCw, ShieldAlert, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Clock, FileDown, Info, RefreshCw, ShieldAlert, Trash2 } from 'lucide-react';
 import { api } from '../../lib/api';
 import {
   BAND_LABELS,
@@ -411,6 +411,8 @@ export default function PreSettlementDetailPage() {
   // Día resaltado al clickear un desvío del aviso de arriba
   const [focusedDate, setFocusedDate] = useState<string | null>(null);
   const [newLine, setNewLine] = useState({ date: '', band: 'day_ld', tier: 'normal', hours: '', client_id: '' });
+  const [descargando, setDescargando] = useState(false);
+  const [errorPdf, setErrorPdf] = useState<string | null>(null);
 
   const detailQuery = useQuery({
     queryKey: ['pre-settlement', id],
@@ -558,6 +560,23 @@ export default function PreSettlementDetailPage() {
   const conteo = detail.day_status_count ?? {};
   const esBorrador = detail.status === 'draft';
 
+  const persona = (Array.isArray(detail.profiles) ? detail.profiles[0] : detail.profiles) as
+    { first_name: string; last_name: string; employee_id?: string | null } | null | undefined;
+  const descargarPdf = async () => {
+    if (!persona) return;
+    setDescargando(true);
+    setErrorPdf(null);
+    try {
+      // Las librerías del PDF se cargan recién acá
+      const { descargarLiquidacionPdf } = await import('../../lib/liquidacionPdf');
+      await descargarLiquidacionPdf(detail, `${persona.first_name} ${persona.last_name}`.trim(), persona.last_name, persona.employee_id);
+    } catch (err) {
+      setErrorPdf(`No se pudo generar el PDF: ${(err as Error).message}`);
+    } finally {
+      setDescargando(false);
+    }
+  };
+
   // Un día puede tener varios desvíos; se muestra el primero pendiente.
   const warningByDate = new Map<string, SettlementWarning>();
   for (const w of detail.settlement_warnings ?? []) {
@@ -594,12 +613,23 @@ export default function PreSettlementDetailPage() {
                   Actualizada {timeAgo(detail.recalculated_at)}
                 </button>
               ) : null}
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                disabled={descargando}
+                title={esBorrador ? 'Sale marcado como borrador: los importes pueden cambiar' : 'La liquidación del agente, día por día'}
+                onClick={descargarPdf}
+              >
+                <FileDown className="h-4 w-4" />
+                {descargando ? 'Generando...' : 'Descargar PDF'}
+              </button>
               <span className={getBadgeClass(detail.status === 'confirmed' ? 'green' : detail.status === 'cancelled' ? 'red' : 'yellow')}>
                 {SETTLEMENT_STATUS_LABELS[detail.status] ?? detail.status}
               </span>
               <div className="text-xl font-semibold text-gray-900">{formatCurrency(detail.total_amount)}</div>
             </div>
           </div>
+          {errorPdf ? <p className="mt-2 text-sm text-red-600">{errorPdf}</p> : null}
           {detail.day_summary?.length ? (
             <p className="mt-2 text-sm text-gray-500">
               {conteo.auto ?? 0} días se pagaron solos
