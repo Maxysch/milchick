@@ -44,6 +44,7 @@ const baseSchema = z.object({
   reg_quantitative_pct: pctField,
   reg_qualitative_pct: pctField,
   super_reg_pct: pctField,
+  monotributo_reimbursement: z.coerce.number().min(0, 'No puede ser negativo'),
   equipment_pct: pctField,
   seniority_months: z.coerce.number().int().min(0),
   holiday_compensation_factor: z.coerce.number().min(0).max(2),
@@ -95,6 +96,7 @@ export default function AgentFormPage() {
       reg_quantitative_pct: 0,
       reg_qualitative_pct: 0,
       super_reg_pct: 0,
+      monotributo_reimbursement: 0,
       equipment_pct: 5,
       seniority_months: 0,
       holiday_compensation_factor: 0.5,
@@ -111,7 +113,7 @@ export default function AgentFormPage() {
       employee_id: string | null; role: 'admin' | 'supervisor' | 'agent';
       hire_date: string | null;
       reg_people_pct: number; reg_quantitative_pct: number; reg_qualitative_pct: number;
-      super_reg_pct: number; equipment_pct: number; seniority_months: number;
+      super_reg_pct: number; monotributo_reimbursement?: number | null; equipment_pct: number; seniority_months: number;
       holiday_compensation_factor: number; vacation_plus_factor: number;
       daily_compensation_minutes: number | null; daily_compensation_band: 'day_ld' | 'night_ld' | 'day_hd' | 'night_hd' | null;
     }>(`/profiles/${id}`),
@@ -138,6 +140,7 @@ export default function AgentFormPage() {
       reg_quantitative_pct: Number(profileQuery.data.reg_quantitative_pct ?? 0) * 100,
       reg_qualitative_pct: Number(profileQuery.data.reg_qualitative_pct ?? 0) * 100,
       super_reg_pct: Number(profileQuery.data.super_reg_pct ?? 0) * 100,
+      monotributo_reimbursement: Number(profileQuery.data.monotributo_reimbursement ?? 0),
       equipment_pct: Number(profileQuery.data.equipment_pct ?? 0) * 100,
       seniority_months: Number(profileQuery.data.seniority_months ?? 0),
       holiday_compensation_factor: Number(profileQuery.data.holiday_compensation_factor ?? 0),
@@ -155,6 +158,7 @@ export default function AgentFormPage() {
         reg_quantitative_pct: values.reg_quantitative_pct / 100,
         reg_qualitative_pct: values.reg_qualitative_pct / 100,
         super_reg_pct: values.super_reg_pct / 100,
+        monotributo_reimbursement: values.monotributo_reimbursement,
         equipment_pct: values.equipment_pct / 100,
         seniority_months: values.seniority_months,
         holiday_compensation_factor: values.holiday_compensation_factor,
@@ -377,6 +381,17 @@ export default function AgentFormPage() {
                   <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-gray-400">%</span>
                 </div>
                 <p className="mt-1 text-xs text-gray-500">Se carga por mes en Evaluación mensual</p>
+              </div>
+              <div>
+                <label htmlFor="monotributo-defecto" className="mb-1 block text-sm font-medium text-gray-700">Reintegro de monotributo (por defecto)</label>
+                <div className="relative">
+                  <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-gray-400">$</span>
+                  <input id="monotributo-defecto" className={`${inputClass} pl-7`} type="number" min="0" step="0.01" {...form.register('monotributo_reimbursement')} />
+                </div>
+                <p className="mt-1 text-xs text-gray-500">
+                  Con este importe arranca cada mes en Evaluación mensual. Cambialo cuando cambie la categoría
+                </p>
+                <p className="mt-1 text-xs text-red-600">{form.formState.errors.monotributo_reimbursement?.message}</p>
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">Reintegro por uso de equipos</label>

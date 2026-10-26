@@ -24,6 +24,8 @@ export const createProfileSchema = z.object({
   reg_quantitative_pct: pct.optional(),
   reg_qualitative_pct: pct.optional(),
   super_reg_pct: pct.optional(),
+  /** Reintegro de monotributo con el que arranca un mes sin cargar */
+  monotributo_reimbursement: z.number().min(0).optional(),
   equipment_pct: pct.optional(),
   seniority_months: z.number().int().min(0).optional(),
   holiday_compensation_factor: z.number().min(0).max(2).optional(),

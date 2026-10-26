@@ -80,6 +80,9 @@ licencias ni ausencias.
 Son los valores **por defecto** del agente:
 
 - Gestión de personas, Cuantitativo, Cualitativo — los tres componentes del REG
+- SUPER REG
+- **Reintegro de monotributo** — el importe con que arranca cada mes. Cambialo
+  cuando cambie la categoría del agente
 - Reintegro por uso de equipos — % sobre el subtotal
 - Meses de antigüedad reconocidos
 - Factor de compensación por feriado

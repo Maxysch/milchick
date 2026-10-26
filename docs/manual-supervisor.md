@@ -299,10 +299,11 @@ en la bandeja como *Trabajó de más*, con **Autorizar X h** ya calculado.
 Por agente y por mes: los tres componentes del **REG** —gestión de personas,
 cuantitativo, cualitativo—, el **SUPER REG** y el **reintegro de monotributo**.
 
-Dependen de cómo performó cada uno **ese mes**, así que no se heredan. Un mes sin
-cargar arranca con el valor por defecto del agente, pero eso es una red, no un
-dato: **sin la evaluación cargada la preliquidación no se confirma**. El
-monotributo arranca siempre en cero.
+El REG y el SUPER REG dependen de cómo performó cada uno **ese mes**, así que no
+se heredan. Un mes sin cargar arranca con los valores por defecto del agente
+—también el monotributo, que cambia sólo con la categoría—, pero eso es una red,
+no un dato: **sin la evaluación cargada la preliquidación no se confirma**.
+Revisá los valores y tocá **Guardar el mes**.
 
 ---
 

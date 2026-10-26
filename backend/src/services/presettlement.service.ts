@@ -35,6 +35,7 @@ import {
   type SuggestedResolution,
   type Tier,
   type TimeBlock,
+  settlementParamsFor,
 } from './settlement-calc.js';
 
 export { settlementPeriod };
@@ -166,7 +167,7 @@ async function fetchSettlementParams(
     supabaseAdmin
       .from('profiles')
       .select(
-        'reg_people_pct, reg_quantitative_pct, reg_qualitative_pct, super_reg_pct, ' +
+        'reg_people_pct, reg_quantitative_pct, reg_qualitative_pct, super_reg_pct, monotributo_reimbursement, ' +
           'equipment_pct, seniority_months, holiday_compensation_factor, vacation_plus_factor'
       )
       .eq('id', profileId)
@@ -189,21 +190,8 @@ async function fetchSettlementParams(
   }
 
   const period = periodRaw as Record<string, number | null> | null;
-  const perf = period ?? profile;
-
   return {
-    params: {
-      reg_people_pct: Number(perf.reg_people_pct ?? 0),
-      reg_quantitative_pct: Number(perf.reg_quantitative_pct ?? 0),
-      reg_qualitative_pct: Number(perf.reg_qualitative_pct ?? 0),
-      super_reg_pct: Number(perf.super_reg_pct ?? 0),
-      equipment_pct: Number(profile.equipment_pct ?? 0),
-      seniority_months: Number(profile.seniority_months ?? 0),
-      holiday_compensation_factor: Number(profile.holiday_compensation_factor ?? 0),
-      vacation_plus_factor: Number(profile.vacation_plus_factor ?? 0),
-      // Sólo existe a nivel período: no tiene valor por defecto en el perfil
-      monotributo_reimbursement: Number(period?.monotributo_reimbursement ?? 0),
-    },
+    params: settlementParamsFor(profile, period),
     periodParamsLoaded: period !== null,
   };
 }

@@ -111,9 +111,10 @@ export default function PeriodParamsPage() {
           <div className="text-sm text-blue-800">
             El Premio a la Excelencia y el SUPER REG dependen de cómo performó cada agente
             <strong> ese mes</strong>, y el reintegro de monotributo cambia con la categoría,
-            así que se cargan por período. Los porcentajes de un mes sin cargar arrancan con
-            el valor por defecto del agente, pero eso es sólo una red: hay que revisarlo
-            antes de liquidar. El monotributo arranca siempre en cero.
+            así que se cargan por período. Un mes sin cargar arranca con los valores por
+            defecto de cada agente —los porcentajes y el monotributo, que se cambian en su
+            ficha—, pero eso es sólo una red: hay que revisarlo y guardar el mes antes de
+            liquidar.
           </div>
         </div>
 

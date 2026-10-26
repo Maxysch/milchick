@@ -12,7 +12,8 @@ router.use(authMiddleware);
  *
  * Devuelve una fila por agente activo aunque todavía no tenga la evaluación del
  * mes cargada: en ese caso viene precargada con los valores por defecto del
- * perfil y `loaded: false`, para que la pantalla muestre qué falta.
+ * perfil —REG, SUPER REG y monotributo— y `loaded: false`, para que la pantalla
+ * muestre qué falta.
  */
 router.get('/', async (req, res: Response) => {
   const year = Number(req.query.year);
@@ -27,7 +28,7 @@ router.get('/', async (req, res: Response) => {
       .from('profiles')
       .select(
         'id, first_name, last_name, employee_id, reg_people_pct, ' +
-          'reg_quantitative_pct, reg_qualitative_pct, super_reg_pct'
+          'reg_quantitative_pct, reg_qualitative_pct, super_reg_pct, monotributo_reimbursement'
       )
       .eq('role', 'agent')
       .eq('is_active', true)
@@ -60,8 +61,7 @@ router.get('/', async (req, res: Response) => {
         reg_quantitative_pct: Number(source.reg_quantitative_pct ?? 0),
         reg_qualitative_pct: Number(source.reg_qualitative_pct ?? 0),
         super_reg_pct: Number(source.super_reg_pct ?? 0),
-        // Sólo vive a nivel período: no se precarga desde el perfil
-        monotributo_reimbursement: Number(loaded?.monotributo_reimbursement ?? 0),
+        monotributo_reimbursement: Number(source.monotributo_reimbursement ?? 0),
         notes: (loaded?.notes as string | null) ?? null,
       };
     })
