@@ -194,7 +194,7 @@ Sobre el subtotal de horas se calculan:
 | Reintegro por uso de equipos | subtotal × su % |
 | Compensación por feriado no trabajado | horas del feriado × valor hora × factor |
 | Plus vacacional | horas de vacaciones × valor hora × factor |
-| Reintegro de monotributo | importe cargado para ese mes |
+| Reintegro de monotributo | importe cargado para ese mes (si no se cargó, el por defecto del agente) |
 
 El REG, el SUPER REG y el monotributo se cargan **por agente y por mes** en
 *Evaluación mensual*: dependen de cómo performó cada uno ese mes.

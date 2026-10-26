@@ -337,6 +337,15 @@
     <figcaption>Un agente con compensación diaria fija: cada día suma sus minutos como una línea aparte.</figcaption>
   </figure>
 
+  <h3>{{i:file-down}} Descargar la liquidación en PDF</h3>
+  <p style="margin-top:0">En el detalle de cada agente, el botón <b>Descargar PDF</b> genera su liquidación para entregársela: el período, las <b>horas por tipo</b>, el <b>detalle día por día</b> (banda y tramo, cliente, horas, valor hora e importe), los <b>conceptos</b> y el <b>total a cobrar</b>. Los feriados no trabajados y las ausencias figuran como día sin horas.</p>
+  <ul>
+    <li>No lleva nada interno: ni avisos, ni decisiones de la bandeja, ni notas.</li>
+    <li>Si la preliquidación <b>no está confirmada</b>, sale marcada <span class="chip ambar">BORRADOR</span> y el archivo termina en <code>-borrador</code>: los importes pueden cambiar. Para entregarla conviene confirmarla antes.</li>
+    <li>Los días <span class="chip azul">Proyectado</span> llevan esa nota: se pagan según el esquema y se ajustan el mes siguiente si cambian.</li>
+    <li>Se genera en el navegador: no se guarda ni se envía por correo. El archivo se llama <code>liquidacion-apellido-2026-09.pdf</code>.</li>
+  </ul>
+
   <h3>{{i:tags}} Los ítems</h3>
   <p style="margin-top:0">Arriba, los que calcula el sistema, marcados <span class="chip">Automático</span>: no se tocan, salen de la evaluación mensual y de los datos del agente. Abajo, los que cargás vos, cada uno con un <b>concepto del catálogo</b>.</p>
   <div class="dos lado">
@@ -503,7 +512,7 @@
     <figure class="captura" style="margin-top:0"><img src="img/evaluacion.png" alt="Evaluación mensual"></figure>
     <div>
       <p style="margin-top:0">Por agente y por mes: los tres componentes del <b>REG</b>, el <b>SUPER REG</b> y el <b>reintegro de monotributo</b>.</p>
-      <p>Dependen de cómo performó cada uno <b>ese mes</b>, así que no se heredan. Un mes sin cargar arranca con el valor por defecto del agente, pero es una red, no un dato: <b>sin la evaluación cargada no se confirma</b>. El monotributo arranca en cero.</p>
+      <p>El REG y el SUPER REG dependen de cómo performó cada uno <b>ese mes</b>, así que no se heredan. Un mes sin cargar arranca con los valores por defecto del agente —también el monotributo, que cambia sólo con la categoría—, pero es una red, no un dato: <b>sin la evaluación cargada no se confirma</b>. Revisá y tocá <b>Guardar el mes</b>.</p>
     </div>
   </div>
 </section>

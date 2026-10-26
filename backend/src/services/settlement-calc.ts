@@ -233,6 +233,35 @@ export const DEFAULT_SETTLEMENT_PARAMS: SettlementParams = {
   monotributo_reimbursement: 0,
 };
 
+type ParamsDePerfil = Partial<Record<keyof SettlementParams, number | string | null>>;
+type ParamsDelMes = Partial<
+  Record<'reg_people_pct' | 'reg_quantitative_pct' | 'reg_qualitative_pct' | 'super_reg_pct' | 'monotributo_reimbursement', number | string | null>
+>;
+
+/**
+ * Los parámetros con que se liquida un período.
+ *
+ * Lo que depende del mes —el REG, el SUPER REG y el monotributo— sale de la
+ * Evaluación mensual si está cargada, y si no del valor por defecto del perfil.
+ * Un mes sin cargar no se puede confirmar: el valor por defecto es una red, no
+ * lo que se paga. El resto (equipos, antigüedad, factores) vive en el perfil.
+ */
+export function settlementParamsFor(profile: ParamsDePerfil, period: ParamsDelMes | null): SettlementParams {
+  const delMes = period ?? profile;
+  const n = (v: number | string | null | undefined) => Number(v ?? 0);
+  return {
+    reg_people_pct: n(delMes.reg_people_pct),
+    reg_quantitative_pct: n(delMes.reg_quantitative_pct),
+    reg_qualitative_pct: n(delMes.reg_qualitative_pct),
+    super_reg_pct: n(delMes.super_reg_pct),
+    monotributo_reimbursement: n(delMes.monotributo_reimbursement),
+    equipment_pct: n(profile.equipment_pct),
+    seniority_months: n(profile.seniority_months),
+    holiday_compensation_factor: n(profile.holiday_compensation_factor),
+    vacation_plus_factor: n(profile.vacation_plus_factor),
+  };
+}
+
 export type ConceptCode =
   | 'reg'
   | 'super_reg'
