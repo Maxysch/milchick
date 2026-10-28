@@ -123,6 +123,20 @@ router.post('/my/clock-in', async (req: AuthRequest, res: Response) => {
   // Fecha y hora de Buenos Aires: el servidor puede estar en UTC
   const { date: today, time } = localNow();
 
+  // Un ingreso con otro abierto es el mismo toque repetido —la pantalla tardó
+  // en mostrar el primero—: se devuelve el abierto en vez de crear otro. Sin
+  // esto, tres toques seguidos dejaban tres ingresos a la misma hora.
+  const { data: abierta } = await supabaseAdmin
+    .from('clock_entries')
+    .select('*, clients(name)')
+    .eq('profile_id', req.userId!)
+    .eq('date', today)
+    .is('clock_out', null)
+    .order('clock_in', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (abierta) { res.json(abierta); return; }
+
   const { data, error } = await supabaseAdmin
     .from('clock_entries')
     .insert({
@@ -138,9 +152,12 @@ router.post('/my/clock-in', async (req: AuthRequest, res: Response) => {
   res.status(201).json(data);
 });
 
+/** Un egreso que llega hasta este tiempo después de otro es el mismo toque repetido */
+const EGRESO_REPETIDO_MIN = 2;
+
 // Clock out (any authenticated user, closes own open entry)
 router.post('/my/clock-out', async (req: AuthRequest, res: Response) => {
-  const { date: today, time } = localNow();
+  const { date: today, time, minutes: ahora } = localNow();
 
   // Find open entry for today
   const { data: openEntry } = await supabaseAdmin
@@ -154,6 +171,21 @@ router.post('/my/clock-out', async (req: AuthRequest, res: Response) => {
     .single();
 
   if (!openEntry) {
+    // Si el egreso de recién ya la cerró, es un toque repetido: se devuelve ese
+    const { data: recien } = await supabaseAdmin
+      .from('clock_entries')
+      .select('*, clients(name)')
+      .eq('profile_id', req.userId!)
+      .eq('date', today)
+      .not('clock_out', 'is', null)
+      .order('clock_out', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (recien?.clock_out) {
+      const [h, m] = String(recien.clock_out).split(':').map(Number);
+      const hace = ahora - (h * 60 + m);
+      if (hace >= 0 && hace <= EGRESO_REPETIDO_MIN) { res.json(recien); return; }
+    }
     res.status(400).json({ error: 'No hay marcación de ingreso abierta para hoy' });
     return;
   }
