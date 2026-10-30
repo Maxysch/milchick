@@ -13,7 +13,7 @@ export default function MyPortalPage() {
   const today = getToday();
 
   // Today's clock entries
-  const { data: todayEntries } = useQuery({
+  const { data: todayEntries, isFetching: actualizando } = useQuery({
     queryKey: ['my-clock-entries', today],
     queryFn: () => api.get<Array<Record<string, unknown>>>('/clock-entries/my/today'),
   });
@@ -39,37 +39,40 @@ export default function MyPortalPage() {
     enabled: !!profile,
   });
 
+  // La marcación se ve apenas el servidor la registra, sin esperar a recargar la
+  // lista: si no, el botón quedaba igual unos segundos y el agente volvía a
+  // tocarlo. Mientras tanto sigue deshabilitado (esperar la recarga dentro de
+  // onSuccess mantiene la mutación pendiente).
+  const registrar = async (fila: Record<string, unknown>) => {
+    queryClient.setQueryData<Array<Record<string, unknown>>>(['my-clock-entries', today], (previas = []) =>
+      previas.some((e) => e.id === fila.id) ? previas.map((e) => (e.id === fila.id ? fila : e)) : [...previas, fila]
+    );
+    await queryClient.invalidateQueries({ queryKey: ['my-clock-entries'] });
+  };
+
   // Clock in
   const clockIn = useMutation({
-    mutationFn: () => {
-      return api.post('/clock-entries/my/clock-in', {
-        notes: clockNote || null,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['my-clock-entries'] });
+    mutationFn: () => api.post<Record<string, unknown>>('/clock-entries/my/clock-in', { notes: clockNote || null }),
+    onSuccess: async (fila) => {
       setClockNote('');
+      await registrar(fila);
     },
   });
 
   // Clock out
   const clockOut = useMutation({
-    mutationFn: () => {
-      return api.post('/clock-entries/my/clock-out', {});
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['my-clock-entries'] });
-    },
+    mutationFn: () => api.post<Record<string, unknown>>('/clock-entries/my/clock-out', {}),
+    onSuccess: registrar,
   });
 
   const undoClockOut = useMutation({
-    mutationFn: () => {
-      return api.post('/clock-entries/my/undo-clock-out', {});
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['my-clock-entries'] });
-    },
+    mutationFn: () => api.post<Record<string, unknown>>('/clock-entries/my/undo-clock-out', {}),
+    onSuccess: registrar,
   });
+
+  // Ningún botón se puede tocar mientras se registra una marcación o se recarga la lista
+  const ocupado = clockIn.isPending || clockOut.isPending || undoClockOut.isPending || actualizando;
+  const botonOcupado = 'disabled:cursor-not-allowed disabled:opacity-60';
 
   const hasOpenEntry = todayEntries?.some((e) => !e.clock_out);
   const lastClosedEntry = todayEntries
@@ -121,28 +124,28 @@ export default function MyPortalPage() {
               />
               <button
                 onClick={() => clockIn.mutate()}
-                disabled={clockIn.isPending}
-                className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 font-medium"
+                disabled={ocupado}
+                className={`bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 font-medium ${botonOcupado}`}
               >
-                Marcar ingreso
+                {clockIn.isPending ? 'Registrando…' : 'Marcar ingreso'}
               </button>
               {lastClosedEntry && (
                 <button
                   onClick={() => undoClockOut.mutate()}
-                  disabled={undoClockOut.isPending}
-                  className="bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 font-medium text-sm"
+                  disabled={ocupado}
+                  className={`bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 font-medium text-sm ${botonOcupado}`}
                 >
-                  Anular egreso
+                  {undoClockOut.isPending ? 'Anulando…' : 'Anular egreso'}
                 </button>
               )}
             </>
           ) : (
             <button
               onClick={() => clockOut.mutate()}
-              disabled={clockOut.isPending}
-              className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 font-medium"
+              disabled={ocupado}
+              className={`bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 font-medium ${botonOcupado}`}
             >
-              Marcar egreso
+              {clockOut.isPending ? 'Registrando…' : 'Marcar egreso'}
             </button>
           )}
         </div>
